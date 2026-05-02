@@ -3568,18 +3568,27 @@ async function listAvailableModels(){
   const apiKey=getApiKey();
   if(!apiKey){toast('⚠️ API 키를 먼저 저장하세요');return;}
   const el=document.getElementById('modelListResult');
-  if(el) el.innerHTML='<span style="color:var(--mu)">불러오는 중...</span>';
-  if(el) el.style.display='block';
+  if(el){el.innerHTML='<span style="color:var(--mu)">불러오는 중...</span>';el.style.display='block';}
   try{
     const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
     const data=await res.json();
+    // 텍스트 생성 지원 + flash/pro 계열만 표시
+    const ALLOW=/^gemini-(2\.5|2\.0|1\.5)-(flash|pro)/;
     const models=(data.models||[])
       .filter(m=>m.supportedGenerationMethods?.includes('generateContent'))
-      .map(m=>m.name.replace('models/',''));
+      .map(m=>m.name.replace('models/',''))
+      .filter(m=>ALLOW.test(m))
+      .sort();
     if(!models.length){el.innerHTML='<span style="color:var(--mu)">모델 없음</span>';return;}
     const cur=getAiModel();
-    el.innerHTML=models.map(m=>`<button class="btn-xs" style="${m===cur?'color:var(--g);border-color:var(--g)':''}" onclick="applyAiModel('${m}')">${m===cur?'✓ ':''}${m}</button>`).join('');
+    el.style.display='block';
+    el.style.flexDirection='column';
+    el.innerHTML=models.map(m=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:6px;background:${m===cur?'rgba(95,217,156,.08)':'transparent'}">
+        <span style="font-size:12px;color:${m===cur?'var(--g)':'var(--tx)'};font-weight:${m===cur?'700':'400'}">${m===cur?'✓ ':''}${m}</span>
+        <button class="btn-xs" style="${m===cur?'color:var(--g);border-color:var(--g)':''}" onclick="applyAiModel('${m}')">${m===cur?'사용 중':'선택'}</button>
+      </div>`).join('');
   }catch(e){
     if(el) el.innerHTML=`<span style="color:var(--rd)">오류: ${e.message}</span>`;
   }
