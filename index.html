@@ -1351,15 +1351,19 @@ const EXCLUDED_DOMAINS = [
 // ════════════════════════════════════════════════════════════════
 //  STATE
 // ════════════════════════════════════════════════════════════════
-let events=JSON.parse(localStorage.getItem('gv8-events')||'[]');
-let coupons=JSON.parse(localStorage.getItem('gv8-coupons')||'[]');
-let customEvents=JSON.parse(localStorage.getItem('gv8-custom-events')||'[]');
-let favs=JSON.parse(localStorage.getItem('gv8-favs')||'[]');
-let alarms=JSON.parse(localStorage.getItem('gv8-alarms')||'{}');
-let inventory=JSON.parse(localStorage.getItem('gv8-inv')||'{}');
-let monthlyOn=JSON.parse(localStorage.getItem('gv8-monthly')||'{}');
-let monthlyStart=JSON.parse(localStorage.getItem('gv8-monthly-start')||'{}');
-let hiddenAutoMira=JSON.parse(localStorage.getItem('gv8-hidden-mira')||'[]');
+function safeLoad(key, fallback){
+  try{ return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback)); }
+  catch(e){ console.warn(`localStorage 손상 [${key}]:`, e); return fallback; }
+}
+let events=safeLoad('gv8-events',[]);
+let coupons=safeLoad('gv8-coupons',[]);
+let customEvents=safeLoad('gv8-custom-events',[]);
+let favs=safeLoad('gv8-favs',[]);
+let alarms=safeLoad('gv8-alarms',{});
+let inventory=safeLoad('gv8-inv',{});
+let monthlyOn=safeLoad('gv8-monthly',{});
+let monthlyStart=safeLoad('gv8-monthly-start',{});
+let hiddenAutoMira=safeLoad('gv8-hidden-mira',[]);
 let serverFilter=localStorage.getItem('gv8-srv')||'all';
 let calDate=new Date();
 let evtIdx=-1,cpnIdx=-1,cpnFilter='all',page='schedule',aiLast='';
@@ -3923,7 +3927,8 @@ ${text}`;
         </div>`;
       }).join('');
   }catch(err){
-    pickupCards.innerHTML='';
+    console.error('aiExtractPickups 실패:', err);
+    pickupCards.innerHTML='<div style="font-size:11px;color:var(--mu2);padding:8px">픽업 카드 자동 생성 실패 — 위 결과를 보고 직접 등록하세요.</div>';
   }
 }
 
@@ -3956,10 +3961,14 @@ JSON만 응답.
     const m=raw.match(/\[[\s\S]*\]/);
     if(m) raw=m[0];
     const parsed=JSON.parse(raw);
-    parsed.forEach(c=>coupons.push({game:gid,srv,code:c.code,reward:c.reward,src:'AI 검색(Gemini)',exp:c.exp||'',used:false}));
+    if(!Array.isArray(parsed)||!parsed.length){toast('⚠️ 추출된 쿠폰 없음');return;}
+    parsed.forEach(c=>{
+      if(!c.code) return;
+      coupons.push({game:gid,srv,code:c.code,reward:c.reward||'',src:'AI 검색(Gemini)',exp:c.exp||'',used:false});
+    });
     save();renderCoupons();updateBadges();
     toast(`🎟 ${parsed.length}개 쿠폰 추가!`);
-  }catch{toast('⚠️ 쿠폰 추출 실패');}
+  }catch(e){console.error('aiAutoCpn 실패:',e);toast('⚠️ 쿠폰 추출 실패');}
 }
 
 // 출처 칩 CSS
