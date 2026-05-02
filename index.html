@@ -3660,6 +3660,34 @@ function extractGeminiText(data){
     ?.join('\n') || '';
 }
 
+// 마크다운 → HTML 간단 렌더러
+function renderMd(text){
+  if(!text) return '';
+  const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return text
+    .split('\n')
+    .map(line=>{
+      // 제목
+      if(/^###\s/.test(line)) return `<div style="font-size:13px;font-weight:900;color:var(--bl);margin:10px 0 4px">${esc(line.slice(4))}</div>`;
+      if(/^##\s/.test(line))  return `<div style="font-size:14px;font-weight:900;color:var(--pu);margin:12px 0 4px">${esc(line.slice(3))}</div>`;
+      if(/^#\s/.test(line))   return `<div style="font-size:15px;font-weight:900;color:var(--pk);margin:14px 0 6px">${esc(line.slice(2))}</div>`;
+      // 구분선
+      if(/^---+$/.test(line.trim())) return `<hr style="border:none;border-top:1px solid var(--bd2);margin:8px 0">`;
+      // 불릿
+      const isBullet=/^\s*[-*•]\s/.test(line);
+      let processed=esc(isBullet?line.replace(/^\s*[-*•]\s/,''):line);
+      // 인라인: **bold**, *italic*, `code`
+      processed=processed
+        .replace(/\*\*(.+?)\*\*/g,'<strong style="color:var(--tx);font-weight:700">$1</strong>')
+        .replace(/\*(.+?)\*/g,'<em style="color:var(--mu2)">$1</em>')
+        .replace(/`(.+?)`/g,'<code style="background:var(--sf2);padding:1px 5px;border-radius:4px;font-size:11px;font-family:monospace">$1</code>');
+      if(isBullet) return `<div style="display:flex;gap:6px;margin:2px 0;padding-left:4px"><span style="color:var(--bl);flex-shrink:0">•</span><span>${processed}</span></div>`;
+      if(!processed.trim()) return `<div style="height:6px"></div>`;
+      return `<div style="margin:2px 0;line-height:1.6">${processed}</div>`;
+    })
+    .join('');
+}
+
 // Gemini 응답에서 검색 소스 추출
 function extractGeminiSources(data){
   const meta=data?.candidates?.[0]?.groundingMetadata;
@@ -3702,7 +3730,7 @@ async function doAi(){
       const {text,sources,ts}=JSON.parse(cached);
       const age=(Date.now()-ts)/1000/3600;
       if(age<24){
-        el.textContent=text;
+        el.innerHTML=renderMd(text);
         const ageStr=age<1?`${Math.round(age*60)}분`:`${Math.round(age)}시간`;
         if(sources&&sources.length){
           const srcHtml=sources.map(s=>`<a href="${s.uri}" target="_blank" class="ai-source-chip" title="${s.uri}">${s.title||s.uri}</a>`).join('');
@@ -3749,7 +3777,7 @@ async function doAi(){
     
     el.classList.remove('loading');
     aiLast=text;
-    el.textContent=text||'결과를 찾을 수 없습니다.';
+    el.innerHTML=text?renderMd(text):'결과를 찾을 수 없습니다.';
     
     // 캐시 저장
     try{localStorage.setItem(cacheKey,JSON.stringify({text,sources,ts:Date.now()}));}catch(e){}
