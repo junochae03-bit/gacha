@@ -882,6 +882,7 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
         <option value="pickup">픽업 배너</option><option value="event">이벤트/재화</option><option value="coupon">리딤코드</option><option value="anniv">주년/대형 업데이트</option>
       </select>
       <button class="btn btn-primary" onclick="doAi()">🔍 검색</button>
+      <button class="btn btn-ghost" onclick="clearAllAiCache()" title="저장된 AI 검색 결과 전체 삭제">🗑 캐시 초기화</button>
     </div>
     <div class="ai-res" id="aiRes">Gemini API 키 저장 후 게임과 검색 유형을 선택해 검색하세요.</div>
     <div id="aiAct" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"></div>
@@ -4053,6 +4054,14 @@ function clearAiCache(key){
   try{localStorage.removeItem(key);}catch(e){}
   toast('🔄 캐시 삭제됨');
   doAi();
+}
+function clearAllAiCache(){
+  const keys=Object.keys(localStorage).filter(k=>k.startsWith('gv8-ai-cache-'));
+  keys.forEach(k=>localStorage.removeItem(k));
+  document.getElementById('aiRes').innerHTML='캐시가 초기화됐습니다. 다시 검색하세요.';
+  document.getElementById('aiAct').innerHTML='';
+  document.getElementById('aiPickupCards').innerHTML='';
+  toast(`🗑 AI 캐시 ${keys.length}개 삭제됨`);
 }
 
 // ── 오프라인 인디케이터 ────────────────────────────────────
