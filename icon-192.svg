@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="36" fill="#0f1320"/>
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="50%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#f472b6"/>
+    </linearGradient>
+  </defs>
+  <!-- 별 모양 -->
+  <polygon points="96,38 107,72 143,72 115,93 125,127 96,107 67,127 77,93 49,72 85,72"
+    fill="url(#g1)" opacity="0.95"/>
+  <!-- 아래 텍스트 -->
+  <text x="96" y="158" text-anchor="middle" font-family="sans-serif" font-size="22" font-weight="900" fill="#a78bfa" letter-spacing="2">가챠</text>
+</svg>
