@@ -3585,6 +3585,15 @@ function saveEvt(){
   // ──────────────────────────────────────────────────────────────
   
   if(evtIdx>=0)events[evtIdx]=entry;else events.push(entry);
+  // 픽업 저장 시 게임-서버 콤보 자동 즐겨찾기 등록
+  const eg=GAMES.find(x=>x.id===entry.game);
+  if(eg){
+    const fk=eg.servers.length>1?`${entry.game}-${entry.srv}`:entry.game;
+    if(!favs.includes(fk)){
+      favs.push(fk);
+      localStorage.setItem('gv8-favs',JSON.stringify(favs));
+    }
+  }
   save();closeEvt();renderAll();
   toast(newSpentCurrency>0?`✅ 저장${toastSuffix}`:'✅ 저장!');
 }
@@ -4774,6 +4783,15 @@ function saveCustomGame(){
   customGames.push(newGame);
   localStorage.setItem('gv8-custom-games',JSON.stringify(customGames));
   rebuildGames();
+  // 새 게임 자동 즐겨찾기 등록
+  servers.forEach(srv=>{
+    const fk=servers.length>1||srv!=='all'?`${newGame.id}-${srv}`:newGame.id;
+    if(!favs.includes(fk)) favs.push(fk);
+  });
+  if(servers.includes('all')){
+    if(!favs.includes(newGame.id)) favs.push(newGame.id);
+  }
+  localStorage.setItem('gv8-favs',JSON.stringify(favs));
   renderSettingsGameList();
   closeGameAddModal();
   toast(`✅ ${name} 추가됨`);
