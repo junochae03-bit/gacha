@@ -198,14 +198,14 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .t-mon{background:rgba(103,232,249,.12);color:var(--cy)}
 .t-paid{background:rgba(251,191,36,.12);color:var(--gold)}
 
-.arow{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}
 .ab{font-size:10px;padding:5px 10px;border-radius:6px;border:1px solid var(--bd2);background:var(--sf2);color:var(--mu2);cursor:pointer;transition:all .2s;font-family:inherit}
 .ab:hover{border-color:var(--bl);color:var(--bl);transform:translateY(-1px);box-shadow:0 4px 12px rgba(96,165,250,.15)}
 .ab.set{border-color:var(--g);color:var(--g);background:rgba(95,217,156,.05)}
 .pull-ctr{margin-top:10px;padding:10px 12px;background:rgba(255,255,255,.02);border:1px solid var(--bd);border-radius:10px}
 .pull-ctr-label{font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px}
+.pc-pity-label{font-size:9px;font-family:'Orbitron',monospace;font-weight:700;text-transform:none;letter-spacing:.5px}
 .pull-ctr-row{display:flex;align-items:center;gap:5px}
-.pc-num{flex:1;text-align:center;font-family:'Orbitron',monospace;font-size:24px;font-weight:800;color:var(--tx);line-height:1}
+.pc-num{flex:1;text-align:center;font-family:'Orbitron',monospace;font-size:24px;font-weight:800;line-height:1;transition:color .3s}
 .pc-unit{font-size:10px;font-weight:400;color:var(--mu);margin-left:2px;font-family:inherit}
 .pc-btn{padding:9px 0;border-radius:8px;border:1px solid var(--bd2);background:var(--sf2);cursor:pointer;font-weight:700;font-family:inherit;transition:all .12s;flex:1;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .pc-btn:active{transform:scale(.92);opacity:.8}
@@ -214,6 +214,19 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .pc-add{font-size:12px;color:var(--bl);border-color:rgba(96,165,250,.3)}
 .pc-add:hover{border-color:var(--bl);background:rgba(96,165,250,.1)}
 .pc-add10{flex:2;font-size:14px;background:rgba(96,165,250,.08);border-color:var(--bl);color:var(--bl)}
+.pc-pity-bar{height:3px;background:rgba(255,255,255,.05);border-radius:99px;overflow:hidden;margin-top:8px}
+.pc-pity-fill{height:100%;border-radius:99px;transition:width .3s ease,background .3s ease}
+.arow{margin-top:11px;display:flex;flex-direction:column;gap:6px}
+.arow-util{display:flex;gap:6px;flex-wrap:wrap}
+.arow-outcome{display:flex;gap:5px}
+.arow-outcome .ab{flex:1;justify-content:center;text-align:center}
+.ab-success{color:var(--g)!important;border-color:rgba(95,217,156,.35)!important;background:rgba(95,217,156,.04)}
+.ab-success:hover{background:rgba(95,217,156,.12)!important;box-shadow:0 4px 12px rgba(95,217,156,.2)!important}
+.ab-fail{color:var(--rd)!important;border-color:rgba(248,113,113,.25)!important;background:rgba(248,113,113,.04)}
+.ab-fail:hover{background:rgba(248,113,113,.12)!important;box-shadow:0 4px 12px rgba(248,113,113,.2)!important}
+.ab-archive{color:var(--pu)!important;border-color:rgba(167,139,250,.35)!important;background:rgba(167,139,250,.04)}
+.ab-archive:hover{background:rgba(167,139,250,.12)!important;box-shadow:0 4px 12px rgba(167,139,250,.2)!important}
+.ab-del{color:var(--mu)!important;border-color:var(--bd)!important;min-width:36px;max-width:36px;padding:5px 0}
 
 .card-foot{padding:10px 16px;border-top:1px solid var(--bd);display:flex;gap:7px;background:rgba(0,0,0,.15)}
 
@@ -2089,7 +2102,14 @@ function renderSchedule(){
   } else {
     if(ongoing.length){html+=`<h3 style="font-family:'Orbitron',monospace;font-size:11px;color:var(--g);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px">🟢 진행 중 <span style="opacity:.5">${ongoing.length}건</span></h3><div class="cards">${ongoing.map(e=>buildCard(e,events.indexOf(e))).join('')}</div>`;}
     if(upcoming.length){html+=`<h3 style="font-family:'Orbitron',monospace;font-size:11px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;margin-top:24px">🟡 출시 예정 <span style="opacity:.5">${upcoming.length}건</span></h3><div class="cards">${upcoming.map(e=>buildCard(e,events.indexOf(e))).join('')}</div>`;}
-    if(ended.length){html+=`<h3 style="font-family:'Orbitron',monospace;font-size:11px;color:var(--mu);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;margin-top:24px">⚫ 종료 <span style="opacity:.5">${ended.length}건</span></h3><div class="cards">${ended.slice(0,6).map(e=>buildCard(e,events.indexOf(e))).join('')}</div>`;}
+    if(ended.length){
+      const endedVisible=showAllEnded?ended:ended.slice(0,6);
+      const moreCount=ended.length-6;
+      const moreBtn=!showAllEnded&&moreCount>0
+        ?`<button class="btn btn-ghost" style="width:100%;margin-top:8px;font-size:12px" onclick="showAllEnded=true;renderSchedule()">▼ 더보기 (${moreCount}건 더)</button>`
+        :(showAllEnded&&ended.length>6?`<button class="btn btn-ghost" style="width:100%;margin-top:8px;font-size:12px" onclick="showAllEnded=false;renderSchedule()">▲ 접기</button>`:'');
+      html+=`<h3 style="font-family:'Orbitron',monospace;font-size:11px;color:var(--mu);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;margin-top:24px">⚫ 종료 <span style="opacity:.5">${ended.length}건</span></h3><div class="cards">${endedVisible.map(e=>buildCard(e,events.indexOf(e))).join('')}</div>${moreBtn}`;
+    }
   }
   document.getElementById('schedule-content').innerHTML=html+
     (archivedCount&&!scheduleSearchQuery?`<div style="margin-top:16px;padding:10px 16px;background:rgba(95,217,156,.06);border:1px solid rgba(95,217,156,.2);border-radius:10px;display:flex;align-items:center;gap:12px;font-size:12px">
@@ -2181,15 +2201,15 @@ function buildCard(e,idx){
     </div>`;
   }
   
-  const ceilHtml = (ceilRemain !== null && totalPulls > 0) ? `
-    <div class="ceil-bar-wrap">
+  const ceilHtml = (maxCeil > 0) ? `
+    <div class="ceil-bar-wrap" data-ceil-eid="${eid}">
       <div class="ceil-bar-inner">
-        <span class="ceil-bar-label">보유 ${totalPulls}뽑</span>
+        <span class="ceil-bar-label">현재 ${curPity}천장</span>
         <div class="ceil-bar-track">
-          <div class="ceil-bar-fill" style="width:${Math.min(100,Math.round(totalPulls/maxCeil*100))}%;background:${totalPulls>=maxCeil?'var(--g)':g.color}88"></div>
+          <div class="ceil-bar-fill" style="width:${Math.min(100,Math.round(curPity/maxCeil*100))}%;background:${curPity>=maxCeil?'var(--g)':g.color}88"></div>
         </div>
-        <span class="ceil-bar-remain" style="color:${ceilRemain===0?'var(--g)':ceilRemain<=10?'var(--gold)':'var(--mu2)'}">
-          ${ceilRemain===0?'천장 도달':`천장 -${ceilRemain}뽑`}
+        <span class="ceil-bar-remain" style="color:${ceilRemain!==null&&ceilRemain===0?'var(--g)':ceilRemain!==null&&ceilRemain<=10?'var(--gold)':'var(--mu2)'}">
+          ${ceilRemain===null?`${maxCeil}천장`:ceilRemain===0?'천장 도달':`천장 -${ceilRemain}뽑`}
         </span>
       </div>
     </div>` : '';
@@ -2219,24 +2239,32 @@ function buildCard(e,idx){
       </div>
       ${spentHtml}
       ${e.memo?`<div style="font-size:11px;color:var(--mu);line-height:1.6;margin-top:8px;padding:8px 10px;background:rgba(167,139,250,.04);border-left:2px solid rgba(167,139,250,.3);border-radius:4px;font-style:italic">📝 ${e.memo}</div>`:''}
-      <div class="pull-ctr">
-        <div class="pull-ctr-label">🎲 뽑기 카운터</div>
+      <div class="pull-ctr${maxCeil>0?' has-pity':''}">
+        <div class="pull-ctr-label" style="display:flex;align-items:center;justify-content:space-between">
+          <span>🎲 뽑기 카운터</span>
+          ${maxCeil>0?`<span class="pc-pity-label" data-pcpity="${eid}" style="color:${curPity>=maxCeil*0.9?'var(--rd)':curPity>=maxCeil*0.7?'var(--gold)':curPity>=maxCeil*0.5?'#fb923c':'var(--mu)'}">천장 ${curPity}/${maxCeil}</span>`:''}
+        </div>
         <div class="pull-ctr-row">
           <button class="pc-btn pc-sub" data-action="pulls-sub10" data-eid="${eid}">−10</button>
           <button class="pc-btn pc-sub" data-action="pulls-sub1" data-eid="${eid}">−1</button>
-          <div class="pc-num"><span data-pceid="${eid}">${e.spentPulls||0}</span><span class="pc-unit">뽑</span></div>
+          <div class="pc-num" style="color:${maxCeil>0&&curPity>=maxCeil*0.9?'var(--rd)':maxCeil>0&&curPity>=maxCeil*0.7?'var(--gold)':'var(--tx)'}"><span data-pceid="${eid}">${e.spentPulls||0}</span><span class="pc-unit">뽑</span></div>
           <button class="pc-btn pc-add" data-action="pulls-add1" data-eid="${eid}">+1</button>
           <button class="pc-btn pc-add pc-add10" data-action="pulls-add10" data-eid="${eid}">+10</button>
         </div>
+        ${maxCeil>0?`<div class="pc-pity-bar"><div class="pc-pity-fill" data-pcpitybar="${eid}" style="width:${Math.min(100,Math.round(curPity/maxCeil*100))}%;background:${curPity>=maxCeil*0.9?'var(--rd)':curPity>=maxCeil*0.7?'var(--gold)':'var(--bl)'}"></div></div>`:''}
       </div>
       <div class="arow">
-        <button class="ab ${alarms[alarmKey]?'set':''}" data-action="alarm" data-eid="${eid}">🔔 ${alarms[alarmKey]?'설정됨':'알람'}</button>
-        <button class="ab" data-action="ical" data-eid="${eid}">📅 캘린더</button>
-        ${g.redeemUrl?`<button class="ab" data-action="redeem" data-url="${g.redeemUrl}">🎁 리딤</button>`:''}
-        <button class="ab ab-success" data-action="success" data-eid="${eid}" style="color:var(--g);border-color:rgba(95,217,156,.35)">✨ 성공</button>
-        <button class="ab ab-fail" data-action="fail" data-eid="${eid}" style="color:var(--rd);border-color:rgba(248,113,113,.25)">💔 픽뚫</button>
-        <button class="ab ab-archive" data-action="archive" data-eid="${eid}" style="color:var(--pu);border-color:rgba(167,139,250,.35)">📦 완료</button>
-        <button class="ab ab-del" data-action="del" data-eid="${eid}">🗑 삭제</button>
+        <div class="arow-util">
+          <button class="ab ${alarms[alarmKey]?'set':''}" data-action="alarm" data-eid="${eid}">🔔 ${alarms[alarmKey]?'알람ON':'알람'}</button>
+          <button class="ab" data-action="ical" data-eid="${eid}">📅 캘린더</button>
+          ${g.redeemUrl?`<button class="ab" data-action="redeem" data-url="${g.redeemUrl}">🎁 리딤</button>`:''}
+        </div>
+        <div class="arow-outcome">
+          <button class="ab ab-success" data-action="success" data-eid="${eid}">✨ 성공</button>
+          <button class="ab ab-fail" data-action="fail" data-eid="${eid}">💔 픽뚫</button>
+          <button class="ab ab-archive" data-action="archive" data-eid="${eid}">📦 완료</button>
+          <button class="ab ab-del" data-action="del" data-eid="${eid}">🗑</button>
+        </div>
       </div>
     </div>
   </div>`;
@@ -3496,10 +3524,58 @@ let _pullTimer=null;
 function addPulls(eid, delta){
   const i=findEvtIdx(eid);
   if(i<0)return;
-  events[i].spentPulls=Math.max(0,(events[i].spentPulls||0)+delta);
+  const prev=events[i].spentPulls||0;
+  events[i].spentPulls=Math.max(0,prev+delta);
+  const actual=events[i].spentPulls-prev; // 실제 변화량 (0 클램핑 고려)
   // 카운터 숫자 즉시 반영 (스크롤 유지)
   const numEl=document.querySelector(`[data-pceid="${eid}"]`);
   if(numEl) numEl.textContent=events[i].spentPulls;
+  // _pity 동기화: delta>0이면 천장 카운터도 증가
+  if(actual!==0){
+    const ev=events[i];
+    const g=GAMES.find(x=>x.id===ev.game);
+    if(g){
+      const srvKey=ev.srv==='all'?g.servers[0]:ev.srv;
+      const invKey=`${ev.game}-${srvKey}`;
+      if(!inventory[invKey]) inventory[invKey]={};
+      const maxPity=g.gacha.hardPity||0;
+      if(maxPity>0){
+        const newPity=Math.min(maxPity,(inventory[invKey]._pity||0)+actual);
+        inventory[invKey]._pity=Math.max(0,newPity);
+        localStorage.setItem('gv8-inv',JSON.stringify(inventory));
+        // 천장 바 즉시 업데이트
+        const ceilEl=document.querySelector(`[data-ceil-eid="${eid}"]`);
+        if(ceilEl){
+          const curP=inventory[invKey]._pity;
+          const totalP=Math.floor(((inventory[invKey][g.currencies[0].id]||0)+(inventory[invKey][g.currencies[0].id+'_paid']||0))/g.gacha.pullCost)+(g.currencies[1]?(inventory[invKey][g.currencies[1].id]||0):0);
+          const remain=Math.max(0,maxPity-curP-totalP);
+          const fillEl=ceilEl.querySelector('.ceil-bar-fill');
+          const labelEl=ceilEl.querySelector('.ceil-bar-label');
+          const remainEl=ceilEl.querySelector('.ceil-bar-remain');
+          if(fillEl) fillEl.style.width=Math.min(100,Math.round(curP/maxPity*100))+'%';
+          if(labelEl) labelEl.textContent=`현재 ${curP}천장`;
+          if(remainEl){
+            remainEl.textContent=remain===0?'천장 도달':`천장 -${remain}뽑`;
+            remainEl.style.color=remain===0?'var(--g)':remain<=10?'var(--gold)':'var(--mu2)';
+          }
+        }
+        // 미니 pity 바 + 라벨 즉시 업데이트
+        const pityColor=inventory[invKey]._pity>=maxPity*0.9?'var(--rd)':inventory[invKey]._pity>=maxPity*0.7?'var(--gold)':'var(--bl)';
+        const pityPct=Math.min(100,Math.round((inventory[invKey]._pity/maxPity)*100));
+        const pityBarEl=document.querySelector(`[data-pcpitybar="${eid}"]`);
+        if(pityBarEl){pityBarEl.style.width=pityPct+'%';pityBarEl.style.background=pityColor;}
+        const pityLabelEl=document.querySelector(`[data-pcpity="${eid}"]`);
+        if(pityLabelEl){
+          pityLabelEl.textContent=`천장 ${inventory[invKey]._pity}/${maxPity}`;
+          const lc=inventory[invKey]._pity>=maxPity*0.9?'var(--rd)':inventory[invKey]._pity>=maxPity*0.7?'var(--gold)':inventory[invKey]._pity>=maxPity*0.5?'#fb923c':'var(--mu)';
+          pityLabelEl.style.color=lc;
+        }
+        // pc-num 색상도 업데이트
+        const pcNumEl=document.querySelector(`[data-pceid="${eid}"]`)?.closest('.pc-num');
+        if(pcNumEl){pcNumEl.style.color=inventory[invKey]._pity>=maxPity*0.9?'var(--rd)':inventory[invKey]._pity>=maxPity*0.7?'var(--gold)':'var(--tx)';}
+      }
+    }
+  }
   // 저장 + 전체 재렌더는 0.8s 디바운스
   clearTimeout(_pullTimer);
   _pullTimer=setTimeout(()=>{save();renderSchedule();},800);
@@ -4619,7 +4695,7 @@ async function gistDownload(){
 // ════════════════════════════════════════════════════════════════
 //  SEARCH & FILTER
 // ════════════════════════════════════════════════════════════════
-let scheduleSearchQuery='', scheduleResultFilter='all';
+let scheduleSearchQuery='', scheduleResultFilter='all', showAllEnded=false;
 function clearSearch(){
   document.getElementById('scheduleSearch').value='';
   scheduleSearchQuery='';
