@@ -104,16 +104,24 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .page-intro-text h2{font-size:16px;font-weight:700;margin-bottom:5px}
 .page-intro-text p{font-size:12px;color:var(--mu2);line-height:1.6}
 
-.gf{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:22px;padding:14px;background:linear-gradient(135deg,var(--sf),rgba(20,25,40,.7));border:1px solid var(--bd);border-radius:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}
-.gc{display:flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;border:1px solid var(--bd2);background:var(--sf2);cursor:pointer;transition:all .2s;font-size:12px;font-weight:500;color:var(--mu2);user-select:none}
-.gc:hover{color:var(--tx);border-color:var(--bd3);transform:translateY(-1px)}
-.gc.on{border-color:var(--gc,var(--bl));background:rgba(var(--gcr,99,179,237),.12);color:var(--gc,var(--bl));font-weight:700;box-shadow:0 0 16px rgba(var(--gcr,99,179,237),.18)}
-.gc .dot{width:7px;height:7px;border-radius:50%;background:var(--gc,var(--bl));opacity:.3;transition:all .2s}
-.gc.on .dot{opacity:1;box-shadow:0 0 8px var(--gc,var(--bl))}
-.gc .srv-tag{font-size:8px;background:rgba(255,255,255,.08);padding:2px 5px;border-radius:3px;font-weight:700;color:var(--mu2)}
-.gf-sep{width:100%;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:2px}
-.gf-sep:first-child{margin-top:0}
-.gf-sep::after{content:'';flex:1;height:1px;background:var(--bd);border-radius:1px}
+.gf{margin-bottom:16px;display:flex;flex-direction:column;gap:3px}
+.gf-sec{background:var(--sf);border:1px solid var(--bd);border-radius:10px;overflow:hidden;transition:border-color .15s}
+.gf-sec:hover{border-color:var(--bd2)}
+.gf-sec-hd{display:flex;align-items:center;gap:7px;padding:8px 12px;cursor:pointer;user-select:none;transition:background .15s}
+.gf-sec-hd:hover{background:rgba(255,255,255,.03)}
+.gf-sec-arrow{font-size:10px;color:var(--mu);transition:transform .2s;width:10px;flex-shrink:0}
+.gf-sec.open .gf-sec-arrow{transform:rotate(90deg)}
+.gf-sec-name{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mu2);flex:1}
+.gf-sec-count{font-size:9px;font-family:'Orbitron',monospace;font-weight:700;color:var(--mu);background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:4px;padding:1px 6px}
+.gf-sec-count.has-fav{color:var(--g);border-color:rgba(95,217,156,.3);background:rgba(95,217,156,.06)}
+.gf-sec-allbtn{font-size:9px;padding:2px 8px;border-radius:4px;border:1px solid var(--bd2);background:transparent;color:var(--mu);cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap}
+.gf-sec-allbtn:hover{border-color:var(--bl);color:var(--bl)}
+.gf-sec-body{display:flex;flex-wrap:wrap;gap:5px;padding:0 12px 10px}
+.gc{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:7px;border:1px solid var(--bd2);background:var(--sf2);cursor:pointer;transition:all .18s;font-size:11px;font-weight:500;color:var(--mu2);user-select:none}
+.gc:hover{color:var(--tx);border-color:var(--bd3)}
+.gc.on{border-color:var(--gc,var(--bl));background:rgba(var(--gcr,99,179,237),.1);color:var(--gc,var(--bl));font-weight:700}
+.gc .dot{width:6px;height:6px;border-radius:50%;background:var(--gc,var(--bl));opacity:.25;transition:all .18s;flex-shrink:0}
+.gc.on .dot{opacity:1;box-shadow:0 0 6px var(--gc,var(--bl))}
 
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(390px,1fr));gap:14px;margin-bottom:30px}
 .card{background:var(--sf);border:1px solid var(--bd);border-radius:14px;overflow:hidden;transition:all .25s;animation:fu .35s ease both;position:relative}
@@ -1654,6 +1662,8 @@ let coupons=safeLoad('gv8-coupons',[]);
 let customEvents=safeLoad('gv8-custom-events',[]);
 let favs=safeLoad('gv8-favs',[]);
 let alarms=safeLoad('gv8-alarms',{});
+let gfExpanded={};   // 섹션 열림/닫힘 상태 (kr/jp/gl/custom)
+let _gfGrouped={};   // renderGF에서 캐시, selectAllSec에서 사용
 let inventory=safeLoad('gv8-inv',{});
 let monthlyOn=safeLoad('gv8-monthly',{});
 let monthlyStart=safeLoad('gv8-monthly-start',{});
@@ -2013,20 +2023,50 @@ function renderGF(){
     }
   });
 
-  const chipHtml=({g,srv,favKey,isFav})=>{
-    const srvTagHtml=srv!=='all'?`<span class="srv-tag srv-tag-${srv}">${SRV_LBL[srv]||srv}</span>`:'';
-    return `<div class="gc ${isFav?'on':''}" style="--gc:${g.color};--gcr:${g.rgb}" onclick="toggleFav('${favKey}')">
-      <div class="dot"></div><span>${g.short}</span>${srvTagHtml}<span style="font-size:9px;opacity:.7">${isFav?'★':'☆'}</span>
-    </div>`;
-  };
+  _gfGrouped=grouped;
+
+  // 처음 로드 시: 즐겨찾기 있는 섹션은 기본 열림
+  SEC_ORDER.forEach(sec=>{
+    if(!(sec in gfExpanded)){
+      gfExpanded[sec]=grouped[sec].some(x=>x.isFav);
+    }
+  });
+
+  const chipHtml=({g,favKey,isFav})=>`<div class="gc${isFav?' on':''}" style="--gc:${g.color};--gcr:${g.rgb}" onclick="toggleFav('${favKey}')"><div class="dot"></div><span>${g.short}</span></div>`;
 
   let html='';
   SEC_ORDER.forEach(sec=>{
-    if(!grouped[sec]||!grouped[sec].length)return;
-    html+=`<span class="gf-sep">${SEC_LABEL[sec]}</span>`;
-    html+=grouped[sec].map(chipHtml).join('');
+    const items=grouped[sec];
+    if(!items||!items.length)return;
+    const favCnt=items.filter(x=>x.isFav).length;
+    const isOpen=gfExpanded[sec];
+    const allFav=favCnt===items.length;
+    html+=`<div class="gf-sec${isOpen?' open':''}">
+      <div class="gf-sec-hd" onclick="toggleGfSec('${sec}')">
+        <span class="gf-sec-arrow">▶</span>
+        <span class="gf-sec-name">${SEC_LABEL[sec]}</span>
+        <span class="gf-sec-count${favCnt>0?' has-fav':''}">${favCnt}/${items.length}</span>
+        <button class="gf-sec-allbtn" onclick="event.stopPropagation();selectAllSec('${sec}',${!allFav})">${allFav?'전체 해제':'전체 선택'}</button>
+      </div>
+      ${isOpen?`<div class="gf-sec-body">${items.map(chipHtml).join('')}</div>`:''}
+    </div>`;
   });
   document.getElementById('gfBar').innerHTML=html;
+}
+
+function toggleGfSec(sec){
+  gfExpanded[sec]=!gfExpanded[sec];
+  renderGF();
+}
+
+function selectAllSec(sec, doSelect){
+  const items=_gfGrouped[sec]||[];
+  items.forEach(({favKey})=>{
+    if(doSelect&&!favs.includes(favKey)) favs.push(favKey);
+    else if(!doSelect) favs=favs.filter(x=>x!==favKey);
+  });
+  localStorage.setItem('gv8-favs',JSON.stringify(favs));
+  renderAll();
 }
 
 function toggleFav(id){
