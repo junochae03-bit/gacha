@@ -111,6 +111,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .gc .dot{width:7px;height:7px;border-radius:50%;background:var(--gc,var(--bl));opacity:.3;transition:all .2s}
 .gc.on .dot{opacity:1;box-shadow:0 0 8px var(--gc,var(--bl))}
 .gc .srv-tag{font-size:8px;background:rgba(255,255,255,.08);padding:2px 5px;border-radius:3px;font-weight:700;color:var(--mu2)}
+.gf-sep{width:100%;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:2px}
+.gf-sep:first-child{margin-top:0}
+.gf-sep::after{content:'';flex:1;height:1px;background:var(--bd);border-radius:1px}
 
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(390px,1fr));gap:14px;margin-bottom:30px}
 .card{background:var(--sf);border:1px solid var(--bd);border-radius:14px;overflow:hidden;transition:all .25s;animation:fu .35s ease both;position:relative}
@@ -1347,7 +1350,7 @@ document.getElementById('installOvl').addEventListener('click', function(e) {
 //  GAMES — sorted in 가나다순 (Korean alphabetical)
 // ════════════════════════════════════════════════════════════════
 const GAMES_RAW=[
-  {id:'hsr',name:'붕괴: 스타레일',short:'스타레일',color:'#4fc3f7',rgb:'79,195,247',
+  {id:'hsr',grp:'hoyo',name:'붕괴: 스타레일',short:'스타레일',color:'#4fc3f7',rgb:'79,195,247',
    launchDates:{all:'2023-04-26'},hasHalfAnniversary:false,
    officialDomains:['hoyoverse.com','mihoyo.com'],
    servers:['all'],
@@ -1361,7 +1364,7 @@ const GAMES_RAW=[
    monthly:{name:'개척의 길',cost:4900,monthlyAmt:300,daily:60,desc:'월 300 + 일일 60'},
    redeemUrl:'https://hsr.hoyoverse.com/gift'},
 
-  {id:'gi',name:'원신',short:'원신',color:'#68d391',rgb:'104,211,145',
+  {id:'gi',grp:'hoyo',name:'원신',short:'원신',color:'#68d391',rgb:'104,211,145',
    launchDates:{all:'2020-09-28'},hasHalfAnniversary:false,
    officialDomains:['hoyoverse.com','mihoyo.com'],
    servers:['all'],
@@ -1375,7 +1378,7 @@ const GAMES_RAW=[
    monthly:{name:'축복의 달빛',cost:4900,monthlyAmt:2700,daily:90,desc:'30일간 매일 90'},
    redeemUrl:'https://genshin.hoyoverse.com/gift'},
 
-  {id:'zzz',name:'젠레스 존 제로',short:'ZZZ',color:'#f687b3',rgb:'246,135,179',
+  {id:'zzz',grp:'hoyo',name:'젠레스 존 제로',short:'ZZZ',color:'#f687b3',rgb:'246,135,179',
    launchDates:{all:'2024-07-04'},hasHalfAnniversary:false,
    officialDomains:['hoyoverse.com','mihoyo.com'],
    servers:['all'],
@@ -1389,7 +1392,7 @@ const GAMES_RAW=[
    monthly:{name:'보조 기억 모듈',cost:4900,monthlyAmt:2700,daily:90,desc:'30일간 매일 90'},
    redeemUrl:'https://zenless.hoyoverse.com/redemption'},
 
-  {id:'ba',name:'블루아카이브',short:'블루아카',color:'#60a5fa',rgb:'96,165,250',
+  {id:'ba',grp:'kr',name:'블루아카이브',short:'블루아카',color:'#60a5fa',rgb:'96,165,250',
    launchDates:{kr:'2021-11-09',jp:'2021-02-04'},hasHalfAnniversary:true,delayMonths:6,
    officialDomains:['nexon.com','bluearchive.jp','yostar.co.jp'],
    servers:['kr','jp'],
@@ -1402,7 +1405,7 @@ const GAMES_RAW=[
    monthly:{name:'크로노스 패스',cost:3900,monthlyAmt:3600,daily:120,desc:'30일간 매일 120'},
    redeemUrl:'https://bluearchive.nexon.com/coupon'},
 
-  {id:'nikke',name:'승리의 여신: 니케',short:'니케',color:'#f97316',rgb:'249,115,22',
+  {id:'nikke',grp:'kr',name:'승리의 여신: 니케',short:'니케',color:'#f97316',rgb:'249,115,22',
    launchDates:{all:'2022-11-04'},hasHalfAnniversary:true,
    officialDomains:['nikke-en.com','nikke-jp.com','smilegate.com'],
    servers:['all'],
@@ -1416,7 +1419,7 @@ const GAMES_RAW=[
    monthly:{name:'월간 패스',cost:4400,monthlyAmt:1200,daily:40,desc:'월 1200 쥬얼'},
    redeemUrl:''},
 
-  {id:'wuwa',name:'명조: 워더링 웨이브',short:'명조',color:'#38bdf8',rgb:'56,189,248',
+  {id:'wuwa',grp:'global',name:'명조: 워더링 웨이브',short:'명조',color:'#38bdf8',rgb:'56,189,248',
    launchDates:{all:'2024-05-23'},hasHalfAnniversary:false,
    officialDomains:['kurogames.com','wutheringwaves.kurogames.com'],
    servers:['all'],
@@ -1429,7 +1432,7 @@ const GAMES_RAW=[
    monthly:{name:'월광 인증',cost:4900,monthlyAmt:2700,daily:90,desc:'30일간 매일 90'},
    redeemUrl:'https://wutheringwaves.kurogames.com/gift'},
 
-  {id:'czn',name:'카오스 제로 나이트메어',short:'카제나',color:'#dc2626',rgb:'220,38,38',
+  {id:'czn',grp:'kr',name:'카오스 제로 나이트메어',short:'카제나',color:'#dc2626',rgb:'220,38,38',
    launchDates:{kr:'2025-02-13'},hasHalfAnniversary:true,
    officialDomains:['smilegate.com','onstove.com'],
    servers:['kr'],
@@ -1443,7 +1446,7 @@ const GAMES_RAW=[
    monthly:{name:'스타라이트 패스',cost:4900,monthlyAmt:0,daily:0,desc:'월 우주의 결정'},
    redeemUrl:''},
 
-  {id:'fgo',name:'페이트 그랜드 오더',short:'FGO',color:'#eab308',rgb:'234,179,8',
+  {id:'fgo',grp:'jp',name:'페이트 그랜드 오더',short:'FGO',color:'#eab308',rgb:'234,179,8',
    launchDates:{kr:'2017-11-21',jp:'2015-07-30'},hasHalfAnniversary:true,delayMonths:24,
    officialDomains:['fate-go.jp','fate-go.com.kr'],
    servers:['kr','jp'],
@@ -1456,7 +1459,7 @@ const GAMES_RAW=[
    monthly:null,
    redeemUrl:''},
 
-  {id:'pjsk',name:'프로젝트 세카이',short:'프로세카',color:'#a78bfa',rgb:'167,139,250',
+  {id:'pjsk',grp:'jp',name:'프로젝트 세카이',short:'프로세카',color:'#a78bfa',rgb:'167,139,250',
    launchDates:{jp:'2020-09-30'},hasHalfAnniversary:true,delayMonths:null,
    officialDomains:['pjsekai.sega.jp','colorfulpalette.co.jp'],
    servers:['kr','jp'],
@@ -1469,7 +1472,7 @@ const GAMES_RAW=[
    monthly:{name:'마이세카이 멤버십',cost:3900,monthlyAmt:1500,daily:50,desc:'월 1500 크리스탈'},
    redeemUrl:''},
 
-  {id:'uma',name:'우마무스메',short:'우마무스메',color:'#fbbf24',rgb:'251,191,36',
+  {id:'uma',grp:'jp',name:'우마무스메',short:'우마무스메',color:'#fbbf24',rgb:'251,191,36',
    launchDates:{kr:'2024-06-20',jp:'2021-02-24'},hasHalfAnniversary:true,delayMonths:40,
    officialDomains:['umamusume.jp','umamusume.kakaogames.com'],
    servers:['kr','jp'],
@@ -1482,7 +1485,7 @@ const GAMES_RAW=[
    monthly:{name:'월간 패스',cost:3900,monthlyAmt:0,daily:0,desc:'월 주얼'},
    redeemUrl:''},
 
-  {id:'trickcal',name:'트릭컬 리바이브',short:'트릭컬',color:'#34d399',rgb:'52,211,153',
+  {id:'trickcal',grp:'kr',name:'트릭컬 리바이브',short:'트릭컬',color:'#34d399',rgb:'52,211,153',
    launchDates:{kr:'2023-08-23'},hasHalfAnniversary:false,delayMonths:0,
    officialDomains:['trickcal-revive.com','epidgames.com'],
    servers:['kr','jp'],
@@ -1495,7 +1498,7 @@ const GAMES_RAW=[
    monthly:{name:'웰컴 패스',cost:3900,monthlyAmt:3000,daily:100,desc:'월 3000 크리스탈'},
    redeemUrl:''},
 
-  {id:'gfl2',name:'소녀전선2: 망명',short:'소전2',color:'#fb7185',rgb:'251,113,133',
+  {id:'gfl2',grp:'global',name:'소녀전선2: 망명',short:'소전2',color:'#fb7185',rgb:'251,113,133',
    launchDates:{kr:'2024-12-05',global:'2024-12-05'},hasHalfAnniversary:false,delayMonths:0,
    officialDomains:['girlsfrontline2.com','sunborngame.com'],
    servers:['kr','global'],
@@ -1875,34 +1878,43 @@ function updateBadges(){
   }
 }
 function renderGF(){
-  // 게임-서버 조합으로 칩 생성
-  const chips=[];
+  const GRP_ORDER=['hoyo','kr','jp','global','custom'];
+  const GRP_LABEL={hoyo:'🟠 호요버스',kr:'🇰🇷 국내',jp:'🇯🇵 일서',global:'🌐 글로벌',custom:'⚙️ 커스텀'};
+
+  const grouped={};
   GAMES.filter(gameMatchesSrvFilter).forEach(g=>{
+    const grp=g.grp||(g.isCustom?'custom':'global');
+    if(!grouped[grp])grouped[grp]=[];
     const hasMultiSrv=g.servers.length>1;
     if(hasMultiSrv){
-      // 서버별 분리 칩
       g.servers.forEach(srv=>{
-        // 현재 서버 필터에 안 맞으면 건너뜀
         if(serverFilter==='kr'&&srv!=='kr')return;
         if(serverFilter==='jp'&&srv!=='jp'&&srv!=='global')return;
         const favKey=`${g.id}-${srv}`;
-        const isFav=favs.includes(favKey)||favs.includes(g.id); // 구버전 호환
-        chips.push({g,srv,favKey,isFav,label:`${g.short} (${SRV_LBL[srv]||srv})`});
+        const isFav=favs.includes(favKey)||favs.includes(g.id);
+        grouped[grp].push({g,srv,favKey,isFav});
       });
     } else {
-      // 단일 서버 게임
       const favKey=g.id;
       const isFav=favs.includes(favKey);
-      chips.push({g,srv:'all',favKey,isFav,label:g.short});
+      grouped[grp].push({g,srv:'all',favKey,isFav});
     }
   });
-  
-  document.getElementById('gfBar').innerHTML=chips.map(({g,srv,favKey,isFav,label})=>{
+
+  const chipHtml=({g,srv,favKey,isFav})=>{
     const srvTagHtml=srv!=='all'?`<span class="srv-tag srv-tag-${srv}">${SRV_LBL[srv]||srv}</span>`:'';
     return `<div class="gc ${isFav?'on':''}" style="--gc:${g.color};--gcr:${g.rgb}" onclick="toggleFav('${favKey}')">
       <div class="dot"></div><span>${g.short}</span>${srvTagHtml}<span style="font-size:9px;opacity:.7">${isFav?'★':'☆'}</span>
     </div>`;
-  }).join('');
+  };
+
+  let html='';
+  GRP_ORDER.forEach(grp=>{
+    if(!grouped[grp]||!grouped[grp].length)return;
+    html+=`<span class="gf-sep">${GRP_LABEL[grp]}</span>`;
+    html+=grouped[grp].map(chipHtml).join('');
+  });
+  document.getElementById('gfBar').innerHTML=html;
 }
 
 function toggleFav(id){
