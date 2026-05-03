@@ -1911,6 +1911,20 @@ function toggleFav(id){
   renderAll();
 }
 
+function resetGameFilter(){
+  // 모든 게임-서버 조합을 즐겨찾기에 추가
+  favs=[];
+  GAMES.forEach(g=>{
+    if(g.servers.length>1){
+      g.servers.forEach(srv=>favs.push(`${g.id}-${srv}`));
+    } else {
+      favs.push(g.id);
+    }
+  });
+  localStorage.setItem('gv8-favs',JSON.stringify(favs));
+  setSrv('all',false);
+}
+
 // 게임-서버 조합이 즐겨찾기인지 확인 (구버전 호환)
 
 // 게임의 어떤 서버 조합이라도 즐겨찾기됐는지
@@ -1942,20 +1956,22 @@ function renderSchedule(){
   
   const now=new Date();
   // archived=true 인 픽업만 스케줄에서 제외 (성공/픽뚫 표기만으로는 제외 안 됨)
-  const isCompleted=e=>(e.result==='success'||e.result==='fail');
+  const totalAll=events.filter(e=>!e.predicted&&!e.archived); // 필터 무관 전체 집계용
   const base=events.filter(e=>!e.predicted&&isFavored(e.game, e.srv)&&matchSrv(e.srv)&&!e.archived);
   const vis=base.filter(e=>eventMatchesSearch(e)&&eventMatchesResult(e));
-  const all=events.filter(e=>!e.predicted&&isFavored(e.game, e.srv)&&matchSrv(e.srv));
-  const archivedCount=all.filter(e=>e.archived).length;
-  
+  const archivedCount=events.filter(e=>!e.predicted&&e.archived).length;
+  const hiddenByFilter=totalAll.length>0&&base.length===0; // 게임/서버 필터 때문에 숨겨진 경우
+
   const ongoing=vis.filter(e=>new Date(e.start)<=now&&new Date(e.end)>=now).sort((a,b)=>new Date(a.end)-new Date(b.end));
   const upcoming=vis.filter(e=>new Date(e.start)>now).sort((a,b)=>new Date(a.start)-new Date(b.start));
   const ended=vis.filter(e=>new Date(e.end)<now).sort((a,b)=>new Date(b.end)-new Date(a.end));
-  
+
   // 검색 결과 없는 경우
   const isFiltered=scheduleSearchQuery||scheduleResultFilter!=='all';
   let html='';
-  if(!all.length){
+  if(hiddenByFilter){
+    html=`<div class="empty-big"><div class="empty-icon-big">🔍</div><h3>게임 필터로 인해 숨겨짐</h3><p>등록된 픽업 ${totalAll.length}건이 있지만 현재 게임/서버 필터에 맞지 않습니다.</p><button class="btn btn-ghost" onclick="resetGameFilter()">🔓 필터 전체 해제</button></div>`;
+  } else if(!totalAll.length){
     html=`<div class="empty-big"><div class="empty-icon-big">📋</div><h3>등록된 픽업이 없습니다</h3><p>＋ 새 픽업 등록 버튼으로 추가하세요.</p>${archivedCount?`<div style="margin-top:12px;padding:10px 16px;background:rgba(95,217,156,.08);border:1px solid rgba(95,217,156,.25);border-radius:10px;font-size:12px;color:var(--g)">✅ 보관 처리된 픽업 ${archivedCount}건은 <strong>📊 픽업 기록</strong> 탭에서 확인하세요.</div>`:''}<button class="btn btn-primary" style="margin-top:12px" onclick="openEvt()">＋ 첫 픽업 등록</button></div>`;
   } else if(isFiltered&&!vis.length){
     html=`<div class="empty-big"><div class="empty-icon-big">🔍</div><h3>검색 결과 없음</h3><p>"${scheduleSearchQuery||scheduleResultFilter}" 에 해당하는 픽업이 없습니다.</p><button class="btn btn-ghost" onclick="clearSearch();setResultFilter('all',document.querySelector('.sfb-btn'))">필터 초기화</button></div>`;
@@ -3586,10 +3602,10 @@ function saveEvt(){
   
   if(evtIdx>=0)events[evtIdx]=entry;else events.push(entry);
   // 픽업 저장 시 게임-서버 콤보 자동 즐겨찾기 등록
-  const eg=GAMES.find(x=>x.id===entry.game);
-  if(eg){
-    const fk=eg.servers.length>1?`${entry.game}-${entry.srv}`:entry.game;
-    if(!favs.includes(fk)){
+  {
+    const eg=GAMES.find(x=>x.id===entry.game);
+    const fk=eg&&eg.servers.length>1?`${entry.game}-${entry.srv}`:entry.game;
+    if(fk&&!favs.includes(fk)){
       favs.push(fk);
       localStorage.setItem('gv8-favs',JSON.stringify(favs));
     }
