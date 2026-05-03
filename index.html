@@ -1510,6 +1510,83 @@ const GAMES_RAW=[
           guarantee:'2연 픽업제 (천장 80연)',type:'softpity'},
    monthly:{name:'커맨더 패스',cost:4900,monthlyAmt:2400,daily:80,desc:'월 2400 크리스탈'},
    redeemUrl:''},
+
+  {id:'arknights',name:'아크나이츠',short:'아크나이츠',color:'#22d3ee',rgb:'34,211,238',
+   launchDates:{kr:'2020-01-16',jp:'2019-04-30',global:'2019-04-30'},hasHalfAnniversary:true,delayMonths:0,
+   officialDomains:['hypergryph.com','ak.hypergryph.com'],
+   servers:['kr','jp','global'],
+   currencies:[
+     {id:'orundum',icon:'💎',name:'합성옥',desc:'한국 공식',pullCost:600},
+     {id:'permit',icon:'🎫',name:'소환 허가',pullCost:1},
+   ],
+   gacha:{topRarity:'6★',offRate:1.0,pickupAbsRate:0.5,pullCost:600,softPity:50,hardPity:100,baseRate:0.02,pickupRate:0.5,pickupSystem:'5050',pickupSysDesc:'6★ 50% 픽업 / 픽뚫 시 확정 + 300뽑 스파크',pickupSysProb:50,pityType:'soft+hard',pityNote:'50뽑부터 확률 상승 → 100뽑 확정 (300연 누적 시 원하는 픽업 교환)',pricePerPull:2000,truckPackKRW:99000,truckPackCurrency:8000,truckPackPulls:13,truckDesc:'₩99,000 팩 기준 (근삿값)',unit:'합성옥',
+          guarantee:'2연 픽업제 (천장 100연) / 300연 스파크',type:'softpity'},
+   monthly:null,
+   redeemUrl:''},
+
+  {id:'limbus',name:'림버스 컴퍼니',short:'림버스',color:'#f97316',rgb:'249,115,22',
+   launchDates:{kr:'2023-02-27',global:'2023-02-27'},hasHalfAnniversary:false,delayMonths:0,
+   officialDomains:['limbuscompany.com','projectmoon.kr'],
+   servers:['kr','global'],
+   currencies:[
+     {id:'lunacy',icon:'🌙',name:'루나시티',desc:'구매',pullCost:230},
+     {id:'thread',icon:'🧵',name:'실',pullCost:1},
+   ],
+   gacha:{topRarity:'3★',offRate:3.0,pickupAbsRate:3.0,pullCost:1,softPity:0,hardPity:40,baseRate:0.03,pickupRate:0.5,pickupSystem:'guaranteed',pickupSysDesc:'40뽑 내 픽업 3★ 인격 보장',pickupSysProb:100,pityType:'hard',pityNote:'40뽑 도달 시 픽업 3★ 인격 확정 (천장 이월)',pricePerPull:2300,truckPackKRW:99000,truckPackCurrency:43,truckPackPulls:43,truckDesc:'₩99,000 팩 기준 (근삿값)',unit:'실',
+          guarantee:'40연 천장',type:'flat'},
+   monthly:null,
+   redeemUrl:''},
+
+  {id:'e7',name:'에픽세븐',short:'에픽세븐',color:'#8b5cf6',rgb:'139,92,246',
+   launchDates:{kr:'2018-11-15',global:'2019-03-28'},hasHalfAnniversary:true,delayMonths:0,
+   officialDomains:['epic7.smilegate.com','stove.smilegate.com'],
+   servers:['kr','global'],
+   currencies:[
+     {id:'covenant',icon:'📖',name:'성약의 책장',desc:'한정 소환',pullCost:1},
+     {id:'moonlight',icon:'🌙',name:'신성한 달빛 책장',pullCost:1},
+   ],
+   gacha:{topRarity:'5★',offRate:4.5,pickupAbsRate:1.0,pullCost:1,softPity:0,hardPity:120,baseRate:0.01,pickupRate:0.2222,pickupSystem:'guaranteed',pickupSysDesc:'120뽑 내 픽업 5★ 보장',pickupSysProb:100,pityType:'hard',pityNote:'120뽑 도달 시 5★ 확정 (천장 이월)',pricePerPull:2200,truckPackKRW:99000,truckPackCurrency:45,truckPackPulls:45,truckDesc:'₩99,000 팩 기준 (근삿값)',unit:'성약의 책장',
+          guarantee:'120연 천장',type:'flat'},
+   monthly:{name:'성약 패스',cost:4900,monthlyAmt:30,daily:1,desc:'월 30 성약의 책장'},
+   redeemUrl:''},
+
+  {id:'hi3',name:'붕괴3rd',short:'붕괴3rd',color:'#ec4899',rgb:'236,72,153',
+   launchDates:{all:'2016-10-14'},hasHalfAnniversary:false,
+   officialDomains:['hoyoverse.com','honkaiimpact3.com'],
+   servers:['all'],
+   currencies:[
+     {id:'crystal',icon:'💎',name:'크리스탈',desc:'구매',pullCost:280},
+     {id:'voucher',icon:'🎫',name:'확장 공급 소환권',pullCost:1},
+   ],
+   gacha:{topRarity:'S급',offRate:1.5,pickupAbsRate:1.5,pullCost:280,softPity:50,hardPity:100,baseRate:0.015,pickupRate:0.5,pickupSystem:'5050',pickupSysDesc:'S급 50% 픽업 / 픽뚫 시 다음 S급 픽업 확정',pickupSysProb:50,pityType:'soft+hard',pityNote:'50뽑부터 확률 상승 → 100뽑 확정 (픽뚫 시 200뽑 보장)',pricePerPull:2500,truckPackKRW:99000,truckPackCurrency:9800,truckPackPulls:35,truckDesc:'₩99,000 팩 기준 (근삿값)',unit:'크리스탈',
+          guarantee:'2연 픽업제 (천장 100연)',type:'softpity'},
+   monthly:{name:'공급 보조',cost:4900,monthlyAmt:2160,daily:72,desc:'30일간 매일 72'},
+   redeemUrl:'https://honkaiimpact3.hoyoverse.com/gift'},
+
+  {id:'pcr',name:'프린세스 커넥트 Re:Dive',short:'프리코네',color:'#f59e0b',rgb:'245,158,11',
+   launchDates:{kr:'2021-01-14',jp:'2018-02-15'},hasHalfAnniversary:true,delayMonths:24,
+   officialDomains:['priconne-redive.jp','game.kakaogames.com'],
+   servers:['kr','jp'],
+   currencies:[
+     {id:'jewel',icon:'💎',name:'보석',desc:'한국 공식',pullCost:150},
+   ],
+   gacha:{topRarity:'3★',offRate:2.5,pickupAbsRate:0.4,pullCost:150,softPity:0,hardPity:150,baseRate:0.025,pickupRate:0.16,pickupSystem:'spark',pickupSysDesc:'150뽑 스파크 — 가챠 포인트 누적 시 픽업 교환',pickupSysProb:100,pityType:'hard',pityNote:'150뽑 누적 시 픽업 3★ 교환 (스파크)',pricePerPull:3000,truckPackKRW:99000,truckPackCurrency:5000,truckPackPulls:33,truckDesc:'₩99,000 팩 기준 (근삿값)',unit:'보석',
+          guarantee:'150연 스파크',type:'flat'},
+   monthly:{name:'월정액 패스',cost:4900,monthlyAmt:0,daily:0,desc:'월 보석'},
+   redeemUrl:''},
+
+  {id:'cs',name:'카운터사이드',short:'카운터사이드',color:'#3b82f6',rgb:'59,130,246',
+   launchDates:{kr:'2020-11-26',jp:'2022-05-19',global:'2022-05-19'},hasHalfAnniversary:true,delayMonths:0,
+   officialDomains:['counterside.com','nexon.com'],
+   servers:['kr','jp','global'],
+   currencies:[
+     {id:'quartz',icon:'💎',name:'수정',desc:'한국 공식',pullCost:300},
+     {id:'ticket',icon:'🎫',name:'소환권',pullCost:1},
+   ],
+   gacha:{topRarity:'SSR',offRate:2.0,pickupAbsRate:2.0,pullCost:300,softPity:0,hardPity:100,baseRate:0.02,pickupRate:0.5,pickupSystem:'guaranteed',pickupSysDesc:'100뽑 내 픽업 SSR 보장',pickupSysProb:100,pityType:'hard',pityNote:'100뽑 도달 시 픽업 SSR 확정',pricePerPull:2000,truckPackKRW:99000,truckPackCurrency:15000,truckPackPulls:50,truckDesc:'₩99,000 팩 기준 (근삿값)',unit:'수정',
+          guarantee:'100연 천장',type:'flat'},
+   monthly:{name:'지휘관 패스',cost:4900,monthlyAmt:2400,daily:80,desc:'월 2400 수정'},
+   redeemUrl:''},
 ];
 
 // ✨ Sort 가나다순 by Korean locale — customGames는 init() 이후에 채워짐
@@ -1878,13 +1955,12 @@ function updateBadges(){
   }
 }
 function renderGF(){
-  const GRP_ORDER=['hoyo','kr','jp','global','custom'];
-  const GRP_LABEL={hoyo:'🟠 호요버스',kr:'🇰🇷 국내',jp:'🇯🇵 일섭',global:'🌐 글로벌',custom:'⚙️ 커스텀'};
+  const SEC_ORDER=['kr','jp','gl','custom'];
+  const SEC_LABEL={kr:'🇰🇷 한섭',jp:'🇯🇵 일섭',gl:'🌐 글로벌',custom:'⚙️ 커스텀'};
+  const grouped={kr:[],jp:[],gl:[],custom:[]};
 
-  const grouped={};
   GAMES.filter(gameMatchesSrvFilter).forEach(g=>{
-    const grp=g.grp||(g.isCustom?'custom':'global');
-    if(!grouped[grp])grouped[grp]=[];
+    const isCust=!!g.isCustom;
     const hasMultiSrv=g.servers.length>1;
     if(hasMultiSrv){
       g.servers.forEach(srv=>{
@@ -1892,12 +1968,15 @@ function renderGF(){
         if(serverFilter==='jp'&&srv!=='jp'&&srv!=='global')return;
         const favKey=`${g.id}-${srv}`;
         const isFav=favs.includes(favKey)||favs.includes(g.id);
-        grouped[grp].push({g,srv,favKey,isFav});
+        const sec=isCust?'custom':(srv==='kr'?'kr':srv==='jp'?'jp':'gl');
+        grouped[sec].push({g,srv,favKey,isFav});
       });
     } else {
+      const srv=g.servers[0];
       const favKey=g.id;
       const isFav=favs.includes(favKey);
-      grouped[grp].push({g,srv:'all',favKey,isFav});
+      const sec=isCust?'custom':(srv==='kr'?'kr':srv==='jp'?'jp':'gl');
+      grouped[sec].push({g,srv,favKey,isFav});
     }
   });
 
@@ -1909,10 +1988,10 @@ function renderGF(){
   };
 
   let html='';
-  GRP_ORDER.forEach(grp=>{
-    if(!grouped[grp]||!grouped[grp].length)return;
-    html+=`<span class="gf-sep">${GRP_LABEL[grp]}</span>`;
-    html+=grouped[grp].map(chipHtml).join('');
+  SEC_ORDER.forEach(sec=>{
+    if(!grouped[sec]||!grouped[sec].length)return;
+    html+=`<span class="gf-sep">${SEC_LABEL[sec]}</span>`;
+    html+=grouped[sec].map(chipHtml).join('');
   });
   document.getElementById('gfBar').innerHTML=html;
 }
