@@ -633,18 +633,31 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 .ai-res.loading{animation:pulse 1.3s ease infinite}
 @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
 
-.ai-pickup-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-top:14px}
-.ai-pickup-card{background:var(--sf2);border:1px solid var(--bd2);border-radius:10px;padding:12px;transition:all .15s}
-.ai-pickup-card:hover{border-color:var(--bl)}
-.aip-game{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px}
-.aip-char{font-size:13px;font-weight:700;color:var(--tx);margin-bottom:3px}
-.aip-event{font-size:11px;color:var(--mu2);margin-bottom:6px}
-.aip-period{font-size:10px;color:var(--mu);font-family:'Orbitron',monospace;margin-bottom:8px}
-.aip-tags{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
-.aip-tag{font-size:9px;padding:2px 6px;border-radius:3px;font-weight:700}
-.aip-tag.lim{background:rgba(244,114,182,.15);color:#f9a8d4}
-.aip-tag.rerun{background:rgba(167,139,250,.15);color:#c4b5fd}
-.aip-tag.std{background:rgba(95,217,156,.15);color:#86efac}
+.ai-pickup-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-top:4px}
+.ai-pickup-header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.ai-pickup-section{grid-column:1/-1;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:6px 0 4px 10px;border-left:3px solid var(--pu);color:var(--mu2);margin-top:8px}
+.ai-pickup-section:first-of-type{margin-top:0}
+.ai-pickup-card{background:var(--sf);border:1px solid var(--bd2);border-radius:12px;overflow:hidden;transition:all .2s;display:flex;flex-direction:column}
+.ai-pickup-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3);border-color:var(--bd3)}
+.aip-top{padding:12px 14px 10px;flex:1}
+.aip-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.aip-game{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
+.aip-status{font-size:9px;font-weight:700;padding:2px 7px;border-radius:99px}
+.aip-status.ongoing{background:rgba(95,217,156,.15);color:var(--g)}
+.aip-status.upcoming{background:rgba(251,191,36,.12);color:var(--gold)}
+.aip-char{font-size:16px;font-weight:900;color:var(--tx);line-height:1.2;margin-bottom:3px}
+.aip-event{font-size:10px;color:var(--mu);margin-bottom:8px;line-height:1.4}
+.aip-period-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.aip-period{font-size:10px;color:var(--mu2);font-family:'Orbitron',monospace;font-weight:700}
+.aip-tags{display:flex;gap:4px;flex-wrap:wrap}
+.aip-tag{font-size:9px;padding:2px 8px;border-radius:99px;font-weight:700;letter-spacing:.3px}
+.aip-tag.lim{background:rgba(244,114,182,.15);color:#f9a8d4;border:1px solid rgba(244,114,182,.3)}
+.aip-tag.rerun{background:rgba(167,139,250,.15);color:#c4b5fd;border:1px solid rgba(167,139,250,.3)}
+.aip-tag.std{background:rgba(95,217,156,.12);color:#86efac;border:1px solid rgba(95,217,156,.25)}
+.aip-tag.fes{background:rgba(251,191,36,.12);color:#fcd34d;border:1px solid rgba(251,191,36,.3)}
+.aip-tag.collab{background:rgba(103,232,249,.12);color:#67e8f9;border:1px solid rgba(103,232,249,.3)}
+.aip-btn{display:block;width:100%;padding:9px;font-size:11px;font-weight:700;border:none;border-top:1px solid var(--bd);background:rgba(96,165,250,.06);color:var(--bl);cursor:pointer;transition:background .15s;font-family:inherit;letter-spacing:.3px}
+.aip-btn:hover{background:rgba(96,165,250,.14)}
 
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -4230,8 +4243,14 @@ async function doAi(){
       const {text,sources,ts}=JSON.parse(cached);
       const age=(Date.now()-ts)/1000/3600;
       if(age<24){
-        el.innerHTML=renderMd(text);
         const ageStr=age<1?`${Math.round(age*60)}분`:`${Math.round(age)}시간`;
+        if(type==='pickup'&&text){
+          el.style.display='none';
+          aiExtractPickups(text,gid,srv);
+        } else {
+          el.style.display='';
+          el.innerHTML=renderMd(text);
+        }
         if(sources&&sources.length){
           const srcHtml=sources.map(s=>`<a href="${s.uri}" target="_blank" class="ai-source-chip" title="${s.uri}">${s.title||s.uri}</a>`).join('');
           act.innerHTML=`<div style="width:100%;font-size:10px;color:var(--mu);margin-bottom:4px;font-weight:700">📎 검색 출처 <span style="color:var(--g);margin-left:6px">⚡ 캐시 (${ageStr} 전)</span></div>${srcHtml}<button class="btn-xs" style="margin-top:8px" onclick="clearAiCache('${cacheKey}')">🔄 새로 검색</button>`;
@@ -4321,22 +4340,25 @@ async function doAi(){
     
     el.classList.remove('loading');
     aiLast=text;
-    el.innerHTML=text?renderMd(text):'결과를 찾을 수 없습니다.';
-    
+
+    // 픽업 타입: 카드가 메인 — raw 텍스트 숨김
+    if(type==='pickup'&&text){
+      el.style.display='none';
+      aiExtractPickups(text,gid,srv);
+    } else {
+      el.style.display='';
+      el.innerHTML=text?renderMd(text):'결과를 찾을 수 없습니다.';
+    }
+
     // 캐시 저장
     try{localStorage.setItem(cacheKey,JSON.stringify({text,sources,ts:Date.now()}));}catch(e){}
-    
+
     // 출처 표시
     if(sources.length){
       const srcHtml=sources.map(s=>
         `<a href="${s.uri}" target="_blank" class="ai-source-chip" title="${s.uri}">${s.title||s.uri}</a>`
       ).join('');
       act.innerHTML=`<div style="width:100%;font-size:10px;color:var(--mu);margin-bottom:4px;font-weight:700">📎 검색 출처</div>${srcHtml}`;
-    }
-    
-    // 픽업 타입이면 자동 카드 생성 (API 추가 호출 없이 텍스트 직접 파싱)
-    if(type==='pickup'&&text){
-      aiExtractPickups(text,gid,srv);
     }
     if(type==='coupon'&&text){
       const cpnBtn=document.createElement('button');
@@ -4424,22 +4446,38 @@ function aiExtractPickups(text,gid,srv){
     return;
   }
 
-  pickupCards.innerHTML=
-    `<div style="grid-column:1/-1;font-size:11px;color:var(--mu2);margin:12px 0 6px;font-weight:700">
-      📋 검색된 픽업 ${parsed.length}건 — 버튼 클릭 시 등록 모달에 자동 입력
-    </div>`+
-    parsed.map(p=>{
-      const tl=typeLabel[p.type||'limited']||'한정';
-      const tc=typeClass[p.type||'limited']||'lim';
-      return `<div class="ai-pickup-card">
-        <div class="aip-game" style="color:${g.color}">${g.short}${srv!=='all'?` · ${SRV_LBL[srv]}`:''}</div>
+  const now=new Date();
+  const ongoing=parsed.filter(p=>p.end&&new Date(p.end+'T23:59:59')>=now&&(!p.start||new Date(p.start)<=now));
+  const upcoming=parsed.filter(p=>p.start&&new Date(p.start)>now);
+  const other=parsed.filter(p=>!ongoing.includes(p)&&!upcoming.includes(p));
+
+  const cardHtml=p=>{
+    const tl=typeLabel[p.type||'limited']||'한정';
+    const tc=typeClass[p.type||'limited']||'lim';
+    const isOngoing=ongoing.includes(p);
+    return `<div class="ai-pickup-card" style="--gc:${g.color}">
+      <div class="aip-top">
+        <div class="aip-head">
+          <div class="aip-game" style="color:${g.color}">${g.short}${p.srv&&p.srv!=='all'?` · ${SRV_LBL[p.srv]||p.srv}`:''}</div>
+          ${isOngoing?'<span class="aip-status ongoing">진행 중</span>':upcoming.includes(p)?'<span class="aip-status upcoming">예정</span>':''}
+        </div>
         <div class="aip-char">${p.char}</div>
         ${p.event?`<div class="aip-event">${p.event}</div>`:''}
-        ${p.start?`<div class="aip-period">${p.start}${p.end?' ~ '+p.end:''}</div>`:''}
+        <div class="aip-period-row">
+          <span style="font-size:9px">📅</span>
+          <span class="aip-period">${p.start||'?'}${p.end?' ~ '+p.end:''}</span>
+        </div>
         <div class="aip-tags"><span class="aip-tag ${tc}">${tl}</span></div>
-        <button class="btn btn-ai" style="font-size:11px;padding:6px 10px;width:100%" onclick='aiRegPickup(${JSON.stringify({...p,game:gid,srv}).replace(/'/g,"&#39;")})'>＋ 픽업 등록</button>
-      </div>`;
-    }).join('');
+      </div>
+      <button class="aip-btn" onclick='aiRegPickup(${JSON.stringify({...p,game:gid,srv}).replace(/'/g,"&#39;")})'>＋ 픽업 등록</button>
+    </div>`;
+  };
+
+  let html=`<div class="ai-pickup-header"><span style="font-size:11px;color:var(--mu2);font-weight:700">📋 ${parsed.length}건 검색됨</span><span style="font-size:10px;color:var(--mu)">클릭 시 등록 모달 자동 입력</span></div>`;
+  if(ongoing.length) html+=`<div class="ai-pickup-section">🟢 진행 중 · ${ongoing.length}건</div>`+ongoing.map(cardHtml).join('');
+  if(upcoming.length) html+=`<div class="ai-pickup-section">🟡 예정 · ${upcoming.length}건</div>`+upcoming.map(cardHtml).join('');
+  if(other.length) html+=`<div class="ai-pickup-section">⚫ 기타 · ${other.length}건</div>`+other.map(cardHtml).join('');
+  pickupCards.innerHTML=html;
 }
 
 function aiRegPickup(data){
