@@ -2033,7 +2033,7 @@ function resetGameFilter(){
     }
   });
   localStorage.setItem('gv8-favs',JSON.stringify(favs));
-  setSrv('all',false);
+  renderAll();
 }
 
 // 게임-서버 조합이 즐겨찾기인지 확인 (구버전 호환)
@@ -3505,6 +3505,8 @@ function addPulls(eid, delta){
   _pullTimer=setTimeout(()=>{save();renderSchedule();},800);
 }
 
+function isCompleted(e){ return e.result==='success'||e.result==='fail'; }
+
 function findEvtIdx(eid){
   return events.findIndex(e=>e.id===eid || (!e.id && 'ev-legacy-'+events.indexOf(e)===eid));
 }
@@ -3734,7 +3736,10 @@ function saveEvt(){
   }
   // ──────────────────────────────────────────────────────────────
   
-  if(evtIdx>=0)events[evtIdx]=entry;else events.push(entry);
+  if(evtIdx>=0){
+    if(events[evtIdx].archived) entry.archived=events[evtIdx].archived;
+    events[evtIdx]=entry;
+  } else events.push(entry);
   // 픽업 저장 시 게임-서버 콤보 자동 즐겨찾기 등록
   {
     const eg=GAMES.find(x=>x.id===entry.game);
