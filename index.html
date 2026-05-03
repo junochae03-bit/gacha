@@ -556,7 +556,11 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 .sgc-prog-untried{background:rgba(255,255,255,.06);transition:width .8s ease}
 .sgc-history{margin-top:14px;border-top:1px dashed var(--bd);padding-top:12px}
 .sgc-history-title{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:1.2px;font-weight:700;margin-bottom:8px}
-.sgc-pickup-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:11px}
+.sgc-pickup-row{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:11px}
+.sgc-pr-actions{display:flex;gap:3px}
+.sgc-pr-btn{background:var(--sf3);border:1px solid var(--bd);border-radius:5px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;transition:all .15s;color:var(--mu2)}
+.sgc-pr-btn:hover{border-color:var(--bl);color:var(--bl);background:rgba(96,165,250,.1)}
+.sgc-pr-btn.del:hover{border-color:var(--rd);color:var(--rd);background:rgba(248,113,113,.1)}
 .sgc-pickup-row:last-child{border-bottom:none}
 .sgc-pr-icon{font-size:14px}
 .sgc-pr-name{color:var(--tx);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
@@ -1614,6 +1618,10 @@ function setupCardClickHandler(){
       setAlarmsById(eid);
     } else if(action === 'ical' && eid){
       exportIcalById(eid);
+    } else if(action === 'success' && eid){
+      quickMarkResult(eid, 'success');
+    } else if(action === 'fail' && eid){
+      quickMarkResult(eid, 'fail');
     } else if(action === 'redeem'){
       const url = target.getAttribute('data-url');
       if(url) window.open(url, '_blank');
@@ -2086,6 +2094,8 @@ function buildCard(e,idx){
         <button class="ab ${alarms[alarmKey]?'set':''}" data-action="alarm" data-eid="${eid}">🔔 ${alarms[alarmKey]?'설정됨':'알람'}</button>
         <button class="ab" data-action="ical" data-eid="${eid}">📅 캘린더</button>
         ${g.redeemUrl?`<button class="ab" data-action="redeem" data-url="${g.redeemUrl}">🎁 리딤</button>`:''}
+        <button class="ab ab-success" data-action="success" data-eid="${eid}" style="color:var(--g);border-color:rgba(95,217,156,.35)">✨ 성공</button>
+        <button class="ab ab-fail" data-action="fail" data-eid="${eid}" style="color:var(--rd);border-color:rgba(248,113,113,.25)">💔 픽뚫</button>
         <button class="ab ab-del" data-action="del" data-eid="${eid}">🗑 삭제</button>
       </div>
     </div>
@@ -3309,6 +3319,10 @@ function renderStats(){
               <small style="color:var(--mu);font-size:8px;font-weight:500">${freeU?`🆓${freeU.toLocaleString()}`:''}${freeU&&paidU?' · ':''}${paidU?`💳${paidU.toLocaleString()}`:''}${krw?` · ₩${krw>=10000?Math.round(krw/1000)+'K':krw.toLocaleString()}`:''}</small>
             </div>
             <span class="sgc-pr-result ${r.cls}">${r.txt}</span>
+            <div class="sgc-pr-actions">
+              <button class="sgc-pr-btn" onclick="openEvtById('${p.id}')" title="수정">✏️</button>
+              <button class="sgc-pr-btn del" onclick="delEvtById('${p.id}')" title="삭제">🗑</button>
+            </div>
           </div>`;
         }).join('')}
       </div>
@@ -3318,6 +3332,17 @@ function renderStats(){
 }
 
 // ── ID 기반 이벤트 조작 (인덱스 불일치 방지) ──────────────────
+function quickMarkResult(eid, result){
+  const i=findEvtIdx(eid);
+  if(i<0){toast('⚠️ 픽업을 찾을 수 없습니다');return;}
+  const label=result==='success'?'✨ 성공':'💔 픽뚫';
+  if(!confirm(`"${events[i].char}" 을(를) [${label}]으로 표기하시겠습니까?\n스케줄에서 제외되고 픽업 기록으로 이동합니다.`))return;
+  events[i].result=result;
+  save();
+  renderAll();
+  toast(`${label} 표기 완료 — 픽업 기록에서 확인하세요`);
+}
+
 function findEvtIdx(eid){
   return events.findIndex(e=>e.id===eid || (!e.id && 'ev-legacy-'+events.indexOf(e)===eid));
 }
