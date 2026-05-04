@@ -657,7 +657,7 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 .task-sec-count{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;color:var(--mu2);background:var(--sf3);border:1px solid var(--bd);border-radius:4px;padding:1px 7px;white-space:nowrap}
 .task-sec-count.all-done{color:var(--g);border-color:rgba(95,217,156,.3);background:rgba(95,217,156,.06)}
 .task-rows{display:flex;flex-direction:column;gap:6px}
-.task-row{display:grid;grid-template-columns:24px 1fr auto 26px;align-items:center;gap:10px;padding:11px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;transition:border-color .15s;position:relative;overflow:hidden}
+.task-row{display:grid;grid-template-columns:24px 1fr auto 24px 24px;align-items:center;gap:8px;padding:11px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;transition:border-color .15s;position:relative;overflow:hidden}
 .task-row:hover{border-color:var(--bd2)}
 .task-row.done-all{opacity:.5}
 .task-row.done-all .task-name{text-decoration:line-through;color:var(--mu)}
@@ -673,8 +673,11 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 .tc-btn:active{transform:scale(.88)}
 .tc-val{font-family:'Orbitron',monospace;font-size:11px;font-weight:800;min-width:30px;text-align:center;color:var(--tx)}
 .tc-val.maxed{color:var(--g)}
-.task-del{width:24px;height:24px;border-radius:6px;border:1px solid transparent;background:transparent;color:var(--mu);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all .15s;opacity:0;flex-shrink:0}
-.task-row:hover .task-del{opacity:1}
+.task-edit,.task-del{width:22px;height:22px;border-radius:6px;border:1px solid transparent;background:transparent;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;transition:all .15s;opacity:0;flex-shrink:0;padding:0;line-height:1}
+.task-edit{color:var(--mu)}
+.task-del{color:var(--mu)}
+.task-row:hover .task-edit,.task-row:hover .task-del{opacity:1}
+.task-edit:hover{border-color:var(--bl);color:var(--bl);background:rgba(96,165,250,.08)}
 .task-del:hover{border-color:var(--rd);color:var(--rd);background:rgba(248,113,113,.08)}
 .task-progress{position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(255,255,255,.03)}
 .task-prog-fill{height:100%;background:linear-gradient(90deg,var(--g),#a7f3d0);transition:width .3s ease}
@@ -1135,6 +1138,19 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
   </div>
 </div></div>
 
+<!-- TASK EDIT MODAL -->
+<div class="overlay" id="taskEditOvl"><div class="modal" style="max-width:380px">
+  <h2>할일 수정</h2>
+  <div class="fg"><label>할일 이름</label><input class="fi" id="te-name" placeholder="할일 이름"></div>
+  <div class="fg"><label>목표 횟수 <span style="font-size:10px;color:var(--mu);font-weight:400">(1 = 체크박스, 2이상 = 카운터)</span></label>
+    <input class="fi" type="number" id="te-max" min="1" max="99" value="1"></div>
+  <div class="mfoot">
+    <button class="btn btn-ghost" style="margin-right:auto;color:var(--rd);border-color:rgba(248,113,113,.4);font-size:12px" onclick="resetTaskEdit()">기본값 복원</button>
+    <button class="btn btn-ghost" onclick="closeTaskEdit()">취소</button>
+    <button class="btn btn-primary" onclick="saveTaskEdit()">저장</button>
+  </div>
+</div></div>
+
 <!-- INSTALL HELP MODAL -->
 <div class="overlay" id="installOvl"><div class="modal" style="max-width:540px">
   <h2>📲 핸드폰 앱으로 설치하기</h2>
@@ -1499,6 +1515,9 @@ let monthlyStart=safeLoad('gv8-monthly-start',{});
 let hiddenAutoMira=safeLoad('gv8-hidden-mira',[]);
 let tasks=safeLoad('gv8-tasks',[]);
 let taskState=safeLoad('gv8-taskstate',{});
+let taskHidden=safeLoad('gv8-task-hidden',[]);
+let taskOverrides=safeLoad('gv8-task-overrides',{});
+let taskEditTid=null;
 let serverFilter=localStorage.getItem('gv8-srv')||'all';
 let calDate=new Date();
 let evtIdx=-1,cpnIdx=-1,cpnFilter='all',page='schedule',aiLast='';
@@ -3083,28 +3102,34 @@ function initTaskResets(){
   localStorage.setItem('gv8-taskstate',JSON.stringify(taskState));
 }
 
+function getTaskMax(gid,t){const tid=`${gid}_${t.key}`;return(taskOverrides[tid]&&taskOverrides[tid].max)||t.max||1;}
+function getTaskName(gid,t){const tid=`${gid}_${t.key}`;return(taskOverrides[tid]&&taskOverrides[tid].name)||t.name;}
+
 function buildTaskRow2(gid,t){
-  const max=t.max||1;
+  const max=getTaskMax(gid,t);
+  const name=getTaskName(gid,t);
   const done=taskState[`${gid}_${t.key}`]||0;
   const isDoneAll=done>=max, pct=Math.round(done/max*100);
   const tid=`${gid}_${t.key}`;
+  const editBtn=`<button class="task-edit" onclick="editTask2('${tid}')" title="수정">✏</button>`;
+  const delBtn=`<button class="task-del" onclick="deleteTask2('${tid}')" title="숨기기">✕</button>`;
   if(max===1){
     return `<div class="task-row${isDoneAll?' done-all':''}">
       <div class="task-check${isDoneAll?' checked':''}" onclick="toggleTask2('${tid}')">${isDoneAll?'✓':''}</div>
-      <div class="task-info"><div class="task-name">${t.name}</div></div>
-      <div></div><div></div>
+      <div class="task-info"><div class="task-name">${name}</div></div>
+      <div></div>${editBtn}${delBtn}
       <div class="task-progress"><div class="task-prog-fill" style="width:${pct}%"></div></div>
     </div>`;
   }
   return `<div class="task-row${isDoneAll?' done-all':''}">
     <div class="task-check${isDoneAll?' checked':''}" onclick="stepTask2('${tid}',${max},1)">${isDoneAll?'✓':''}</div>
-    <div class="task-info"><div class="task-name">${t.name}</div></div>
+    <div class="task-info"><div class="task-name">${name}</div></div>
     <div class="task-counter">
       <button class="tc-btn" onclick="stepTask2('${tid}',${max},-1)">−</button>
       <span class="tc-val${isDoneAll?' maxed':''}">${done}/${max}</span>
       <button class="tc-btn" onclick="stepTask2('${tid}',${max},1)">＋</button>
     </div>
-    <div></div>
+    ${editBtn}${delBtn}
     <div class="task-progress"><div class="task-prog-fill" style="width:${pct}%"></div></div>
   </div>`;
 }
@@ -3121,19 +3146,22 @@ function renderTasks(){
       <div style="font-size:14px;font-weight:700;margin-bottom:6px">즐겨찾기 게임이 없습니다</div>
       <div style="font-size:12px">게임 필터에서 게임을 즐겨찾기에 추가하면<br>해당 게임의 할일이 자동으로 표시됩니다.</div>
     </div>`;
-    document.getElementById('nav-cnt-tasks').textContent='';
+    const badge=document.getElementById('nav-cnt-tasks');
+    if(badge) badge.textContent='';
     return;
   }
 
   taskGameIdx=Math.max(0,Math.min(taskGameIdx,gameList.length-1));
   const cur=gameList[taskGameIdx];
-  const curTasks=GAME_TASKS[cur.id]||[];
-  const curDone=curTasks.filter(t=>(taskState[`${cur.id}_${t.key}`]||0)>=(t.max||1)).length;
+  const allCurTasks=GAME_TASKS[cur.id]||[];
+  const curTasks=allCurTasks.filter(t=>!taskHidden.includes(`${cur.id}_${t.key}`));
+  const hiddenCount=allCurTasks.length-curTasks.length;
+  const curDone=curTasks.filter(t=>(taskState[`${cur.id}_${t.key}`]||0)>=getTaskMax(cur.id,t)).length;
   const curPct=curTasks.length?Math.round(curDone/curTasks.length*100):0;
 
   const dotsHtml=gameList.map((g,i)=>{
-    const gt=GAME_TASKS[g.id]||[];
-    const hasRemain=gt.some(t=>(taskState[`${g.id}_${t.key}`]||0)<(t.max||1));
+    const gt=(GAME_TASKS[g.id]||[]).filter(t=>!taskHidden.includes(`${g.id}_${t.key}`));
+    const hasRemain=gt.some(t=>(taskState[`${g.id}_${t.key}`]||0)<getTaskMax(g.id,t));
     return `<div class="tgn-dot-item${i===taskGameIdx?' act':hasRemain?' has-remain':''}" onclick="taskGameIdx=${i};renderTasks()" title="${g.short}"></div>`;
   }).join('');
 
@@ -3160,7 +3188,7 @@ function renderTasks(){
   sections.forEach(sec=>{
     const items=curTasks.filter(t=>t.freq===sec.key);
     if(!items.length) return;
-    const doneCount=items.filter(t=>(taskState[`${cur.id}_${t.key}`]||0)>=(t.max||1)).length;
+    const doneCount=items.filter(t=>(taskState[`${cur.id}_${t.key}`]||0)>=getTaskMax(cur.id,t)).length;
     const allDone=doneCount===items.length;
     html+=`<div class="task-section">
       <div class="task-sec-hd">
@@ -3173,12 +3201,20 @@ function renderTasks(){
     </div>`;
   });
 
+  if(hiddenCount>0){
+    html+=`<div style="text-align:center;margin-top:10px">
+      <button class="btn btn-ghost" style="font-size:11px;padding:6px 14px" onclick="restoreHiddenTasks('${cur.id}')">🔄 숨긴 할일 복구 (${hiddenCount}개)</button>
+    </div>`;
+  }
+
   wrap.innerHTML=html;
 
-  // 네비 배지: 즐찾 게임 전체 미완료 수
+  // 네비 배지: 즐찾 게임 전체 미완료 수 (숨긴 할일 제외)
   let remaining=0;
   gameList.forEach(g=>{
-    (GAME_TASKS[g.id]||[]).forEach(t=>{ if((taskState[`${g.id}_${t.key}`]||0)<(t.max||1)) remaining++; });
+    (GAME_TASKS[g.id]||[]).filter(t=>!taskHidden.includes(`${g.id}_${t.key}`)).forEach(t=>{
+      if((taskState[`${g.id}_${t.key}`]||0)<getTaskMax(g.id,t)) remaining++;
+    });
   });
   const badge=document.getElementById('nav-cnt-tasks');
   if(badge) badge.textContent=remaining>0?remaining:'';
@@ -3188,10 +3224,9 @@ function prevTaskGame(){taskGameIdx=Math.max(0,taskGameIdx-1);renderTasks();}
 function nextTaskGame(){taskGameIdx=Math.min(getFavGameList().length-1,taskGameIdx+1);renderTasks();}
 
 function toggleTask2(tid){
-  // tid = "${gid}_${t.key}" — t.key는 d1/d2/w1 형식이므로 마지막 _ 기준으로 분리
   const p=tid.lastIndexOf('_'); const gid=tid.slice(0,p), key=tid.slice(p+1);
   const t=(GAME_TASKS[gid]||[]).find(x=>x.key===key); if(!t) return;
-  const max=t.max||1;
+  const max=getTaskMax(gid,t);
   taskState[tid]=(taskState[tid]||0)>=max?0:max;
   localStorage.setItem('gv8-taskstate',JSON.stringify(taskState));
   renderTasks();
@@ -3199,6 +3234,43 @@ function toggleTask2(tid){
 function stepTask2(tid,max,delta){
   taskState[tid]=Math.max(0,Math.min(max,(taskState[tid]||0)+delta));
   localStorage.setItem('gv8-taskstate',JSON.stringify(taskState));
+  renderTasks();
+}
+
+function deleteTask2(tid){
+  if(!taskHidden.includes(tid))taskHidden.push(tid);
+  localStorage.setItem('gv8-task-hidden',JSON.stringify(taskHidden));
+  renderTasks();
+}
+function restoreHiddenTasks(gid){
+  taskHidden=taskHidden.filter(tid=>!tid.startsWith(gid+'_'));
+  localStorage.setItem('gv8-task-hidden',JSON.stringify(taskHidden));
+  renderTasks();
+}
+function editTask2(tid){
+  taskEditTid=tid;
+  const p=tid.lastIndexOf('_'); const gid=tid.slice(0,p), key=tid.slice(p+1);
+  const t=(GAME_TASKS[gid]||[]).find(x=>x.key===key); if(!t) return;
+  document.getElementById('te-name').value=getTaskName(gid,t);
+  document.getElementById('te-max').value=getTaskMax(gid,t);
+  document.getElementById('taskEditOvl').classList.add('open');
+}
+function closeTaskEdit(){document.getElementById('taskEditOvl').classList.remove('open');taskEditTid=null;}
+function saveTaskEdit(){
+  if(!taskEditTid)return;
+  const name=document.getElementById('te-name').value.trim();
+  const max=Math.max(1,parseInt(document.getElementById('te-max').value)||1);
+  if(!name){toast('이름을 입력하세요');return;}
+  taskOverrides[taskEditTid]={name,max};
+  localStorage.setItem('gv8-task-overrides',JSON.stringify(taskOverrides));
+  closeTaskEdit();
+  renderTasks();
+}
+function resetTaskEdit(){
+  if(!taskEditTid)return;
+  delete taskOverrides[taskEditTid];
+  localStorage.setItem('gv8-task-overrides',JSON.stringify(taskOverrides));
+  closeTaskEdit();
   renderTasks();
 }
 
@@ -4325,7 +4397,7 @@ function showPage(name){
 }
 
 function toast(msg){const el=document.createElement('div');el.className='toast';el.innerHTML=msg.replace(/\n/g,'<br>');document.getElementById('tw').appendChild(el);setTimeout(()=>el.remove(),2500);}
-['evtOvl','cpnOvl','customEvtOvl'].forEach(id=>document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
+['evtOvl','cpnOvl','customEvtOvl','taskEditOvl'].forEach(id=>document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
 
 // Color picker event delegation
 document.getElementById('cevColorPicker').addEventListener('click', e => {
