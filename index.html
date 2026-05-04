@@ -104,7 +104,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .page-intro-text h2{font-size:16px;font-weight:700;margin-bottom:5px}
 .page-intro-text p{font-size:12px;color:var(--mu2);line-height:1.6}
 
-.gf{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:22px;padding:14px;background:linear-gradient(135deg,var(--sf),rgba(20,25,40,.7));border:1px solid var(--bd);border-radius:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}
+.gf{display:flex;flex-direction:column;gap:8px;margin-bottom:22px;padding:12px 14px;background:linear-gradient(135deg,var(--sf),rgba(20,25,40,.7));border:1px solid var(--bd);border-radius:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}
+.gf-section{display:flex;flex-direction:column;gap:5px}
+.gf-section+.gf-section{padding-top:8px;border-top:1px solid var(--bd)}
+.gf-sec-label{font-size:9px;font-weight:800;color:var(--mu);text-transform:uppercase;letter-spacing:1.2px}
+.gf-chips{display:flex;flex-wrap:wrap;gap:6px}
 .gc{display:flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;border:1px solid var(--bd2);background:var(--sf2);cursor:pointer;transition:all .2s;font-size:12px;font-weight:500;color:var(--mu2);user-select:none}
 .gc:hover{color:var(--tx);border-color:var(--bd3);transform:translateY(-1px)}
 .gc.on{border-color:var(--gc,var(--bl));background:rgba(var(--gcr,99,179,237),.12);color:var(--gc,var(--bl));font-weight:700;box-shadow:0 0 16px rgba(var(--gcr,99,179,237),.18)}
@@ -1728,16 +1732,12 @@ function init(){
     }
   });
   if(migrated) localStorage.setItem('gv8-favs',JSON.stringify(favs));
-  
-  if(!favs.length){
+
+  // 버전2: 기존에 전체 자동-즐겨찾기된 데이터를 초기화
+  if(!localStorage.getItem('gv8-favs-v2')){
     favs=[];
-    GAMES.forEach(g=>{
-      if(g.servers.length>1){
-        g.servers.forEach(srv=>favs.push(`${g.id}-${srv}`));
-      } else {
-        favs.push(g.id);
-      }
-    });
+    localStorage.setItem('gv8-favs',JSON.stringify(favs));
+    localStorage.setItem('gv8-favs-v2','1');
   }
   // 테마 초기화
   const savedTheme=localStorage.getItem('gv8-theme')||'dark';
@@ -2022,34 +2022,50 @@ function updateBadges(){
   }
 }
 function renderGF(){
-  // 게임-서버 조합으로 칩 생성
-  const chips=[];
-  GAMES.filter(gameMatchesSrvFilter).forEach(g=>{
-    const hasMultiSrv=g.servers.length>1;
-    if(hasMultiSrv){
-      // 서버별 분리 칩
-      g.servers.forEach(srv=>{
-        // 현재 서버 필터에 안 맞으면 건너뜀
-        if(serverFilter==='kr'&&srv!=='kr')return;
-        if(serverFilter==='jp'&&srv!=='jp'&&srv!=='global')return;
-        const favKey=`${g.id}-${srv}`;
-        const isFav=favs.includes(favKey)||favs.includes(g.id); // 구버전 호환
-        chips.push({g,srv,favKey,isFav,label:`${g.short} (${SRV_LBL[srv]||srv})`});
-      });
-    } else {
-      // 단일 서버 게임
-      const favKey=g.id;
-      const isFav=favs.includes(favKey);
-      chips.push({g,srv:'all',favKey,isFav,label:g.short});
-    }
-  });
-  
-  document.getElementById('gfBar').innerHTML=chips.map(({g,srv,favKey,isFav,label})=>{
-    const srvTagHtml=srv!=='all'?`<span class="srv-tag srv-tag-${srv}">${SRV_LBL[srv]||srv}</span>`:'';
-    return `<div class="gc ${isFav?'on':''}" style="--gc:${g.color};--gcr:${g.rgb}" onclick="toggleFav('${favKey}')">
-      <div class="dot"></div><span>${g.short}</span>${srvTagHtml}<span style="font-size:9px;opacity:.7">${isFav?'★':'☆'}</span>
+  function makeChips(games){
+    const chips=[];
+    games.forEach(g=>{
+      if(g.servers.includes('all')){
+        chips.push({g,srv:'all',favKey:g.id,isFav:favs.includes(g.id)});
+      } else {
+        g.servers.forEach(srv=>{
+          if(serverFilter==='kr'&&srv!=='kr')return;
+          if(serverFilter==='jp'&&srv!=='jp'&&srv!=='global')return;
+          const favKey=`${g.id}-${srv}`;
+          chips.push({g,srv,favKey,isFav:favs.includes(favKey)});
+        });
+      }
+    });
+    return chips;
+  }
+  function chipsHtml(chips){
+    return chips.map(({g,srv,favKey,isFav})=>{
+      const srvTag=srv!=='all'?`<span class="srv-tag srv-tag-${srv}">${SRV_LBL[srv]||srv}</span>`:'';
+      return `<div class="gc ${isFav?'on':''}" style="--gc:${g.color};--gcr:${g.rgb}" onclick="toggleFav('${favKey}')">
+        <div class="dot"></div><span>${g.short}</span>${srvTag}<span style="font-size:9px;opacity:.7">${isFav?'★':'☆'}</span>
+      </div>`;
+    }).join('');
+  }
+
+  const categories=[
+    {label:'🌐 전서버', test:g=>g.servers.includes('all')},
+    {label:'🇰🇷 한섭', test:g=>!g.servers.includes('all')&&g.servers.includes('kr')},
+    {label:'🌏 일섭 / 글로벌', test:g=>!g.servers.includes('all')&&!g.servers.includes('kr')&&(g.servers.includes('jp')||g.servers.includes('global'))},
+  ];
+
+  let html='';
+  categories.forEach(cat=>{
+    const games=GAMES.filter(g=>gameMatchesSrvFilter(g)&&cat.test(g));
+    if(!games.length) return;
+    const chips=makeChips(games);
+    if(!chips.length) return;
+    html+=`<div class="gf-section">
+      <div class="gf-sec-label">${cat.label}</div>
+      <div class="gf-chips">${chipsHtml(chips)}</div>
     </div>`;
-  }).join('');
+  });
+
+  document.getElementById('gfBar').innerHTML=html;
 }
 
 function toggleFav(id){
@@ -3318,7 +3334,7 @@ function buildTaskRow2(gid,t){
   const done=taskState[tid]||0;
   const isDoneAll=done>=max, pct=Math.round(done/max*100);
   const editBtn=`<button class="task-edit" onclick="editTask2('${tid}')" title="수정">✏</button>`;
-  const delBtn=`<button class="task-del" onclick="deleteTask2('${tid}')" title="${isCustom?'삭제':'숨기기'}">✕</button>`;
+  const delBtn=`<button class="task-del" onclick="deleteTask2('${tid}')" title="삭제">✕</button>`;
   if(max===1){
     return `<div class="task-row${isDoneAll?' done-all':''}">
       <div class="task-check${isDoneAll?' checked':''}" onclick="toggleTask2('${tid}')">${isDoneAll?'✓':''}</div>
@@ -3344,57 +3360,34 @@ function renderTasks(){
   const wrap=document.getElementById('tasksWrap');
   if(!wrap) return;
   initTaskResets();
-  const gameList=getFavGameList();
 
-  if(!gameList.length){
+  // 커스텀 할일만 표시 (기본 제공 할일 없음 — 사용자가 직접 등록)
+  const tasks=customTasks;
+
+  // 배지 갱신
+  const remaining=tasks.filter(t=>(taskState[t.id]||0)<(t.max||1)).length;
+  const badge=document.getElementById('nav-cnt-tasks');
+  if(badge) badge.textContent=remaining>0?remaining:'';
+
+  if(!tasks.length){
     wrap.innerHTML=`<div class="task-empty" style="padding:40px;text-align:center">
-      <div style="font-size:32px;margin-bottom:10px">⭐</div>
-      <div style="font-size:14px;font-weight:700;margin-bottom:6px">즐겨찾기 게임이 없습니다</div>
-      <div style="font-size:12px">게임 필터에서 게임을 즐겨찾기에 추가하면<br>해당 게임의 할일이 자동으로 표시됩니다.</div>
+      <div style="font-size:32px;margin-bottom:10px">📝</div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:8px">할일이 없습니다</div>
+      <div style="font-size:12px;color:var(--mu);line-height:1.8">위 <strong style="color:var(--bl)">＋ 할일 추가</strong> 버튼으로<br>일일 · 주간 · 월간 할일을 직접 등록하세요.</div>
     </div>`;
-    const badge=document.getElementById('nav-cnt-tasks');
-    if(badge) badge.textContent='';
     return;
   }
-
-  taskGameIdx=Math.max(0,Math.min(taskGameIdx,gameList.length-1));
-  const cur=gameList[taskGameIdx];
-  const allCurTasks=GAME_TASKS[cur.id]||[];
-  const curTasks=allCurTasks.filter(t=>!taskHidden.includes(`${cur.id}_${t.key}`));
-  const hiddenCount=allCurTasks.length-curTasks.length;
-  const curDone=curTasks.filter(t=>(taskState[`${cur.id}_${t.key}`]||0)>=getTaskMax(cur.id,t)).length;
-  const curPct=curTasks.length?Math.round(curDone/curTasks.length*100):0;
-
-  const dotsHtml=gameList.map((g,i)=>{
-    const gt=(GAME_TASKS[g.id]||[]).filter(t=>!taskHidden.includes(`${g.id}_${t.key}`));
-    const hasRemain=gt.some(t=>(taskState[`${g.id}_${t.key}`]||0)<getTaskMax(g.id,t));
-    return `<div class="tgn-dot-item${i===taskGameIdx?' act':hasRemain?' has-remain':''}" onclick="taskGameIdx=${i};renderTasks()" title="${g.short}"></div>`;
-  }).join('');
-
-  let html=`
-    <div class="task-game-nav">
-      <button class="tgn-btn" onclick="prevTaskGame()" ${taskGameIdx===0?'disabled':''}>◀</button>
-      <div class="tgn-center">
-        <div class="tgn-dot" style="background:${cur.color}"></div>
-        <span class="tgn-name" style="color:${cur.color}">${cur.short}</span>
-        <div class="tgn-progress">
-          <div class="tgn-prog-bar"><div class="tgn-prog-fill" style="width:${curPct}%"></div></div>
-          <span class="tgn-prog-txt${curDone===curTasks.length?' done':''}">${curDone}/${curTasks.length}</span>
-        </div>
-      </div>
-      <button class="tgn-btn" onclick="nextTaskGame()" ${taskGameIdx===gameList.length-1?'disabled':''}>▶</button>
-    </div>
-    <div class="tgn-dots">${dotsHtml}</div>`;
 
   const sections=[
     {key:'daily',label:'일일',icon:'☀️',reset:'매일 자정'},
     {key:'weekly',label:'주간',icon:'📅',reset:'매주 월요일'},
     {key:'monthly',label:'월간',icon:'🗓',reset:'매월 1일'},
   ];
+  let html='';
   sections.forEach(sec=>{
-    const items=curTasks.filter(t=>t.freq===sec.key);
+    const items=tasks.filter(t=>t.freq===sec.key);
     if(!items.length) return;
-    const doneCount=items.filter(t=>(taskState[`${cur.id}_${t.key}`]||0)>=getTaskMax(cur.id,t)).length;
+    const doneCount=items.filter(t=>(taskState[t.id]||0)>=(t.max||1)).length;
     const allDone=doneCount===items.length;
     html+=`<div class="task-section">
       <div class="task-sec-hd">
@@ -3403,49 +3396,10 @@ function renderTasks(){
         <span class="task-sec-reset">${sec.reset}</span>
         <span class="task-sec-count${allDone?' all-done':''}">${doneCount}/${items.length}</span>
       </div>
-      <div class="task-rows">${items.map(t=>buildTaskRow2(cur.id,t)).join('')}</div>
+      <div class="task-rows">${items.map(t=>buildTaskRow2(null,t)).join('')}</div>
     </div>`;
   });
-
-  if(hiddenCount>0){
-    html+=`<div style="text-align:center;margin-top:10px">
-      <button class="btn btn-ghost" style="font-size:11px;padding:6px 14px" onclick="restoreHiddenTasks('${cur.id}')">🔄 숨긴 할일 복구 (${hiddenCount}개)</button>
-    </div>`;
-  }
-
-  // 사용자 커스텀 할일 섹션
-  const visCustom=customTasks.filter(t=>!taskHidden.includes(t.id));
-  if(visCustom.length){
-    html+=`<div style="font-size:10px;font-weight:800;letter-spacing:1px;color:var(--mu2);text-transform:uppercase;padding:14px 2px 6px">📝 내 할일</div>`;
-    [{key:'daily',label:'일일',icon:'☀️',reset:'매일 자정'},{key:'weekly',label:'주간',icon:'📅',reset:'매주 월요일'},{key:'monthly',label:'월간',icon:'🗓',reset:'매월 1일'}].forEach(sec=>{
-      const items=visCustom.filter(t=>t.freq===sec.key);
-      if(!items.length) return;
-      const doneCount=items.filter(t=>(taskState[t.id]||0)>=(t.max||1)).length;
-      const allDone=doneCount===items.length;
-      html+=`<div class="task-section">
-        <div class="task-sec-hd">
-          <span class="task-sec-icon">${sec.icon}</span>
-          <span class="task-sec-label">${sec.label}</span>
-          <span class="task-sec-reset">${sec.reset}</span>
-          <span class="task-sec-count${allDone?' all-done':''}">${doneCount}/${items.length}</span>
-        </div>
-        <div class="task-rows">${items.map(t=>buildTaskRow2(null,t)).join('')}</div>
-      </div>`;
-    });
-  }
-
   wrap.innerHTML=html;
-
-  // 네비 배지: 즐찾 게임 전체 미완료 수 (숨긴 할일 제외) + 커스텀 할일
-  let remaining=0;
-  gameList.forEach(g=>{
-    (GAME_TASKS[g.id]||[]).filter(t=>!taskHidden.includes(`${g.id}_${t.key}`)).forEach(t=>{
-      if((taskState[`${g.id}_${t.key}`]||0)<getTaskMax(g.id,t)) remaining++;
-    });
-  });
-  visCustom.forEach(ct=>{ if((taskState[ct.id]||0)<(ct.max||1)) remaining++; });
-  const badge=document.getElementById('nav-cnt-tasks');
-  if(badge) badge.textContent=remaining>0?remaining:'';
 }
 
 function prevTaskGame(){taskGameIdx=Math.max(0,taskGameIdx-1);renderTasks();}
@@ -3472,15 +3426,11 @@ function stepTask2(tid,max,delta){
 }
 
 function deleteTask2(tid){
-  if(tid.startsWith('ct-')){
-    customTasks=customTasks.filter(t=>t.id!==tid);
-    localStorage.setItem('gv8-custom-tasks',JSON.stringify(customTasks));
-    delete taskState[tid];
-    localStorage.setItem('gv8-taskstate',JSON.stringify(taskState));
-  } else {
-    if(!taskHidden.includes(tid))taskHidden.push(tid);
-    localStorage.setItem('gv8-task-hidden',JSON.stringify(taskHidden));
-  }
+  // 커스텀 할일 삭제 (ct- 접두어)
+  customTasks=customTasks.filter(t=>t.id!==tid);
+  localStorage.setItem('gv8-custom-tasks',JSON.stringify(customTasks));
+  delete taskState[tid];
+  localStorage.setItem('gv8-taskstate',JSON.stringify(taskState));
   renderTasks();
 }
 function restoreHiddenTasks(gid){
@@ -3953,6 +3903,10 @@ function saveEvt(){
     hasGuaranteed:document.getElementById('em-guaranteed')?.checked||false
   };
   
+  // 단일서버(전서버) 게임은 srv를 'all'로 정규화 → matchSrv 필터 통과 보장
+  const _gs=GAMES.find(x=>x.id===entry.game);
+  if(_gs && _gs.servers.length===1) entry.srv=_gs.servers[0];
+
   // ── 인벤토리 자동 차감 (무료 우선 → 유료 보충) ────────────────
   const g=GAMES.find(x=>x.id===entry.game);
   let toastSuffix='';
