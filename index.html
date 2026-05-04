@@ -4014,8 +4014,14 @@ function saveEvt(){
       parts.push(`유료 ${paidUsed.toLocaleString()} (₩${krw.toLocaleString()})`);
     }
     if(parts.length) toastSuffix=` · ${parts.join(' + ')}`;
-    // 확정천장 보유 상태를 인벤토리에 동기화 (계산기에서도 반영)
-    inventory[invKey]['_guarantee']=entry.hasGuaranteed?1:0;
+  }
+  // 확정천장 보유 상태를 인벤토리에 동기화 (재화 소비 여부 상관없이)
+  if(g && entry.hasGuaranteed !== undefined){
+    const srvKey2=entry.srv==='all'?g.servers[0]:entry.srv;
+    const invKey2=`${entry.game}-${srvKey2}`;
+    if(!inventory[invKey2])inventory[invKey2]={};
+    inventory[invKey2]['_guarantee']=entry.hasGuaranteed?1:0;
+    localStorage.setItem('gv8-inv',JSON.stringify(inventory));
   }
   // ──────────────────────────────────────────────────────────────
 
