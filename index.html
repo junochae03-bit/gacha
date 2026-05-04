@@ -887,9 +887,8 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
   <div class="page-intro">
     <div class="page-intro-text">
       <h2>✅ 할일 체크</h2>
-      <p>게임별 일일·주간·월간 컨텐츠를 등록하고 완료 체크하세요. 자정/월요일/매월 1일에 자동 초기화됩니다.</p>
+      <p>즐겨찾기 게임의 일일·주간·월간 컨텐츠가 자동 표시됩니다. 자정/월요일/매월 1일에 자동 초기화.</p>
     </div>
-    <button class="btn btn-primary" onclick="openTaskModal()">＋ 할일 추가</button>
   </div>
   <div id="tasksWrap"></div>
 </div>
@@ -1137,49 +1136,6 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 </div></div>
 
 <!-- INSTALL HELP MODAL -->
-<!-- TASK ADD/EDIT MODAL -->
-<div class="overlay" id="taskOvl" onclick="if(event.target===this)closeTaskModal()"><div class="modal" style="max-width:460px">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-    <span id="taskModalTitle" style="font-family:'Orbitron',monospace;font-size:13px;font-weight:800;background:linear-gradient(135deg,var(--bl),var(--pu));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">＋ 할일 추가</span>
-    <button onclick="closeTaskModal()" style="background:var(--sf2);border:1px solid var(--bd2);border-radius:8px;width:30px;height:30px;color:var(--mu2);cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;transition:all .15s">✕</button>
-  </div>
-  <div class="fg">
-    <label>게임 (선택)</label>
-    <select id="tm-game" class="fi">
-      <option value="">── 게임 없음 (공통)</option>
-    </select>
-  </div>
-  <div class="fg">
-    <label>할일 이름 *</label>
-    <input id="tm-name" class="fi" placeholder="예: 일일 의뢰 4개 완료" maxlength="40">
-  </div>
-  <div class="fg">
-    <label>주기</label>
-    <select id="tm-freq" class="fi">
-      <option value="daily">일일 (매일 자정 초기화)</option>
-      <option value="weekly">주간 (매주 월요일 초기화)</option>
-      <option value="monthly">월간 (매월 1일 초기화)</option>
-    </select>
-  </div>
-  <div class="fg" style="margin-bottom:18px">
-    <label>횟수</label>
-    <select id="tm-max" class="fi" style="width:140px">
-      <option value="1">1회 (체크박스)</option>
-      <option value="2">2회</option>
-      <option value="3">3회</option>
-      <option value="4">4회</option>
-      <option value="5">5회</option>
-      <option value="7">7회</option>
-      <option value="10">10회</option>
-      <option value="20">20회</option>
-    </select>
-  </div>
-  <div style="display:flex;gap:8px">
-    <button class="btn btn-primary" style="flex:1" onclick="saveTask()">저장</button>
-    <button class="btn btn-ghost" onclick="closeTaskModal()">취소</button>
-  </div>
-</div></div>
-
 <div class="overlay" id="installOvl"><div class="modal" style="max-width:540px">
   <h2>📲 핸드폰 앱으로 설치하기</h2>
   
@@ -1439,6 +1395,73 @@ const GAMES_RAW=[
 // ✨ Sort 가나다순 by Korean locale
 const GAMES = [...GAMES_RAW].sort((a,b) => a.name.localeCompare(b.name, 'ko-KR'));
 
+// 게임별 기본 할일 목록
+const GAME_TASKS = {
+  hsr:[
+    {key:'d1',name:'일일 임무 4개 완료',freq:'daily',max:4},
+    {key:'d2',name:'개척력 소비',freq:'daily'},
+    {key:'w1',name:'에코 오브 워 (주간 보스)',freq:'weekly',max:3},
+    {key:'w2',name:'시뮬레이션 우주 주간 포인트',freq:'weekly'},
+  ],
+  gi:[
+    {key:'d1',name:'일일 의뢰 4개',freq:'daily',max:4},
+    {key:'d2',name:'레진 소비',freq:'daily'},
+    {key:'w1',name:'주간 보스',freq:'weekly',max:3},
+    {key:'m1',name:'심연의 나선',freq:'monthly'},
+  ],
+  zzz:[
+    {key:'d1',name:'일일 임무 완료',freq:'daily'},
+    {key:'d2',name:'배터리 소비',freq:'daily'},
+    {key:'w1',name:'음동구역',freq:'weekly'},
+    {key:'w2',name:'데드리 커미션',freq:'weekly'},
+  ],
+  ba:[
+    {key:'d1',name:'일일 임무',freq:'daily'},
+    {key:'d2',name:'일일 작전',freq:'daily'},
+    {key:'d3',name:'아레나',freq:'daily'},
+    {key:'w1',name:'총력전',freq:'weekly'},
+    {key:'w2',name:'대결전',freq:'weekly'},
+  ],
+  nikke:[
+    {key:'d1',name:'아웃포스트 수확',freq:'daily'},
+    {key:'d2',name:'일일 미션',freq:'daily'},
+    {key:'d3',name:'시뮬레이션 룸',freq:'daily'},
+    {key:'w1',name:'특수 방어 훈련',freq:'weekly'},
+  ],
+  wuwa:[
+    {key:'d1',name:'일일 활력 4개',freq:'daily',max:4},
+    {key:'d2',name:'파동 에너지 소비',freq:'daily'},
+    {key:'w1',name:'심층 환상',freq:'weekly'},
+  ],
+  czn:[
+    {key:'d1',name:'일일 미션',freq:'daily'},
+    {key:'w1',name:'주간 도전',freq:'weekly'},
+  ],
+  fgo:[
+    {key:'d1',name:'일일 퀘스트',freq:'daily'},
+    {key:'d2',name:'AP 소비',freq:'daily'},
+  ],
+  pjsk:[
+    {key:'d1',name:'일일 미션',freq:'daily'},
+    {key:'d2',name:'라이브 도전',freq:'daily'},
+    {key:'w1',name:'이벤트 포인트 수집',freq:'weekly'},
+  ],
+  uma:[
+    {key:'d1',name:'일일 레이스',freq:'daily'},
+    {key:'d2',name:'육성 1회',freq:'daily'},
+    {key:'w1',name:'챔피언스 미팅',freq:'weekly'},
+  ],
+  trickcal:[
+    {key:'d1',name:'일일 임무',freq:'daily'},
+    {key:'w1',name:'주간 임무',freq:'weekly'},
+  ],
+  gfl2:[
+    {key:'d1',name:'일일 작전',freq:'daily'},
+    {key:'d2',name:'작전 기록 소비',freq:'daily'},
+    {key:'w1',name:'주간 작전',freq:'weekly'},
+  ],
+};
+
 const CATS=['daily','weekly','event','reward','monthly','misc'];
 const CLBL={daily:'일간',weekly:'주간',event:'이벤트',reward:'보상',monthly:'월정액',misc:'기타'};
 const SRV_LBL={kr:'🇰🇷한섭',jp:'🇯🇵일섭',global:'🌐글로벌',all:'전서버'};
@@ -1475,6 +1498,7 @@ let monthlyOn=safeLoad('gv8-monthly',{});
 let monthlyStart=safeLoad('gv8-monthly-start',{});
 let hiddenAutoMira=safeLoad('gv8-hidden-mira',[]);
 let tasks=safeLoad('gv8-tasks',[]);
+let taskState=safeLoad('gv8-taskstate',{});
 let serverFilter=localStorage.getItem('gv8-srv')||'all';
 let calDate=new Date();
 let evtIdx=-1,cpnIdx=-1,cpnFilter='all',page='schedule',aiLast='';
@@ -3026,86 +3050,91 @@ function delCpn(i){if(!confirm('삭제?'))return;coupons.splice(i,1);save();rend
 // ════════════════════════════════════════════════════════════════
 let taskGameIdx=0;
 
-function initTaskResets(){
-  const now=new Date();
-  const todayStr=now.toDateString();
-  const lastD=localStorage.getItem('gv8-task-reset-d')||'';
-  const monDate=new Date(now); monDate.setDate(now.getDate()-((now.getDay()+6)%7)); const monStr=monDate.toDateString();
-  const lastW=localStorage.getItem('gv8-task-reset-w')||'';
-  const m1=new Date(now.getFullYear(),now.getMonth(),1).toDateString();
-  const lastM=localStorage.getItem('gv8-task-reset-m')||'';
-  let changed=false;
-  tasks.forEach(t=>{
-    if(t.freq==='daily'&&lastD!==todayStr){t.done=0;changed=true;}
-    if(t.freq==='weekly'&&lastW!==monStr){t.done=0;changed=true;}
-    if(t.freq==='monthly'&&lastM!==m1){t.done=0;changed=true;}
+function getFavGameList(){
+  const seen=new Set(); const list=[];
+  GAMES.forEach(g=>{
+    const faved=g.servers.length>1?g.servers.some(s=>favs.includes(`${g.id}-${s}`)):favs.includes(g.id);
+    if(faved&&!seen.has(g.id)&&GAME_TASKS[g.id]){seen.add(g.id);list.push(g);}
   });
-  if(lastD!==todayStr) localStorage.setItem('gv8-task-reset-d',todayStr);
-  if(lastW!==monStr) localStorage.setItem('gv8-task-reset-w',monStr);
-  if(lastM!==m1) localStorage.setItem('gv8-task-reset-m',m1);
-  if(changed) localStorage.setItem('gv8-tasks',JSON.stringify(tasks));
-}
-
-function getTaskGameList(){
-  const ids=[...new Set(tasks.map(t=>t.game||''))];
-  const list=[];
-  if(ids.includes('')) list.push({id:'',label:'공통',color:'var(--mu2)'});
-  GAMES.forEach(g=>{ if(ids.includes(g.id)) list.push({id:g.id,label:g.short,color:g.color}); });
   return list;
 }
 
-function buildTaskRow(t){
-  const max=t.max||1, done=t.done||0;
+function initTaskResets(){
+  const now=new Date();
+  const todayStr=now.toDateString();
+  const monDate=new Date(now); monDate.setDate(now.getDate()-((now.getDay()+6)%7));
+  const monStr=monDate.toDateString();
+  const m1=new Date(now.getFullYear(),now.getMonth(),1).toDateString();
+  const resets=safeLoad('gv8-task-resets',{});
+  const resetD=resets.daily!==todayStr, resetW=resets.weekly!==monStr, resetM=resets.monthly!==m1;
+  if(!resetD&&!resetW&&!resetM) return;
+  Object.entries(GAME_TASKS).forEach(([gid,tlist])=>{
+    tlist.forEach(t=>{
+      const k=`${gid}_${t.key}`;
+      if(resetD&&t.freq==='daily') taskState[k]=0;
+      if(resetW&&t.freq==='weekly') taskState[k]=0;
+      if(resetM&&t.freq==='monthly') taskState[k]=0;
+    });
+  });
+  if(resetD) resets.daily=todayStr;
+  if(resetW) resets.weekly=monStr;
+  if(resetM) resets.monthly=m1;
+  localStorage.setItem('gv8-task-resets',JSON.stringify(resets));
+  localStorage.setItem('gv8-taskstate',JSON.stringify(taskState));
+}
+
+function buildTaskRow2(gid,t){
+  const max=t.max||1;
+  const done=taskState[`${gid}_${t.key}`]||0;
   const isDoneAll=done>=max, pct=Math.round(done/max*100);
+  const tid=`${gid}_${t.key}`;
   if(max===1){
-    return `<div class="task-row${isDoneAll?' done-all':''}" data-tid="${t.id}">
-      <div class="task-check${isDoneAll?' checked':''}" onclick="toggleTask('${t.id}')">${isDoneAll?'✓':''}</div>
+    return `<div class="task-row${isDoneAll?' done-all':''}">
+      <div class="task-check${isDoneAll?' checked':''}" onclick="toggleTask2('${tid}')">${isDoneAll?'✓':''}</div>
       <div class="task-info"><div class="task-name">${t.name}</div></div>
-      <div></div>
-      <button class="task-del" onclick="deleteTask('${t.id}')" title="삭제">🗑</button>
+      <div></div><div></div>
       <div class="task-progress"><div class="task-prog-fill" style="width:${pct}%"></div></div>
     </div>`;
   }
-  return `<div class="task-row${isDoneAll?' done-all':''}" data-tid="${t.id}">
-    <div class="task-check${isDoneAll?' checked':''}" onclick="stepTask('${t.id}',1)">${isDoneAll?'✓':''}</div>
+  return `<div class="task-row${isDoneAll?' done-all':''}">
+    <div class="task-check${isDoneAll?' checked':''}" onclick="stepTask2('${tid}',${max},1)">${isDoneAll?'✓':''}</div>
     <div class="task-info"><div class="task-name">${t.name}</div></div>
     <div class="task-counter">
-      <button class="tc-btn" onclick="stepTask('${t.id}',-1)">−</button>
+      <button class="tc-btn" onclick="stepTask2('${tid}',${max},-1)">−</button>
       <span class="tc-val${isDoneAll?' maxed':''}">${done}/${max}</span>
-      <button class="tc-btn" onclick="stepTask('${t.id}',1)">＋</button>
+      <button class="tc-btn" onclick="stepTask2('${tid}',${max},1)">＋</button>
     </div>
-    <button class="task-del" onclick="deleteTask('${t.id}')" title="삭제">🗑</button>
+    <div></div>
     <div class="task-progress"><div class="task-prog-fill" style="width:${pct}%"></div></div>
   </div>`;
 }
 
 function renderTasks(){
   const wrap=document.getElementById('tasksWrap');
-  if(!wrap)return;
+  if(!wrap) return;
   initTaskResets();
+  const gameList=getFavGameList();
 
-  if(!tasks.length){
-    wrap.innerHTML=`<div class="task-empty" style="padding:40px">
-      <div style="font-size:36px;margin-bottom:12px">✅</div>
-      <div style="font-size:14px;font-weight:700;margin-bottom:6px">등록된 할일이 없습니다</div>
-      <div style="font-size:12px">＋ 할일 추가 버튼으로 게임별 컨텐츠를 등록해보세요</div>
+  if(!gameList.length){
+    wrap.innerHTML=`<div class="task-empty" style="padding:40px;text-align:center">
+      <div style="font-size:32px;margin-bottom:10px">⭐</div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:6px">즐겨찾기 게임이 없습니다</div>
+      <div style="font-size:12px">게임 필터에서 게임을 즐겨찾기에 추가하면<br>해당 게임의 할일이 자동으로 표시됩니다.</div>
     </div>`;
     document.getElementById('nav-cnt-tasks').textContent='';
     return;
   }
 
-  const gameList=getTaskGameList();
   taskGameIdx=Math.max(0,Math.min(taskGameIdx,gameList.length-1));
   const cur=gameList[taskGameIdx];
-  const curTasks=tasks.filter(t=>(t.game||'')===cur.id);
-  const curDone=curTasks.filter(t=>(t.done||0)>=(t.max||1)).length;
+  const curTasks=GAME_TASKS[cur.id]||[];
+  const curDone=curTasks.filter(t=>(taskState[`${cur.id}_${t.key}`]||0)>=(t.max||1)).length;
   const curPct=curTasks.length?Math.round(curDone/curTasks.length*100):0;
 
-  // 게임 네비게이션
   const dotsHtml=gameList.map((g,i)=>{
-    const gt=tasks.filter(t=>(t.game||'')===g.id);
-    const hasRemain=gt.some(t=>(t.done||0)<(t.max||1));
-    return `<div class="tgn-dot-item${i===taskGameIdx?' act':hasRemain?' has-remain':''}" onclick="taskGameIdx=${i};renderTasks()" title="${g.label}"></div>`;
+    const gt=GAME_TASKS[g.id]||[];
+    const hasRemain=gt.some(t=>(taskState[`${g.id}_${t.key}`]||0)<(t.max||1));
+    return `<div class="tgn-dot-item${i===taskGameIdx?' act':hasRemain?' has-remain':''}" onclick="taskGameIdx=${i};renderTasks()" title="${g.short}"></div>`;
   }).join('');
 
   let html=`
@@ -3113,7 +3142,7 @@ function renderTasks(){
       <button class="tgn-btn" onclick="prevTaskGame()" ${taskGameIdx===0?'disabled':''}>◀</button>
       <div class="tgn-center">
         <div class="tgn-dot" style="background:${cur.color}"></div>
-        <span class="tgn-name" style="color:${cur.color}">${cur.label}</span>
+        <span class="tgn-name" style="color:${cur.color}">${cur.short}</span>
         <div class="tgn-progress">
           <div class="tgn-prog-bar"><div class="tgn-prog-fill" style="width:${curPct}%"></div></div>
           <span class="tgn-prog-txt${curDone===curTasks.length?' done':''}">${curDone}/${curTasks.length}</span>
@@ -3123,18 +3152,15 @@ function renderTasks(){
     </div>
     <div class="tgn-dots">${dotsHtml}</div>`;
 
-  // 섹션별 렌더
   const sections=[
     {key:'daily',label:'일일',icon:'☀️',reset:'매일 자정'},
     {key:'weekly',label:'주간',icon:'📅',reset:'매주 월요일'},
     {key:'monthly',label:'월간',icon:'🗓',reset:'매월 1일'},
   ];
-  let hasSections=false;
   sections.forEach(sec=>{
     const items=curTasks.filter(t=>t.freq===sec.key);
-    if(!items.length)return;
-    hasSections=true;
-    const doneCount=items.filter(t=>(t.done||0)>=(t.max||1)).length;
+    if(!items.length) return;
+    const doneCount=items.filter(t=>(taskState[`${cur.id}_${t.key}`]||0)>=(t.max||1)).length;
     const allDone=doneCount===items.length;
     html+=`<div class="task-section">
       <div class="task-sec-hd">
@@ -3143,95 +3169,37 @@ function renderTasks(){
         <span class="task-sec-reset">${sec.reset}</span>
         <span class="task-sec-count${allDone?' all-done':''}">${doneCount}/${items.length}</span>
       </div>
-      <div class="task-rows">${items.map(buildTaskRow).join('')}</div>
+      <div class="task-rows">${items.map(t=>buildTaskRow2(cur.id,t)).join('')}</div>
     </div>`;
   });
-  if(!hasSections) html+=`<div class="task-empty">이 게임에 등록된 할일이 없습니다</div>`;
 
   wrap.innerHTML=html;
-  const remaining=tasks.filter(t=>(t.done||0)<(t.max||1)).length;
+
+  // 네비 배지: 즐찾 게임 전체 미완료 수
+  let remaining=0;
+  gameList.forEach(g=>{
+    (GAME_TASKS[g.id]||[]).forEach(t=>{ if((taskState[`${g.id}_${t.key}`]||0)<(t.max||1)) remaining++; });
+  });
   const badge=document.getElementById('nav-cnt-tasks');
   if(badge) badge.textContent=remaining>0?remaining:'';
 }
 
 function prevTaskGame(){taskGameIdx=Math.max(0,taskGameIdx-1);renderTasks();}
-function nextTaskGame(){taskGameIdx=Math.min(getTaskGameList().length-1,taskGameIdx+1);renderTasks();}
+function nextTaskGame(){taskGameIdx=Math.min(getFavGameList().length-1,taskGameIdx+1);renderTasks();}
 
-function openTaskModal(editId){
-  const ovl=document.getElementById('taskOvl');
-  const sel=document.getElementById('tm-game');
-  sel.innerHTML='<option value="">── 게임 없음 (공통)</option>';
-  GAMES.forEach(g=>{
-    const opt=document.createElement('option');
-    opt.value=g.id; opt.textContent=g.short;
-    sel.appendChild(opt);
-  });
-  if(editId){
-    const t=tasks.find(x=>x.id===editId);
-    if(t){
-      sel.value=t.game||'';
-      document.getElementById('tm-name').value=t.name||'';
-      document.getElementById('tm-freq').value=t.freq||'daily';
-      document.getElementById('tm-max').value=t.max||1;
-      ovl.dataset.editId=editId;
-      document.getElementById('taskModalTitle').textContent='✏️ 할일 수정';
-    }
-  } else {
-    // 현재 보고 있는 게임을 기본값으로
-    const gameList=getTaskGameList();
-    const curGame=gameList[taskGameIdx]?.id||'';
-    sel.value=curGame;
-    document.getElementById('tm-name').value='';
-    document.getElementById('tm-freq').value='daily';
-    document.getElementById('tm-max').value='1';
-    delete ovl.dataset.editId;
-    document.getElementById('taskModalTitle').textContent='＋ 할일 추가';
-  }
-  ovl.classList.add('open');
-  setTimeout(()=>document.getElementById('tm-name').focus(),100);
-}
-function closeTaskModal(){document.getElementById('taskOvl').classList.remove('open');}
-function saveTask(){
-  const name=document.getElementById('tm-name').value.trim();
-  if(!name){toast('할일 이름을 입력하세요.');return;}
-  const ovl=document.getElementById('taskOvl');
-  const editId=ovl.dataset.editId;
-  const gameVal=document.getElementById('tm-game').value;
-  if(editId){
-    const t=tasks.find(x=>x.id===editId);
-    if(t){t.game=gameVal;t.name=name;t.freq=document.getElementById('tm-freq').value;t.max=parseInt(document.getElementById('tm-max').value)||1;}
-  } else {
-    tasks.push({id:'t'+Date.now(),game:gameVal,name,freq:document.getElementById('tm-freq').value,max:parseInt(document.getElementById('tm-max').value)||1,done:0});
-    // 저장 후 해당 게임 탭으로 이동
-    const list=getTaskGameList();
-    const newIdx=list.findIndex(x=>x.id===gameVal);
-    if(newIdx>=0) taskGameIdx=newIdx;
-  }
-  localStorage.setItem('gv8-tasks',JSON.stringify(tasks));
-  closeTaskModal();
-  renderTasks();
-  toast('✅ 저장되었습니다.');
-}
-function toggleTask(id){
-  const t=tasks.find(x=>x.id===id); if(!t)return;
+function toggleTask2(tid){
+  // tid = "${gid}_${t.key}" — t.key는 d1/d2/w1 형식이므로 마지막 _ 기준으로 분리
+  const p=tid.lastIndexOf('_'); const gid=tid.slice(0,p), key=tid.slice(p+1);
+  const t=(GAME_TASKS[gid]||[]).find(x=>x.key===key); if(!t) return;
   const max=t.max||1;
-  t.done=(t.done||0)>=max?0:max;
-  localStorage.setItem('gv8-tasks',JSON.stringify(tasks));
+  taskState[tid]=(taskState[tid]||0)>=max?0:max;
+  localStorage.setItem('gv8-taskstate',JSON.stringify(taskState));
   renderTasks();
 }
-function stepTask(id,delta){
-  const t=tasks.find(x=>x.id===id); if(!t)return;
-  const max=t.max||1;
-  t.done=Math.max(0,Math.min(max,(t.done||0)+delta));
-  localStorage.setItem('gv8-tasks',JSON.stringify(tasks));
+function stepTask2(tid,max,delta){
+  taskState[tid]=Math.max(0,Math.min(max,(taskState[tid]||0)+delta));
+  localStorage.setItem('gv8-taskstate',JSON.stringify(taskState));
   renderTasks();
-}
-function deleteTask(id){
-  tasks=tasks.filter(x=>x.id!==id);
-  localStorage.setItem('gv8-tasks',JSON.stringify(tasks));
-  taskGameIdx=Math.max(0,Math.min(taskGameIdx,getTaskGameList().length-1));
-  renderTasks();
-  toast('🗑 삭제되었습니다.');
 }
 
 // ════════════════════════════════════════════════════════════════
