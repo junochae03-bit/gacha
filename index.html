@@ -779,6 +779,40 @@ select.fi{cursor:pointer}
   .dash-tile-icon{font-size:20px}
   .dash-tile-value{font-size:18px}
 }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/*  TASK SCHEDULER                    */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.task-section{margin-bottom:20px}
+.task-sec-hd{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--sf);border:1px solid var(--bd2);border-radius:10px;margin-bottom:8px}
+.task-sec-icon{font-size:16px;flex-shrink:0}
+.task-sec-label{font-size:12px;font-weight:800;letter-spacing:.5px;color:var(--tx);flex:1}
+.task-sec-reset{font-size:9px;color:var(--mu);white-space:nowrap}
+.task-sec-count{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;color:var(--mu2);background:var(--sf3);border:1px solid var(--bd);border-radius:4px;padding:1px 7px;white-space:nowrap}
+.task-sec-count.all-done{color:var(--g);border-color:rgba(95,217,156,.3);background:rgba(95,217,156,.06)}
+.task-rows{display:flex;flex-direction:column;gap:6px}
+.task-row{display:grid;grid-template-columns:24px 1fr auto 26px;align-items:center;gap:10px;padding:11px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;transition:border-color .15s;position:relative;overflow:hidden}
+.task-row:hover{border-color:var(--bd2)}
+.task-row.done-all{opacity:.5}
+.task-row.done-all .task-name{text-decoration:line-through;color:var(--mu)}
+.task-check{width:22px;height:22px;border-radius:6px;border:2px solid var(--bd2);background:var(--sf2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#0a0d14;transition:all .15s;flex-shrink:0;user-select:none}
+.task-check:hover{border-color:var(--g)}
+.task-check.checked{background:var(--g);border-color:var(--g)}
+.task-info{min-width:0;overflow:hidden}
+.task-game{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px}
+.task-name{font-size:13px;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.task-counter{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.tc-btn{width:24px;height:24px;border-radius:6px;border:1px solid var(--bd2);background:var(--sf2);color:var(--mu2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;font-weight:700;line-height:1;user-select:none}
+.tc-btn:hover{border-color:var(--bl);color:var(--bl);background:rgba(96,165,250,.08)}
+.tc-btn:active{transform:scale(.88)}
+.tc-val{font-family:'Orbitron',monospace;font-size:11px;font-weight:800;min-width:30px;text-align:center;color:var(--tx)}
+.tc-val.maxed{color:var(--g)}
+.task-del{width:24px;height:24px;border-radius:6px;border:1px solid transparent;background:transparent;color:var(--mu);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all .15s;opacity:0;flex-shrink:0}
+.task-row:hover .task-del{opacity:1}
+.task-del:hover{border-color:var(--rd);color:var(--rd);background:rgba(248,113,113,.08)}
+.task-progress{position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(255,255,255,.03)}
+.task-prog-fill{height:100%;background:linear-gradient(90deg,var(--g),#a7f3d0);transition:width .3s ease}
+.task-empty{text-align:center;padding:18px;color:var(--mu);font-size:12px;background:var(--sf);border:1px dashed var(--bd2);border-radius:10px}
 </style>
 </head>
 <body>
@@ -850,14 +884,20 @@ select.fi{cursor:pointer}
       <span class="nav-label">쿠폰</span>
       <span class="nav-badge" id="nav-cnt-cpn"></span>
     </button>
-    <button class="nav-item" data-page="search" onclick="navTo('search')">
+    <button class="nav-item" data-page="tasks" onclick="navTo('tasks')">
       <span class="nav-num">7</span>
+      <span class="nav-icon">✅</span>
+      <span class="nav-label">할일 체크</span>
+      <span class="nav-badge" id="nav-cnt-tasks"></span>
+    </button>
+    <button class="nav-item" data-page="search" onclick="navTo('search')">
+      <span class="nav-num">8</span>
       <span class="nav-icon">🤖</span>
       <span class="nav-label">AI 검색</span>
       <span class="nav-badge"></span>
     </button>
     <button class="nav-item" data-page="settings" onclick="navTo('settings')">
-      <span class="nav-num">8</span>
+      <span class="nav-num">9</span>
       <span class="nav-icon">⚙️</span>
       <span class="nav-label">설정</span>
       <span class="nav-badge"></span>
@@ -969,6 +1009,17 @@ select.fi{cursor:pointer}
     <button class="sub-tab" onclick="cpnF('used',this)">사용완료</button>
   </div>
   <div class="cpn-grid" id="cpnGrid"></div>
+</div>
+
+<div id="page-tasks" style="display:none">
+  <div class="page-intro">
+    <div class="page-intro-text">
+      <h2>✅ 할일 체크</h2>
+      <p>게임별 일일·주간·월간 컨텐츠를 등록하고 완료 체크하세요. 자정/월요일/매월 1일에 자동 초기화됩니다.</p>
+    </div>
+    <button class="btn btn-primary" onclick="openTaskModal()">＋ 할일 추가</button>
+  </div>
+  <div id="tasksWrap"></div>
 </div>
 
 <div id="page-search" style="display:none">
@@ -1298,6 +1349,49 @@ select.fi{cursor:pointer}
   
   <div class="mfoot">
     <button class="btn btn-ghost" onclick="closeGistSync()">닫기</button>
+  </div>
+</div></div>
+
+<!-- TASK ADD/EDIT MODAL -->
+<div class="overlay" id="taskOvl" onclick="if(event.target===this)closeTaskModal()"><div class="modal" style="max-width:460px">
+  <div class="modal-hdr">
+    <span id="taskModalTitle">＋ 할일 추가</span>
+    <button class="modal-close" onclick="closeTaskModal()">✕</button>
+  </div>
+  <div class="frow3" style="margin-bottom:12px">
+    <div class="flbl">게임 (선택)</div>
+    <select id="tm-game" class="finput" style="grid-column:1/-1">
+      <option value="">── 게임 없음 (공통)</option>
+    </select>
+  </div>
+  <div class="frow3" style="margin-bottom:12px">
+    <div class="flbl">할일 이름 *</div>
+    <input id="tm-name" class="finput" style="grid-column:1/-1" placeholder="예: 일일 의뢰 4개 완료" maxlength="40">
+  </div>
+  <div class="frow3" style="margin-bottom:12px">
+    <div class="flbl">주기</div>
+    <select id="tm-freq" class="finput" style="grid-column:1/-1">
+      <option value="daily">일일 (매일 자정 초기화)</option>
+      <option value="weekly">주간 (매주 월요일 초기화)</option>
+      <option value="monthly">월간 (매월 1일 초기화)</option>
+    </select>
+  </div>
+  <div class="frow3" style="margin-bottom:18px">
+    <div class="flbl">횟수</div>
+    <select id="tm-max" class="finput" style="width:110px">
+      <option value="1">1회 (체크박스)</option>
+      <option value="2">2회</option>
+      <option value="3">3회</option>
+      <option value="4">4회</option>
+      <option value="5">5회</option>
+      <option value="7">7회</option>
+      <option value="10">10회</option>
+      <option value="20">20회</option>
+    </select>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-primary" style="flex:1" onclick="saveTask()">저장</button>
+    <button class="btn btn-ghost" onclick="closeTaskModal()">취소</button>
   </div>
 </div></div>
 
@@ -1720,6 +1814,7 @@ let inventory=safeLoad('gv8-inv',{});
 let monthlyOn=safeLoad('gv8-monthly',{});
 let monthlyStart=safeLoad('gv8-monthly-start',{});
 let hiddenAutoMira=safeLoad('gv8-hidden-mira',[]);
+let tasks=safeLoad('gv8-tasks',[]);
 let serverFilter=localStorage.getItem('gv8-srv')||'all';
 let calDate=new Date();
 let evtIdx=-1,cpnIdx=-1,cpnFilter='all',page='schedule',aiLast='';
@@ -3370,6 +3465,178 @@ function useCpn(i){coupons[i].used=true;save();renderCoupons();updateBadges();to
 function delCpn(i){if(!confirm('삭제?'))return;coupons.splice(i,1);save();renderCoupons();updateBadges();}
 
 // ════════════════════════════════════════════════════════════════
+//  TASK SCHEDULER
+// ════════════════════════════════════════════════════════════════
+function initTaskResets(){
+  const now=new Date();
+  const todayStr=now.toDateString();
+  const lastD=localStorage.getItem('gv8-task-reset-d')||'';
+  const monDate=new Date(now); monDate.setDate(now.getDate()-((now.getDay()+6)%7)); const monStr=monDate.toDateString();
+  const lastW=localStorage.getItem('gv8-task-reset-w')||'';
+  const m1=new Date(now.getFullYear(),now.getMonth(),1).toDateString();
+  const lastM=localStorage.getItem('gv8-task-reset-m')||'';
+  let changed=false;
+  tasks.forEach(t=>{
+    if(t.freq==='daily'&&lastD!==todayStr){t.done=0;changed=true;}
+    if(t.freq==='weekly'&&lastW!==monStr){t.done=0;changed=true;}
+    if(t.freq==='monthly'&&lastM!==m1){t.done=0;changed=true;}
+  });
+  if(lastD!==todayStr) localStorage.setItem('gv8-task-reset-d',todayStr);
+  if(lastW!==monStr) localStorage.setItem('gv8-task-reset-w',monStr);
+  if(lastM!==m1) localStorage.setItem('gv8-task-reset-m',m1);
+  if(changed) localStorage.setItem('gv8-tasks',JSON.stringify(tasks));
+}
+
+function renderTasks(){
+  const wrap=document.getElementById('tasksWrap');
+  if(!wrap)return;
+  initTaskResets();
+  const sections=[
+    {key:'daily',label:'일일 컨텐츠',icon:'☀️',reset:'매일 자정 초기화'},
+    {key:'weekly',label:'주간 컨텐츠',icon:'📅',reset:'매주 월요일 초기화'},
+    {key:'monthly',label:'월간 컨텐츠',icon:'🗓',reset:'매월 1일 초기화'},
+  ];
+  let html='';
+  sections.forEach(sec=>{
+    const items=tasks.filter(t=>t.freq===sec.key);
+    const doneCount=items.filter(t=>(t.done||0)>=(t.max||1)).length;
+    const allDone=items.length>0&&doneCount===items.length;
+    html+=`<div class="task-section">
+      <div class="task-sec-hd">
+        <span class="task-sec-icon">${sec.icon}</span>
+        <span class="task-sec-label">${sec.label}</span>
+        <span class="task-sec-reset">${sec.reset}</span>
+        <span class="task-sec-count${allDone?' all-done':''}">${doneCount}/${items.length}</span>
+      </div>
+      <div class="task-rows">`;
+    if(!items.length){
+      html+=`<div class="task-empty">할일이 없습니다 — ＋ 할일 추가 버튼으로 등록하세요</div>`;
+    } else {
+      items.forEach(t=>{
+        const max=t.max||1;
+        const done=t.done||0;
+        const isDoneAll=done>=max;
+        const pct=Math.round(done/max*100);
+        const g=t.game?GAMES.find(x=>x.id===t.game):null;
+        const gameLabel=g?g.short:'공통';
+        const gameColor=g?g.color:'var(--mu)';
+        if(max===1){
+          html+=`<div class="task-row${isDoneAll?' done-all':''}" data-tid="${t.id}">
+            <div class="task-check${isDoneAll?' checked':''}" onclick="toggleTask('${t.id}')">${isDoneAll?'✓':''}</div>
+            <div class="task-info">
+              <div class="task-game" style="color:${gameColor}">${gameLabel}</div>
+              <div class="task-name">${t.name}</div>
+            </div>
+            <div></div>
+            <button class="task-del" onclick="deleteTask('${t.id}')" title="삭제">🗑</button>
+            <div class="task-progress"><div class="task-prog-fill" style="width:${pct}%"></div></div>
+          </div>`;
+        } else {
+          html+=`<div class="task-row${isDoneAll?' done-all':''}" data-tid="${t.id}">
+            <div class="task-check${isDoneAll?' checked':''}" onclick="stepTask('${t.id}',1)">${isDoneAll?'✓':''}</div>
+            <div class="task-info">
+              <div class="task-game" style="color:${gameColor}">${gameLabel}</div>
+              <div class="task-name">${t.name}</div>
+            </div>
+            <div class="task-counter">
+              <button class="tc-btn" onclick="stepTask('${t.id}',-1)">−</button>
+              <span class="tc-val${isDoneAll?' maxed':''}">${done}/${max}</span>
+              <button class="tc-btn" onclick="stepTask('${t.id}',1)">＋</button>
+            </div>
+            <button class="task-del" onclick="deleteTask('${t.id}')" title="삭제">🗑</button>
+            <div class="task-progress"><div class="task-prog-fill" style="width:${pct}%"></div></div>
+          </div>`;
+        }
+      });
+    }
+    html+='</div></div>';
+  });
+  wrap.innerHTML=html;
+  const remaining=tasks.filter(t=>(t.done||0)<(t.max||1)).length;
+  const badge=document.getElementById('nav-cnt-tasks');
+  if(badge) badge.textContent=remaining>0?remaining:'';
+}
+
+function openTaskModal(editId){
+  const ovl=document.getElementById('taskOvl');
+  const sel=document.getElementById('tm-game');
+  sel.innerHTML='<option value="">── 게임 없음 (공통)</option>';
+  GAMES.forEach(g=>{
+    const opt=document.createElement('option');
+    opt.value=g.id; opt.textContent=g.short;
+    sel.appendChild(opt);
+  });
+  if(editId){
+    const t=tasks.find(x=>x.id===editId);
+    if(t){
+      sel.value=t.game||'';
+      document.getElementById('tm-name').value=t.name||'';
+      document.getElementById('tm-freq').value=t.freq||'daily';
+      document.getElementById('tm-max').value=t.max||1;
+      ovl.dataset.editId=editId;
+      document.getElementById('taskModalTitle').textContent='✏️ 할일 수정';
+    }
+  } else {
+    sel.value='';
+    document.getElementById('tm-name').value='';
+    document.getElementById('tm-freq').value='daily';
+    document.getElementById('tm-max').value='1';
+    delete ovl.dataset.editId;
+    document.getElementById('taskModalTitle').textContent='＋ 할일 추가';
+  }
+  ovl.classList.add('open');
+  setTimeout(()=>document.getElementById('tm-name').focus(),100);
+}
+function closeTaskModal(){document.getElementById('taskOvl').classList.remove('open');}
+function saveTask(){
+  const name=document.getElementById('tm-name').value.trim();
+  if(!name){toast('할일 이름을 입력하세요.');return;}
+  const ovl=document.getElementById('taskOvl');
+  const editId=ovl.dataset.editId;
+  if(editId){
+    const t=tasks.find(x=>x.id===editId);
+    if(t){
+      t.game=document.getElementById('tm-game').value;
+      t.name=name;
+      t.freq=document.getElementById('tm-freq').value;
+      t.max=parseInt(document.getElementById('tm-max').value)||1;
+    }
+  } else {
+    tasks.push({
+      id:'t'+Date.now(),
+      game:document.getElementById('tm-game').value,
+      name,freq:document.getElementById('tm-freq').value,
+      max:parseInt(document.getElementById('tm-max').value)||1,
+      done:0,
+    });
+  }
+  localStorage.setItem('gv8-tasks',JSON.stringify(tasks));
+  closeTaskModal();
+  renderTasks();
+  toast('✅ 저장되었습니다.');
+}
+function toggleTask(id){
+  const t=tasks.find(x=>x.id===id); if(!t)return;
+  const max=t.max||1;
+  t.done=(t.done||0)>=max?0:max;
+  localStorage.setItem('gv8-tasks',JSON.stringify(tasks));
+  renderTasks();
+}
+function stepTask(id,delta){
+  const t=tasks.find(x=>x.id===id); if(!t)return;
+  const max=t.max||1;
+  t.done=Math.max(0,Math.min(max,(t.done||0)+delta));
+  localStorage.setItem('gv8-tasks',JSON.stringify(tasks));
+  renderTasks();
+}
+function deleteTask(id){
+  tasks=tasks.filter(x=>x.id!==id);
+  localStorage.setItem('gv8-tasks',JSON.stringify(tasks));
+  renderTasks();
+  toast('🗑 삭제되었습니다.');
+}
+
+// ════════════════════════════════════════════════════════════════
 //  STATS PAGE — Per-game pickup history & consumption
 // ════════════════════════════════════════════════════════════════
 function renderStats(){
@@ -4557,12 +4824,12 @@ document.head.appendChild(srcChipStyle);
 // ════════════════════════════════════════════════════════════════
 const PAGE_INFO={
   schedule:{icon:'📅',label:'픽업 스케줄'},
-  
   inventory:{icon:'💰',label:'재화 보유량'},
   calc:{icon:'🎲',label:'뽑기 계산기'},
   stats:{icon:'📊',label:'픽업 기록'},
   calendar:{icon:'🗓',label:'캘린더'},
   coupon:{icon:'🎟',label:'쿠폰'},
+  tasks:{icon:'✅',label:'할일 체크'},
   search:{icon:'🤖',label:'AI 검색'},
   settings:{icon:'⚙️',label:'설정'},
 };
@@ -4587,7 +4854,7 @@ function navTo(name){
 
 function showPage(name){
   page=name;
-  ['schedule','inventory','calc','stats','calendar','coupon','search','settings'].forEach(p=>{document.getElementById(`page-${p}`).style.display=p===name?'block':'none';});
+  ['schedule','inventory','calc','stats','calendar','coupon','tasks','search','settings'].forEach(p=>{document.getElementById(`page-${p}`).style.display=p===name?'block':'none';});
   // Update nav-toggle display
   const info=PAGE_INFO[name]||{icon:'📅',label:'페이지'};
   document.getElementById('navCurIcon').textContent=info.icon;
@@ -4598,8 +4865,8 @@ function showPage(name){
   if(name==='calendar')renderCalendar();
   if(name==='calc')renderCalc();
   if(name==='inventory')renderInventory();
-  
   if(name==='stats')renderStats();
+  if(name==='tasks')renderTasks();
   if(name==='search')refreshApiStatus();
   if(name==='settings'){rebuildGames();renderSettingsGameList();}
   // Update top badge for current page
