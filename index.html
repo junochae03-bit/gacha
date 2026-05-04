@@ -1031,7 +1031,13 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
     </div>
   </div>
 
-  <div class="fg"><label>📝 메모</label><textarea class="fi" id="em-memo" rows="2" placeholder="픽뚫 보유 여부, 천장 카운트, 기타 메모..."></textarea></div>
+  <div class="fg" id="em-guarantee-row" style="display:none">
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;font-size:13px">
+      <input type="checkbox" id="em-guaranteed" style="width:15px;height:15px;cursor:pointer;accent-color:var(--g)">
+      ✅ 확정천장 보유 <span style="font-size:10px;color:var(--mu);font-weight:400">(픽뚫 당함 → 다음 최고등급 픽업 확정)</span>
+    </label>
+  </div>
+  <div class="fg"><label>📝 메모</label><textarea class="fi" id="em-memo" rows="2" placeholder="천장 카운트, 기타 메모..."></textarea></div>
 
   <div class="mfoot">
     <button class="btn-xs" id="evt-clone-btn" style="display:none;margin-right:auto" onclick="cloneCurrentEvt()">📋 복제</button>
@@ -1426,6 +1432,122 @@ const GAMES_RAW=[
           guarantee:'2연 픽업제 (천장 80연)',type:'softpity'},
    monthly:{name:'커맨더 패스',cost:4900,monthlyAmt:2400,daily:80,desc:'월 2400 크리스탈'},
    redeemUrl:''},
+
+  {id:'arknights',name:'아크나이츠',short:'아크나이츠',color:'#22d3ee',rgb:'34,211,238',
+   launchDates:{kr:'2020-01-16',jp:'2019-04-30',global:'2019-04-30'},hasHalfAnniversary:true,delayMonths:0,
+   officialDomains:['hypergryph.com','ak.hypergryph.com'],
+   servers:['kr','jp','global'],
+   currencies:[
+     {id:'orundum',icon:'💎',name:'합성옥',desc:'한국 공식',pullCost:600},
+     {id:'permit',icon:'🎫',name:'소환 허가',pullCost:1},
+   ],
+   gacha:{topRarity:'6★',offRate:1.0,pickupAbsRate:0.5,pullCost:600,softPity:50,hardPity:100,baseRate:0.02,pickupRate:0.5,pickupSystem:'5050',pickupSysDesc:'6★ 50% 픽업 / 픽뚫 시 확정 + 300뽑 스파크',pickupSysProb:50,pityType:'soft+hard',pityNote:'50뽑부터 확률 상승 → 100뽑 확정 (300연 누적 시 원하는 픽업 교환)',pricePerPull:2000,truckPackKRW:99000,truckPackCurrency:8000,truckPackPulls:13,truckDesc:'₩99,000 팩 기준 (근삿값)',unit:'합성옥',
+          guarantee:'2연 픽업제 (천장 100연) / 300연 스파크',type:'softpity'},
+   monthly:null,
+   redeemUrl:''},
+
+  {id:'limbus',name:'림버스 컴퍼니',short:'림버스',color:'#f97316',rgb:'249,115,22',
+   launchDates:{kr:'2023-02-27',global:'2023-02-27'},hasHalfAnniversary:false,delayMonths:0,
+   officialDomains:['limbuscompany.com','projectmoon.kr'],
+   servers:['kr','global'],
+   currencies:[
+     {id:'lunacy',icon:'🌙',name:'루나시티',desc:'구매',pullCost:130},
+     {id:'thread',icon:'🧵',name:'실',pullCost:1},
+   ],
+   gacha:{topRarity:'3★',offRate:3.0,pickupAbsRate:3.0,pullCost:1,softPity:0,hardPity:200,baseRate:0.03,pickupRate:0.5,pickupSystem:'point_only',pickupSysDesc:'이상(Ideality) 200포인트 누적 시 픽업 3★ 인격 교환 (이월 가능)',pickupSysProb:100,pityType:'point',pityNote:'실 1개 = 1추출 = 이상 1점 · 200포인트에 픽업 인격 교환 (배너 이월)',pricePerPull:1980,truckPackKRW:99000,truckPackCurrency:760,truckPackPulls:43,truckDesc:'₩99,000 팩 기준 (근삿값)',unit:'실',
+          guarantee:'이상 200포인트 교환 (이월)',type:'flat'},
+   monthly:{name:'월간 뉴문 패스',cost:9900,monthlyAmt:650,daily:0,desc:'유료 루나시티 650 즉시 지급 (월 2회 구매 가능)'},
+   redeemUrl:''},
+
+  {id:'e7',name:'에픽세븐',short:'에픽세븐',color:'#8b5cf6',rgb:'139,92,246',
+   launchDates:{kr:'2018-11-15',global:'2019-03-28'},hasHalfAnniversary:true,delayMonths:0,
+   officialDomains:['epic7.smilegate.com','stove.smilegate.com'],
+   servers:['kr','global'],
+   currencies:[
+     {id:'covenant',icon:'📖',name:'성약의 책장',desc:'한정 소환',pullCost:1},
+     {id:'moonlight',icon:'🌙',name:'신성한 달빛 책장',pullCost:1},
+   ],
+   gacha:{topRarity:'5★',offRate:4.5,pickupAbsRate:1.0,pullCost:1,softPity:0,hardPity:120,baseRate:0.01,pickupRate:0.2222,pickupSystem:'guaranteed',pickupSysDesc:'120뽑 내 픽업 5★ 보장',pickupSysProb:100,pityType:'hard',pityNote:'120뽑 도달 시 5★ 확정 (천장 이월)',pricePerPull:2200,truckPackKRW:99000,truckPackCurrency:45,truckPackPulls:45,truckDesc:'₩99,000 팩 기준 (근삿값)',unit:'성약의 책장',
+          guarantee:'120연 천장',type:'flat'},
+   monthly:{name:'성약 패스',cost:4900,monthlyAmt:30,daily:1,desc:'월 30 성약의 책장'},
+   redeemUrl:''},
+
+  {id:'hi3',name:'붕괴3rd',short:'붕괴3rd',color:'#ec4899',rgb:'236,72,153',
+   launchDates:{kr:'2017-10-17',all:'2016-10-14'},hasHalfAnniversary:false,
+   officialDomains:['hoyoverse.com','honkaiimpact3.com'],
+   servers:['all'],
+   currencies:[
+     {id:'crystal',icon:'💎',name:'크리스탈',desc:'구매',pullCost:280},
+     {id:'voucher',icon:'🎫',name:'확장 공급 소환권',pullCost:1},
+   ],
+   gacha:{topRarity:'S급',offRate:1.5,pickupAbsRate:1.5,pullCost:280,softPity:75,hardPity:90,baseRate:0.015,pickupRate:0.5,pickupSystem:'5050',pickupSysDesc:'S급 50% 픽업 / 픽뚫 시 다음 S급 픽업 확정',pickupSysProb:50,pityType:'soft+hard',pityNote:'75뽑부터 확률 상승 → 90뽑 확정 · Part2 개편 기준 (픽뚫 시 180뽑 보장)',pricePerPull:2500,truckPackKRW:99000,truckPackCurrency:9800,truckPackPulls:35,truckDesc:'₩99,000 팩 기준 (근삿값)',unit:'크리스탈',
+          guarantee:'2연 픽업제 (천장 90연, Part2 기준)',type:'softpity'},
+   monthly:{name:'공급 보조',cost:4900,monthlyAmt:2160,daily:72,desc:'30일간 매일 72'},
+   redeemUrl:'https://honkaiimpact3.hoyoverse.com/gift'},
+
+  {id:'pcr',name:'프린세스 커넥트 Re:Dive',short:'프리코네',color:'#f59e0b',rgb:'245,158,11',
+   launchDates:{jp:'2018-02-15'},hasHalfAnniversary:true,delayMonths:0,
+   officialDomains:['priconne-redive.jp'],
+   servers:['jp'],
+   currencies:[
+     {id:'jewel',icon:'💎',name:'보석',pullCost:150},
+   ],
+   gacha:{topRarity:'3★',offRate:2.5,pickupAbsRate:0.4,pullCost:150,softPity:0,hardPity:200,baseRate:0.025,pickupRate:0.16,pickupSystem:'spark',pickupSysDesc:'200뽑 스파크 — 가챠 포인트 누적 시 픽업 3★ 교환',pickupSysProb:100,pityType:'hard',pityNote:'200뽑 누적 시 픽업 3★ 교환 (스파크, 2021.03 이후)',pricePerPull:3000,truckPackKRW:99000,truckPackCurrency:5000,truckPackPulls:33,truckDesc:'₩99,000 팩 기준 (근삿값)',unit:'보석',
+          guarantee:'200연 스파크',type:'flat'},
+   monthly:{name:'월정액 패스',cost:4900,monthlyAmt:0,daily:0,desc:'월 보석'},
+   redeemUrl:''},
+
+  {id:'stellasora',name:'스텔라 소라',short:'스텔라 소라',color:'#818cf8',rgb:'129,140,248',
+   launchDates:{kr:'2025-10-20',jp:'2025-10-21',global:'2025-10-19'},hasHalfAnniversary:false,delayMonths:0,
+   officialDomains:['stellasora.kr','stellasora.jp','stellasora.global'],
+   servers:['kr','jp','global'],
+   currencies:[
+     {id:'fragment',icon:'⭐',name:'별의 파편',desc:'기본 가챠 화폐',pullCost:300},
+     {id:'cerulean',icon:'🎫',name:'세룰리안 티켓',pullCost:2},
+   ],
+   gacha:{topRarity:'5★',offRate:2.0,pickupAbsRate:1.0,pullCost:300,softPity:0,hardPity:120,baseRate:0.02,pickupRate:0.5,pickupSystem:'5050',pickupSysDesc:'5★ 중 픽업 50% / 픽뚫 시 스택 160연 이월 확정',pickupSysProb:50,pityType:'hard',pityNote:'120연 마일리지 천장 (배너 이월 불가) / 160연 스택 천장 (이월 가능)',pricePerPull:2200,truckPackKRW:99000,truckPackCurrency:13500,truckPackPulls:45,truckDesc:'₩99,000 팩 기준 (근삿값)',unit:'별의 파편',
+          guarantee:'120연 마일리지 / 160연 스택',type:'flat'},
+   monthly:{name:'프리미엄 지원금',cost:11000,monthlyAmt:0,daily:0,desc:'별의 파편·티켓 포함 패스'},
+   redeemUrl:''},
+
+  {id:'cs',name:'카운터사이드',short:'카운터사이드',color:'#3b82f6',rgb:'59,130,246',
+   launchDates:{kr:'2020-11-26',jp:'2022-05-19',global:'2022-05-19'},hasHalfAnniversary:true,delayMonths:0,
+   officialDomains:['counterside.com','nexon.com'],
+   servers:['kr','jp','global'],
+   currencies:[
+     {id:'quartz',icon:'💎',name:'수정',desc:'한국 공식',pullCost:300},
+     {id:'ticket',icon:'🎫',name:'소환권',pullCost:1},
+   ],
+   gacha:{topRarity:'SSR',offRate:2.0,pickupAbsRate:2.0,pullCost:300,softPity:0,hardPity:150,baseRate:0.02,pickupRate:0.5,pickupSystem:'guaranteed',pickupSysDesc:'150뽑 내 픽업 SSR 보장 (천장 이월)',pickupSysProb:100,pityType:'hard',pityNote:'150뽑 도달 시 픽업 SSR 확정 (천장 이월 가능)',pricePerPull:2000,truckPackKRW:99000,truckPackCurrency:15000,truckPackPulls:50,truckDesc:'₩99,000 팩 기준 (근삿값)',unit:'수정',
+          guarantee:'150연 천장 (이월)',type:'flat'},
+   monthly:{name:'지휘관 패스',cost:4900,monthlyAmt:2400,daily:80,desc:'월 2400 수정'},
+   redeemUrl:''},
+
+  {id:'endfield',name:'명일방주: 엔드필드',short:'엔드필드',color:'#e8a020',rgb:'232,160,32',
+   launchDates:{all:'2026-01-22'},hasHalfAnniversary:false,delayMonths:0,
+   officialDomains:['endfield.gryphline.com'],
+   servers:['all'],
+   currencies:[
+     {id:'oroberyl',icon:'💎',name:'오로베릴',desc:'뽑기 화폐',pullCost:500},
+     {id:'arsenal',icon:'🎫',name:'아세날 티켓',pullCost:1},
+   ],
+   gacha:{topRarity:'6★',offRate:0.8,pickupAbsRate:0.8,pullCost:500,softPity:65,hardPity:80,baseRate:0.008,pickupRate:0.5,pickupSystem:'5050',pickupSysDesc:'6성 50% 픽업 / 픽뚫 시 120연 내 픽업 확정 (120연 이월 X)',pickupSysProb:50,pityType:'soft+hard',pityNote:'65뽑부터 확률 상승 → 80뽑 6성 확정 (이월) / 120뽑 픽업 확정 (이월 X)',pricePerPull:2022,truckPackKRW:93000,truckPackCurrency:23000,truckPackPulls:46,truckDesc:'₩93,000 팩 기준 (근삿값)',unit:'오로베릴',
+          guarantee:'2연 픽업제 (천장 80연+120연)',type:'softpity'},
+   monthly:{name:'달빛 관측 카드',cost:7000,monthlyAmt:6000,daily:200,desc:'30일간 매일 오로베릴 200 (총 6,000 = 12연)'},
+   redeemUrl:''},
+
+  {id:'nte',name:'이환',short:'이환',color:'#a855f7',rgb:'168,85,247',
+   launchDates:{all:'2026-04-29'},hasHalfAnniversary:false,delayMonths:0,
+   officialDomains:['nte.perfectworld.com'],
+   servers:['all'],
+   currencies:[
+     {id:'annulith',icon:'💎',name:'이상 수정',desc:'기본 뽑기 화폐',pullCost:160},
+     {id:'trikey',icon:'🎫',name:'트라이키',pullCost:1},
+   ],
+   gacha:{topRarity:'S급',offRate:1.87,pickupAbsRate:1.87,pullCost:160,softPity:70,hardPity:90,baseRate:0.0187,pickupRate:1.0,pickupSystem:'guaranteed',pickupSysDesc:'S급 획득 시 100% 픽업 확정 (50/50 없음) · 천장 이월',pickupSysProb:100,pityType:'soft+hard',pityNote:'70뽑부터 확률 급상승 → 90뽑 S급 픽업 확정 (이월)',pricePerPull:2938,truckPackKRW:119000,truckPackCurrency:6480,truckPackPulls:40,truckDesc:'₩119,000 팩 → 이상 수정 6,480개',unit:'이상 수정',
+          guarantee:'90연 픽업 확정 (이월, 50/50 없음)',type:'softpity'},
+   monthly:{name:'정예 헌터 보급',cost:12000,monthlyAmt:680,daily:0,desc:'이상 수정 680 즉시 지급'},
+   redeemUrl:''},
 ];
 
 // ✨ Sort 가나다순 by Korean locale
@@ -1495,6 +1617,54 @@ const GAME_TASKS = {
     {key:'d1',name:'일일 작전',freq:'daily'},
     {key:'d2',name:'작전 기록 소비',freq:'daily'},
     {key:'w1',name:'주간 작전',freq:'weekly'},
+  ],
+  arknights:[
+    {key:'d1',name:'일일 임무',freq:'daily'},
+    {key:'d2',name:'이성 소비',freq:'daily'},
+    {key:'w1',name:'주간 임무',freq:'weekly'},
+  ],
+  limbus:[
+    {key:'d1',name:'일일 모듈',freq:'daily'},
+    {key:'d2',name:'에너지 소비',freq:'daily'},
+    {key:'w1',name:'주간 임무',freq:'weekly'},
+  ],
+  e7:[
+    {key:'d1',name:'일일 임무',freq:'daily'},
+    {key:'d2',name:'에너지 소비',freq:'daily'},
+    {key:'w1',name:'천공의 탑',freq:'weekly'},
+    {key:'w2',name:'투기장',freq:'weekly'},
+  ],
+  hi3:[
+    {key:'d1',name:'일일 임무',freq:'daily'},
+    {key:'d2',name:'균열 시공 소비',freq:'daily'},
+    {key:'w1',name:'암흑 잠입',freq:'weekly'},
+    {key:'w2',name:'양자 괴멸',freq:'weekly'},
+  ],
+  pcr:[
+    {key:'d1',name:'일일 퀘스트',freq:'daily'},
+    {key:'d2',name:'스태미나 소비',freq:'daily'},
+    {key:'w1',name:'클랜 배틀',freq:'monthly'},
+  ],
+  stellasora:[
+    {key:'d1',name:'일일 임무',freq:'daily'},
+    {key:'d2',name:'활력 소비',freq:'daily'},
+    {key:'w1',name:'주간 임무',freq:'weekly'},
+  ],
+  cs:[
+    {key:'d1',name:'일일 임무',freq:'daily'},
+    {key:'d2',name:'코인 소비',freq:'daily'},
+    {key:'w1',name:'리그전',freq:'weekly'},
+  ],
+  endfield:[
+    {key:'d1',name:'일일 임무',freq:'daily'},
+    {key:'d2',name:'이성 소비',freq:'daily'},
+    {key:'w1',name:'주간 임무',freq:'weekly'},
+    {key:'w2',name:'통합 전략',freq:'weekly'},
+  ],
+  nte:[
+    {key:'d1',name:'일일 임무',freq:'daily'},
+    {key:'d2',name:'활력 소비',freq:'daily'},
+    {key:'w1',name:'주간 임무',freq:'weekly'},
   ],
 };
 
@@ -2025,7 +2195,7 @@ function buildCard(e,idx){
       <span>${probEmoji}</span>
       <div style="flex:1">
         <div style="font-weight:700;color:${probColor}">획득 확률 <span style="font-family:'Orbitron',monospace;font-size:14px;font-weight:800">${probPct}%</span></div>
-        <div style="font-size:9px;color:var(--mu);margin-top:1px">${totalPulls}뽑 · ${hasGuar?'픽뚫 보유':'일반'}</div>
+        <div style="font-size:9px;color:var(--mu);margin-top:1px">${totalPulls}뽑 · ${hasGuar?'<span style="color:var(--g)">확정천장 보유</span>':'일반'}</div>
       </div>
     </div>`;
   }
@@ -2428,6 +2598,12 @@ function setMonthlyStart(key,date){
   renderInventory();
   if(page==='calc')renderCalc();
 }
+function ccGuarToggle(key,gid,srv,checked){
+  if(!inventory[key])inventory[key]={};
+  inventory[key]['_guarantee']=checked?1:0;
+  localStorage.setItem('gv8-inv',JSON.stringify(inventory));
+  ccCalc(key,gid,srv);
+}
 
 function renderCalc(){
   let cards=[];
@@ -2469,11 +2645,14 @@ function renderCalc(){
           <div class="calc-l">현재 천장 카운트</div>
           <input class="ci" type="number" inputmode="numeric" id="cc-${key}-pity" value="${inv._pity||0}" min="0" max="${pc.hardPity}" oninput="ccUpd('${key}','_pity',this.value)">
         </div>
-        ${pc.pickupRate<1.0?`<div class="calc-input-row">
-          <div class="calc-l">픽뚫 보유</div>
-          <select class="ci" id="cc-${key}-guar" onchange="ccCalc('${key}','${g.id}','${srv}')" style="text-align:left">
-            <option value="0">없음 (50:50)</option><option value="1">보유 (확정)</option>
-          </select>
+        ${pc.pickupRate<1.0?`<div class="calc-input-row" style="align-items:center">
+          <div class="calc-l">다음 픽업 확정 보유</div>
+          <label style="cursor:pointer;display:flex;align-items:center;justify-content:flex-end;gap:6px;font-size:12px;color:var(--tx)">
+            <input type="checkbox" id="cc-${key}-guar" ${inv['_guarantee']===1?'checked':''}
+              onchange="ccGuarToggle('${key}','${g.id}','${srv}',this.checked)"
+              style="width:15px;height:15px;cursor:pointer;accent-color:var(--g);flex-shrink:0">
+            <span style="font-size:10px;color:var(--mu)">확정천장</span>
+          </label>
         </div>`:''}
         <div class="calc-input-row">
           <div class="calc-l">목표 캐릭터 수</div>
@@ -2532,7 +2711,7 @@ function ccCalc(key,gid,srv){
   const ticket=ticketEl?(parseInt(ticketEl.value)||0):0;
   const pity=Math.min(parseInt(document.getElementById(`cc-${key}-pity`)?.value)||0, pc.hardPity);
   const guarEl=document.getElementById(`cc-${key}-guar`);
-  const guar=guarEl?(parseInt(guarEl.value)||0):(pc.pickupRate>=1.0?1:0);
+  const guar=guarEl?(guarEl.checked?1:0):(pc.pickupRate>=1.0?1:0);
   const tgt=Math.max(1,Math.min(10,parseInt(document.getElementById(`cc-${key}-tgt`)?.value)||1));
   const monthOnState=monthlyOn[`${gid}-${srv}-monthly`]||false;
   const pullsFromCurrency=Math.floor(have/pc.pullCost);
@@ -3507,15 +3686,18 @@ function renderStats(){
     const avgCurrencyPerSuccess=succ?Math.round(groupCurrency/succ):0;
     const sortedPickups=[...grp.pickups].sort((a,b)=>new Date(b.start)-new Date(a.start));
     const unitName=pc.unit;
-    
+    // 게임별 실패 레이블 — 50/50 시스템만 "픽뚫"
+    const failLabel=pc.pickupSystem==='5050'?'픽뚫':'미획득';
+    const successLabel=pc.pickupSystem==='5050'?'성공':'획득';
+
     html+=`<div class="stats-game-card" style="--gc-color:${g.color}">
       <div class="sgc-hd">
         <div class="sgc-name" style="color:${g.color}">${g.name}${grp.srv!=='all'?` <span class="sgc-srv">${SRV_LBL[grp.srv]}</span>`:''}</div>
         <div style="font-size:10px;color:var(--mu);font-weight:600">${total}건 · 성공률 ${successRateGrp}%</div>
       </div>
       <div class="sgc-stats">
-        <div class="sgc-stat"><div class="sgc-stat-l">성공</div><div class="sgc-stat-v" style="color:var(--g)">${succ}</div></div>
-        <div class="sgc-stat"><div class="sgc-stat-l">픽뚫</div><div class="sgc-stat-v" style="color:var(--rd)">${fail}</div></div>
+        <div class="sgc-stat"><div class="sgc-stat-l">${successLabel}</div><div class="sgc-stat-v" style="color:var(--g)">${succ}</div></div>
+        <div class="sgc-stat"><div class="sgc-stat-l">${failLabel}</div><div class="sgc-stat-v" style="color:var(--rd)">${fail}</div></div>
         <div class="sgc-stat">
           <div class="sgc-stat-l">총 소비 ${unitName}</div>
           <div class="sgc-stat-v" style="color:var(--gold);font-size:13px;line-height:1.1">${groupCurrency.toLocaleString()}</div>
@@ -3645,11 +3827,15 @@ function openEvt(idx=-1,asMira=false){
     document.getElementById('em-spent-currency').value=e.spentCurrency||'';
     document.getElementById('em-spent-pulls').value=e.spentPulls||'';
     document.getElementById('em-memo').value=e.memo||'';
+    const guarCb=document.getElementById('em-guaranteed');
+    if(guarCb) guarCb.checked=!!e.hasGuaranteed;
     const result=e.result||'untried';
     document.querySelectorAll('input[name="em-result"]').forEach(r=>r.checked=(r.value===result));
     if(cloneBtn) cloneBtn.style.display='inline-flex';
   }else{
     ['em-event','em-char','em-start','em-end','em-spent-currency','em-spent-pulls','em-memo'].forEach(id=>document.getElementById(id).value='');
+    const guarCb=document.getElementById('em-guaranteed');
+    if(guarCb) guarCb.checked=false;
     document.getElementById('em-type').value='limited';
     // 서버 필터에 따라 기본 서버 설정
     let defSrv='kr';
@@ -3661,6 +3847,7 @@ function openEvt(idx=-1,asMira=false){
   }
   updateSpentHint();
   refreshEventSuggestions();
+  updateGuaranteeRow();
   document.getElementById('evtOvl').classList.add('open');
 }
 
@@ -3679,6 +3866,16 @@ function onGameChange(){
   updateSpentHint();
   autoCalcCurrency();
   refreshEventSuggestions();
+  updateGuaranteeRow();
+}
+function updateGuaranteeRow(){
+  const gid=document.getElementById('em-game').value;
+  const g=GAMES.find(x=>x.id===gid);
+  const row=document.getElementById('em-guarantee-row');
+  if(!row)return;
+  // Only show for games with 50/50 pickup system
+  const show=g && g.gacha && g.gacha.pickupRate<1.0 && g.gacha.pickupSystem==='5050';
+  row.style.display=show?'':'none';
 }
 
 // Server change in modal: refresh suggestions for current game/srv
@@ -3752,7 +3949,8 @@ function saveEvt(){
     result:resultRadio?resultRadio.value:'untried',
     spentCurrency:newSpentCurrency,
     spentPulls:newSpentPulls,
-    memo:document.getElementById('em-memo').value.trim()
+    memo:document.getElementById('em-memo').value.trim(),
+    hasGuaranteed:document.getElementById('em-guaranteed')?.checked||false
   };
   
   // ── 인벤토리 자동 차감 (무료 우선 → 유료 보충) ────────────────
@@ -3816,9 +4014,11 @@ function saveEvt(){
       parts.push(`유료 ${paidUsed.toLocaleString()} (₩${krw.toLocaleString()})`);
     }
     if(parts.length) toastSuffix=` · ${parts.join(' + ')}`;
+    // 확정천장 보유 상태를 인벤토리에 동기화 (계산기에서도 반영)
+    inventory[invKey]['_guarantee']=entry.hasGuaranteed?1:0;
   }
   // ──────────────────────────────────────────────────────────────
-  
+
   if(evtIdx>=0)events[evtIdx]=entry;else events.push(entry);
   // 픽업 저장 시 해당 게임/서버 자동 즐겨찾기
   if(g){
