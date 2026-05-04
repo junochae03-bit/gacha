@@ -104,24 +104,13 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .page-intro-text h2{font-size:16px;font-weight:700;margin-bottom:5px}
 .page-intro-text p{font-size:12px;color:var(--mu2);line-height:1.6}
 
-.gf{margin-bottom:16px;display:flex;flex-direction:column;gap:3px}
-.gf-sec{background:var(--sf);border:1px solid var(--bd);border-radius:10px;overflow:hidden;transition:border-color .15s}
-.gf-sec:hover{border-color:var(--bd2)}
-.gf-sec-hd{display:flex;align-items:center;gap:7px;padding:8px 12px;cursor:pointer;user-select:none;transition:background .15s}
-.gf-sec-hd:hover{background:rgba(255,255,255,.03)}
-.gf-sec-arrow{font-size:10px;color:var(--mu);transition:transform .2s;width:10px;flex-shrink:0}
-.gf-sec.open .gf-sec-arrow{transform:rotate(90deg)}
-.gf-sec-name{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mu2);flex:1}
-.gf-sec-count{font-size:9px;font-family:'Orbitron',monospace;font-weight:700;color:var(--mu);background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:4px;padding:1px 6px}
-.gf-sec-count.has-fav{color:var(--g);border-color:rgba(95,217,156,.3);background:rgba(95,217,156,.06)}
-.gf-sec-allbtn{font-size:9px;padding:2px 8px;border-radius:4px;border:1px solid var(--bd2);background:transparent;color:var(--mu);cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap}
-.gf-sec-allbtn:hover{border-color:var(--bl);color:var(--bl)}
-.gf-sec-body{display:flex;flex-wrap:wrap;gap:5px;padding:0 12px 10px}
-.gc{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:7px;border:1px solid var(--bd2);background:var(--sf2);cursor:pointer;transition:all .18s;font-size:11px;font-weight:500;color:var(--mu2);user-select:none}
-.gc:hover{color:var(--tx);border-color:var(--bd3)}
-.gc.on{border-color:var(--gc,var(--bl));background:rgba(var(--gcr,99,179,237),.1);color:var(--gc,var(--bl));font-weight:700}
-.gc .dot{width:6px;height:6px;border-radius:50%;background:var(--gc,var(--bl));opacity:.25;transition:all .18s;flex-shrink:0}
-.gc.on .dot{opacity:1;box-shadow:0 0 6px var(--gc,var(--bl))}
+.gf{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:22px;padding:14px;background:linear-gradient(135deg,var(--sf),rgba(20,25,40,.7));border:1px solid var(--bd);border-radius:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}
+.gc{display:flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;border:1px solid var(--bd2);background:var(--sf2);cursor:pointer;transition:all .2s;font-size:12px;font-weight:500;color:var(--mu2);user-select:none}
+.gc:hover{color:var(--tx);border-color:var(--bd3);transform:translateY(-1px)}
+.gc.on{border-color:var(--gc,var(--bl));background:rgba(var(--gcr,99,179,237),.12);color:var(--gc,var(--bl));font-weight:700;box-shadow:0 0 16px rgba(var(--gcr,99,179,237),.18)}
+.gc .dot{width:7px;height:7px;border-radius:50%;background:var(--gc,var(--bl));opacity:.3;transition:all .2s}
+.gc.on .dot{opacity:1;box-shadow:0 0 8px var(--gc,var(--bl))}
+.gc .srv-tag{font-size:8px;background:rgba(255,255,255,.08);padding:2px 5px;border-radius:3px;font-weight:700;color:var(--mu2)}
 
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(390px,1fr));gap:14px;margin-bottom:30px}
 .card{background:var(--sf);border:1px solid var(--bd);border-radius:14px;overflow:hidden;transition:all .25s;animation:fu .35s ease both;position:relative}
@@ -206,35 +195,10 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .t-mon{background:rgba(103,232,249,.12);color:var(--cy)}
 .t-paid{background:rgba(251,191,36,.12);color:var(--gold)}
 
+.arow{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}
 .ab{font-size:10px;padding:5px 10px;border-radius:6px;border:1px solid var(--bd2);background:var(--sf2);color:var(--mu2);cursor:pointer;transition:all .2s;font-family:inherit}
 .ab:hover{border-color:var(--bl);color:var(--bl);transform:translateY(-1px);box-shadow:0 4px 12px rgba(96,165,250,.15)}
 .ab.set{border-color:var(--g);color:var(--g);background:rgba(95,217,156,.05)}
-.pull-ctr{margin-top:10px;padding:10px 12px;background:rgba(255,255,255,.02);border:1px solid var(--bd);border-radius:10px}
-.pull-ctr-label{font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px}
-.pc-pity-label{font-size:9px;font-family:'Orbitron',monospace;font-weight:700;text-transform:none;letter-spacing:.5px}
-.pull-ctr-row{display:flex;align-items:center;gap:5px}
-.pc-num{flex:1;text-align:center;font-family:'Orbitron',monospace;font-size:24px;font-weight:800;line-height:1;transition:color .3s}
-.pc-unit{font-size:10px;font-weight:400;color:var(--mu);margin-left:2px;font-family:inherit}
-.pc-btn{padding:9px 0;border-radius:8px;border:1px solid var(--bd2);background:var(--sf2);cursor:pointer;font-weight:700;font-family:inherit;transition:all .12s;flex:1;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.pc-btn:active{transform:scale(.92);opacity:.8}
-.pc-sub{font-size:11px;color:var(--mu)}
-.pc-sub:hover{border-color:var(--rd);color:var(--rd)}
-.pc-add{font-size:12px;color:var(--bl);border-color:rgba(96,165,250,.3)}
-.pc-add:hover{border-color:var(--bl);background:rgba(96,165,250,.1)}
-.pc-add10{flex:2;font-size:14px;background:rgba(96,165,250,.08);border-color:var(--bl);color:var(--bl)}
-.pc-pity-bar{height:3px;background:rgba(255,255,255,.05);border-radius:99px;overflow:hidden;margin-top:8px}
-.pc-pity-fill{height:100%;border-radius:99px;transition:width .3s ease,background .3s ease}
-.arow{margin-top:11px;display:flex;flex-direction:column;gap:6px}
-.arow-util{display:flex;gap:6px;flex-wrap:wrap}
-.arow-outcome{display:flex;gap:5px}
-.arow-outcome .ab{flex:1;justify-content:center;text-align:center}
-.ab-success{color:var(--g)!important;border-color:rgba(95,217,156,.35)!important;background:rgba(95,217,156,.04)}
-.ab-success:hover{background:rgba(95,217,156,.12)!important;box-shadow:0 4px 12px rgba(95,217,156,.2)!important}
-.ab-fail{color:var(--rd)!important;border-color:rgba(248,113,113,.25)!important;background:rgba(248,113,113,.04)}
-.ab-fail:hover{background:rgba(248,113,113,.12)!important;box-shadow:0 4px 12px rgba(248,113,113,.2)!important}
-.ab-archive{color:var(--pu)!important;border-color:rgba(167,139,250,.35)!important;background:rgba(167,139,250,.04)}
-.ab-archive:hover{background:rgba(167,139,250,.12)!important;box-shadow:0 4px 12px rgba(167,139,250,.2)!important}
-.ab-del{color:var(--mu)!important;border-color:var(--bd)!important;min-width:36px;max-width:36px;padding:5px 0}
 
 .card-foot{padding:10px 16px;border-top:1px solid var(--bd);display:flex;gap:7px;background:rgba(0,0,0,.15)}
 
@@ -592,11 +556,7 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 .sgc-prog-untried{background:rgba(255,255,255,.06);transition:width .8s ease}
 .sgc-history{margin-top:14px;border-top:1px dashed var(--bd);padding-top:12px}
 .sgc-history-title{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:1.2px;font-weight:700;margin-bottom:8px}
-.sgc-pickup-row{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:11px}
-.sgc-pr-actions{display:flex;gap:3px}
-.sgc-pr-btn{background:var(--sf3);border:1px solid var(--bd);border-radius:5px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;transition:all .15s;color:var(--mu2)}
-.sgc-pr-btn:hover{border-color:var(--bl);color:var(--bl);background:rgba(96,165,250,.1)}
-.sgc-pr-btn.del:hover{border-color:var(--rd);color:var(--rd);background:rgba(248,113,113,.1)}
+.sgc-pickup-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:11px}
 .sgc-pickup-row:last-child{border-bottom:none}
 .sgc-pr-icon{font-size:14px}
 .sgc-pr-name{color:var(--tx);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
@@ -629,35 +589,22 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 .ai-sel{flex:1;min-width:140px;background:var(--sf2);border:1px solid var(--bd2);border-radius:8px;padding:9px 12px;color:var(--tx);font-family:inherit;font-size:13px}
 .ai-source-note{background:rgba(95,217,156,.05);border:1px solid rgba(95,217,156,.18);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:11px;color:var(--mu2);line-height:1.6}
 .ai-source-note strong{color:var(--g)}
-.ai-res{background:var(--sf2);border-radius:8px;padding:16px;font-size:12px;line-height:1.8;color:var(--mu2);min-height:60px;border:1px solid var(--bd)}
+.ai-res{background:var(--sf2);border-radius:8px;padding:14px;font-size:12px;line-height:1.9;color:var(--mu2);min-height:60px;white-space:pre-wrap;max-height:340px;overflow-y:auto;border:1px solid var(--bd)}
 .ai-res.loading{animation:pulse 1.3s ease infinite}
 @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
 
-.ai-pickup-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-top:4px}
-.ai-pickup-header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
-.ai-pickup-section{grid-column:1/-1;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:6px 0 4px 10px;border-left:3px solid var(--pu);color:var(--mu2);margin-top:8px}
-.ai-pickup-section:first-of-type{margin-top:0}
-.ai-pickup-card{background:var(--sf);border:1px solid var(--bd2);border-radius:12px;overflow:hidden;transition:all .2s;display:flex;flex-direction:column}
-.ai-pickup-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3);border-color:var(--bd3)}
-.aip-top{padding:12px 14px 10px;flex:1}
-.aip-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.aip-game{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
-.aip-status{font-size:9px;font-weight:700;padding:2px 7px;border-radius:99px}
-.aip-status.ongoing{background:rgba(95,217,156,.15);color:var(--g)}
-.aip-status.upcoming{background:rgba(251,191,36,.12);color:var(--gold)}
-.aip-char{font-size:16px;font-weight:900;color:var(--tx);line-height:1.2;margin-bottom:3px}
-.aip-event{font-size:10px;color:var(--mu);margin-bottom:8px;line-height:1.4}
-.aip-period-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
-.aip-period{font-size:10px;color:var(--mu2);font-family:'Orbitron',monospace;font-weight:700}
-.aip-tags{display:flex;gap:4px;flex-wrap:wrap}
-.aip-tag{font-size:9px;padding:2px 8px;border-radius:99px;font-weight:700;letter-spacing:.3px}
-.aip-tag.lim{background:rgba(244,114,182,.15);color:#f9a8d4;border:1px solid rgba(244,114,182,.3)}
-.aip-tag.rerun{background:rgba(167,139,250,.15);color:#c4b5fd;border:1px solid rgba(167,139,250,.3)}
-.aip-tag.std{background:rgba(95,217,156,.12);color:#86efac;border:1px solid rgba(95,217,156,.25)}
-.aip-tag.fes{background:rgba(251,191,36,.12);color:#fcd34d;border:1px solid rgba(251,191,36,.3)}
-.aip-tag.collab{background:rgba(103,232,249,.12);color:#67e8f9;border:1px solid rgba(103,232,249,.3)}
-.aip-btn{display:block;width:100%;padding:9px;font-size:11px;font-weight:700;border:none;border-top:1px solid var(--bd);background:rgba(96,165,250,.06);color:var(--bl);cursor:pointer;transition:background .15s;font-family:inherit;letter-spacing:.3px}
-.aip-btn:hover{background:rgba(96,165,250,.14)}
+.ai-pickup-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-top:14px}
+.ai-pickup-card{background:var(--sf2);border:1px solid var(--bd2);border-radius:10px;padding:12px;transition:all .15s}
+.ai-pickup-card:hover{border-color:var(--bl)}
+.aip-game{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px}
+.aip-char{font-size:13px;font-weight:700;color:var(--tx);margin-bottom:3px}
+.aip-event{font-size:11px;color:var(--mu2);margin-bottom:6px}
+.aip-period{font-size:10px;color:var(--mu);font-family:'Orbitron',monospace;margin-bottom:8px}
+.aip-tags{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.aip-tag{font-size:9px;padding:2px 6px;border-radius:3px;font-weight:700}
+.aip-tag.lim{background:rgba(244,114,182,.15);color:#f9a8d4}
+.aip-tag.rerun{background:rgba(167,139,250,.15);color:#c4b5fd}
+.aip-tag.std{background:rgba(95,217,156,.15);color:#86efac}
 
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -697,87 +644,6 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
   .cdn{font-size:10px;top:2px;left:4px}
   .cal-bar{font-size:8px;height:14px;line-height:14px;padding:0 3px}
   .cp-opt{width:24px;height:24px}
-}
-
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-/*  UI 개선 (2025.05)                 */
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-
-/* 모달 헤더 공통 */
-.modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 0;margin:-24px -24px 18px;border-bottom:1px solid var(--bd);padding-bottom:16px}
-.modal-hdr span{font-family:'Orbitron',monospace;font-size:13px;font-weight:800;letter-spacing:.5px;background:linear-gradient(135deg,var(--bl),var(--pu));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.modal-close{background:var(--sf2);border:1px solid var(--bd2);border-radius:8px;width:30px;height:30px;color:var(--mu2);cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
-.modal-close:hover{background:rgba(248,113,113,.1);border-color:var(--rd);color:var(--rd)}
-
-/* 대시보드 타일 */
-.dash-tile{background:linear-gradient(135deg,var(--sf),var(--sf2));border:1px solid var(--bd);border-radius:14px;padding:16px 14px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
-.dash-tile::before{content:'';position:absolute;top:-30px;right:-30px;width:80px;height:80px;border-radius:50%;filter:blur(30px);opacity:.2;pointer-events:none}
-.dash-tile:hover{transform:translateY(-2px);border-color:var(--bd2);box-shadow:0 8px 28px rgba(0,0,0,.3)}
-.dash-tile-icon{font-size:24px;margin-bottom:6px;line-height:1}
-.dash-tile-value{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;line-height:1;margin-bottom:4px}
-.dash-tile-label{font-size:10px;color:var(--mu2);font-weight:600;letter-spacing:.5px}
-.dash-tile.active .dash-tile-value{color:var(--g)}
-.dash-tile.active::before{background:var(--g)}
-.dash-tile.warning .dash-tile-value{color:var(--rd)}
-.dash-tile.warning::before{background:var(--rd)}
-.dash-tile.upcoming .dash-tile-value{color:var(--bl)}
-.dash-tile.upcoming::before{background:var(--bl)}
-.dash-tile.stats .dash-tile-value{color:var(--pu)}
-.dash-tile.stats::before{background:var(--pu)}
-
-/* 설정 페이지 섹션 */
-.settings-section{background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:20px;margin-bottom:14px}
-.settings-section-title{font-size:14px;font-weight:800;color:var(--tx);margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.settings-game-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--sf2);border:1px solid var(--bd);margin-bottom:6px;transition:border-color .15s}
-.settings-game-row:hover{border-color:var(--bd2)}
-.settings-game-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.settings-game-info{flex:1;min-width:0}
-.settings-game-name{font-size:13px;font-weight:600;color:var(--tx)}
-.settings-game-srv{font-size:10px;color:var(--mu2);margin-top:1px}
-.settings-badge{font-size:9px;padding:2px 8px;border-radius:4px;background:var(--sf3);color:var(--mu);font-weight:700}
-
-/* 버튼 개선 */
-.btn-danger{background:rgba(248,113,113,.1);color:var(--rd);border:1px solid rgba(248,113,113,.25);font-size:11px;padding:5px 10px;border-radius:6px;cursor:pointer;font-family:inherit;transition:all .15s}
-.btn-danger:hover{background:rgba(248,113,113,.2);border-color:var(--rd)}
-
-/* 카드 body 패딩 개선 */
-.card-body{padding:16px}
-
-/* 입력 필드 개선 */
-.fi{transition:border-color .2s,box-shadow .2s}
-.fi:focus{box-shadow:0 0 0 3px rgba(96,165,250,.12)}
-select.fi{cursor:pointer}
-
-/* 페이지 전환 애니메이션 */
-[id^="page-"]{animation:pageIn .2s ease both}
-@keyframes pageIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-
-/* 헤더 액션 버튼들 간격 */
-.hdr-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-
-/* 빈 상태 개선 */
-.empty-big{animation:fu .4s ease both}
-.empty-big .empty-icon-big{animation:float 3s ease-in-out infinite}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-
-/* 스크롤바 개선 */
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:rgba(255,255,255,.02);border-radius:3px}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.18)}
-
-/* ai-res 박스 개선 */
-.ai-res{font-size:13px;line-height:1.8;border-radius:10px}
-
-/* 진행 중 카드 상태 강조 */
-.card.active-now{border-color:rgba(95,217,156,.15)}
-.card.ending-soon{border-color:rgba(248,113,113,.25);box-shadow:0 0 0 1px rgba(248,113,113,.08) inset}
-
-/* 모바일 대시보드 */
-@media(max-width:480px){
-  .dash-tile{padding:12px 10px}
-  .dash-tile-icon{font-size:20px}
-  .dash-tile-value{font-size:18px}
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -896,12 +762,6 @@ select.fi{cursor:pointer}
       <span class="nav-label">AI 검색</span>
       <span class="nav-badge"></span>
     </button>
-    <button class="nav-item" data-page="settings" onclick="navTo('settings')">
-      <span class="nav-num">9</span>
-      <span class="nav-icon">⚙️</span>
-      <span class="nav-label">설정</span>
-      <span class="nav-badge"></span>
-    </button>
   </div>
 </nav>
 <div class="nav-backdrop" id="navBackdrop" onclick="closeNav()"></div>
@@ -917,10 +777,6 @@ select.fi{cursor:pointer}
       <button class="btn btn-primary" onclick="openEvt()">＋ 새 픽업 등록</button>
     </div>
   </div>
-
-  <!-- 대시보드 요약 위젯 -->
-  <div id="dashWidget" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:18px"></div>
-
   <div class="search-filter-bar">
     <div class="sfb-search">
       <span class="sfb-icon">🔍</span>
@@ -1053,6 +909,14 @@ select.fi{cursor:pointer}
         <li style="color:var(--g)">✅ 완전 무료 (Gemini 2.5 Flash · 일 1,500회 무료)</li>
       </ol>
     </details>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--bd)">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:11px;color:var(--mu2)">🤖 모델:</span>
+        <span id="curModelLabel" style="font-size:11px;color:var(--g);font-weight:700"></span>
+        <button class="btn-xs" onclick="listAvailableModels()">모델 목록</button>
+      </div>
+      <div id="modelListResult" style="display:none;margin-top:8px;flex-wrap:wrap;gap:6px"></div>
+    </div>
   </div>
 
   <div class="ai-box">
@@ -1074,102 +938,6 @@ select.fi{cursor:pointer}
     <div class="ai-res" id="aiRes">Gemini API 키 저장 후 게임과 검색 유형을 선택해 검색하세요.</div>
     <div id="aiAct" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"></div>
     <div id="aiPickupCards" class="ai-pickup-cards"></div>
-  </div>
-</div>
-
-<!-- SETTINGS PAGE -->
-<div id="page-settings" style="display:none">
-  <div class="page-intro">
-    <div class="page-intro-text">
-      <h2>⚙️ 설정</h2>
-      <p>게임 추가/삭제, 데이터 백업, 알림 설정을 관리합니다.</p>
-    </div>
-  </div>
-
-  <div class="settings-section">
-    <div class="settings-section-title">
-      🎮 게임 목록
-      <button class="btn btn-primary" style="font-size:12px;padding:7px 14px;margin-left:auto" onclick="openGameAddModal()">＋ 게임 추가</button>
-    </div>
-    <div id="settings-game-list"></div>
-  </div>
-
-  <div class="settings-section">
-    <div class="settings-section-title">💾 데이터 관리</div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-      <button class="btn btn-ghost" onclick="exportData()">💾 백업 (JSON 다운로드)</button>
-      <button class="btn btn-ghost" onclick="importData()">📂 복원 (JSON 불러오기)</button>
-      <button class="btn btn-ghost" onclick="openGistSync()">☁️ GitHub Gist 동기화</button>
-    </div>
-    <p style="font-size:11px;color:var(--mu2);line-height:1.6">백업 파일은 PC 교체·재설치 시 데이터 복구에 사용합니다. 정기적으로 백업하세요.</p>
-  </div>
-
-  <div class="settings-section">
-    <div class="settings-section-title">🔔 알림 설정</div>
-    <div style="margin-bottom:10px">
-      <button class="btn btn-ghost" onclick="requestPushPermission()">🔔 알림 권한 설정</button>
-    </div>
-    <p style="font-size:11px;color:var(--mu2);line-height:1.6">픽업 종료 D-1, D-3일 전에 알림을 보냅니다. 즐겨찾기에 추가된 게임만 대상입니다.</p>
-  </div>
-</div>
-
-<!-- GAME ADD MODAL -->
-<div class="overlay" id="gameAddOvl" onclick="if(event.target===this)closeGameAddModal()">
-  <div class="modal" style="max-width:500px">
-    <div class="modal-hdr">
-      <span id="gameAddModalTitle">🎮 게임 추가</span>
-      <button class="modal-close" onclick="closeGameAddModal()">✕</button>
-    </div>
-    <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
-      <div class="fg">
-        <label>게임 이름 <span style="color:var(--rd)">*</span></label>
-        <input class="fi" id="gam-name" type="text" placeholder="예: 붕괴: 스타레일" maxlength="40">
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="fg">
-          <label>줄임말 <span style="color:var(--rd)">*</span></label>
-          <input class="fi" id="gam-short" type="text" placeholder="예: 스타레일" maxlength="8">
-        </div>
-        <div class="fg">
-          <label>대표 색상</label>
-          <div style="display:flex;gap:6px;align-items:center">
-            <input type="color" id="gam-color" value="#60a5fa" style="width:40px;height:36px;border:none;background:none;cursor:pointer;padding:0">
-            <span style="font-size:11px;color:var(--mu2)">앱 내 표시 색상</span>
-          </div>
-        </div>
-      </div>
-      <div class="fg">
-        <label>서버</label>
-        <div style="display:flex;gap:12px;margin-top:6px;flex-wrap:wrap">
-          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" id="gam-srv-kr" value="kr"> 🇰🇷 한국</label>
-          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" id="gam-srv-jp" value="jp"> 🇯🇵 일본</label>
-          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" id="gam-srv-global" value="global"> 🌐 글로벌</label>
-          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" id="gam-srv-all" value="all" checked> 전서버 통합</label>
-        </div>
-      </div>
-      <div style="border-top:1px solid var(--bd);padding-top:12px">
-        <div style="font-size:12px;font-weight:700;color:var(--mu2);margin-bottom:10px">주요 재화 (뽑기에 사용되는 것)</div>
-        <div style="display:grid;grid-template-columns:50px 1fr 100px;gap:8px">
-          <div class="fg"><label>아이콘</label><input class="fi" id="gam-cur-icon" type="text" placeholder="💎" maxlength="4" style="text-align:center;font-size:18px"></div>
-          <div class="fg"><label>재화 이름</label><input class="fi" id="gam-cur-name" type="text" placeholder="예: 원석" maxlength="20"></div>
-          <div class="fg"><label>1뽑 비용</label><input class="fi" id="gam-cur-cost" type="number" placeholder="160" min="1"></div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="fg">
-          <label>천장 (뽑기 수)</label>
-          <input class="fi" id="gam-pity" type="number" placeholder="90" min="1" max="1000">
-        </div>
-        <div class="fg">
-          <label>쿠폰 교환 URL</label>
-          <input class="fi" id="gam-redeem" type="url" placeholder="https://..." style="font-size:11px">
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
-        <button class="btn btn-ghost" onclick="closeGameAddModal()">취소</button>
-        <button class="btn btn-primary" onclick="saveCustomGame()">저장</button>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -1352,33 +1120,34 @@ select.fi{cursor:pointer}
   </div>
 </div></div>
 
+<!-- INSTALL HELP MODAL -->
 <!-- TASK ADD/EDIT MODAL -->
 <div class="overlay" id="taskOvl" onclick="if(event.target===this)closeTaskModal()"><div class="modal" style="max-width:460px">
-  <div class="modal-hdr">
-    <span id="taskModalTitle">＋ 할일 추가</span>
-    <button class="modal-close" onclick="closeTaskModal()">✕</button>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+    <span id="taskModalTitle" style="font-family:'Orbitron',monospace;font-size:13px;font-weight:800;background:linear-gradient(135deg,var(--bl),var(--pu));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">＋ 할일 추가</span>
+    <button onclick="closeTaskModal()" style="background:var(--sf2);border:1px solid var(--bd2);border-radius:8px;width:30px;height:30px;color:var(--mu2);cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;transition:all .15s">✕</button>
   </div>
-  <div class="frow3" style="margin-bottom:12px">
-    <div class="flbl">게임 (선택)</div>
-    <select id="tm-game" class="finput" style="grid-column:1/-1">
+  <div class="fg">
+    <label>게임 (선택)</label>
+    <select id="tm-game" class="fi">
       <option value="">── 게임 없음 (공통)</option>
     </select>
   </div>
-  <div class="frow3" style="margin-bottom:12px">
-    <div class="flbl">할일 이름 *</div>
-    <input id="tm-name" class="finput" style="grid-column:1/-1" placeholder="예: 일일 의뢰 4개 완료" maxlength="40">
+  <div class="fg">
+    <label>할일 이름 *</label>
+    <input id="tm-name" class="fi" placeholder="예: 일일 의뢰 4개 완료" maxlength="40">
   </div>
-  <div class="frow3" style="margin-bottom:12px">
-    <div class="flbl">주기</div>
-    <select id="tm-freq" class="finput" style="grid-column:1/-1">
+  <div class="fg">
+    <label>주기</label>
+    <select id="tm-freq" class="fi">
       <option value="daily">일일 (매일 자정 초기화)</option>
       <option value="weekly">주간 (매주 월요일 초기화)</option>
       <option value="monthly">월간 (매월 1일 초기화)</option>
     </select>
   </div>
-  <div class="frow3" style="margin-bottom:18px">
-    <div class="flbl">횟수</div>
-    <select id="tm-max" class="finput" style="width:110px">
+  <div class="fg" style="margin-bottom:18px">
+    <label>횟수</label>
+    <select id="tm-max" class="fi" style="width:140px">
       <option value="1">1회 (체크박스)</option>
       <option value="2">2회</option>
       <option value="3">3회</option>
@@ -1395,7 +1164,6 @@ select.fi{cursor:pointer}
   </div>
 </div></div>
 
-<!-- INSTALL HELP MODAL -->
 <div class="overlay" id="installOvl"><div class="modal" style="max-width:540px">
   <h2>📲 핸드폰 앱으로 설치하기</h2>
   
@@ -1490,7 +1258,7 @@ document.getElementById('installOvl').addEventListener('click', function(e) {
 //  GAMES — sorted in 가나다순 (Korean alphabetical)
 // ════════════════════════════════════════════════════════════════
 const GAMES_RAW=[
-  {id:'hsr',grp:'hoyo',name:'붕괴: 스타레일',short:'스타레일',color:'#4fc3f7',rgb:'79,195,247',
+  {id:'hsr',name:'붕괴: 스타레일',short:'스타레일',color:'#4fc3f7',rgb:'79,195,247',
    launchDates:{all:'2023-04-26'},hasHalfAnniversary:false,
    officialDomains:['hoyoverse.com','mihoyo.com'],
    servers:['all'],
@@ -1504,7 +1272,7 @@ const GAMES_RAW=[
    monthly:{name:'개척의 길',cost:4900,monthlyAmt:300,daily:60,desc:'월 300 + 일일 60'},
    redeemUrl:'https://hsr.hoyoverse.com/gift'},
 
-  {id:'gi',grp:'hoyo',name:'원신',short:'원신',color:'#68d391',rgb:'104,211,145',
+  {id:'gi',name:'원신',short:'원신',color:'#68d391',rgb:'104,211,145',
    launchDates:{all:'2020-09-28'},hasHalfAnniversary:false,
    officialDomains:['hoyoverse.com','mihoyo.com'],
    servers:['all'],
@@ -1518,7 +1286,7 @@ const GAMES_RAW=[
    monthly:{name:'축복의 달빛',cost:4900,monthlyAmt:2700,daily:90,desc:'30일간 매일 90'},
    redeemUrl:'https://genshin.hoyoverse.com/gift'},
 
-  {id:'zzz',grp:'hoyo',name:'젠레스 존 제로',short:'ZZZ',color:'#f687b3',rgb:'246,135,179',
+  {id:'zzz',name:'젠레스 존 제로',short:'ZZZ',color:'#f687b3',rgb:'246,135,179',
    launchDates:{all:'2024-07-04'},hasHalfAnniversary:false,
    officialDomains:['hoyoverse.com','mihoyo.com'],
    servers:['all'],
@@ -1532,7 +1300,7 @@ const GAMES_RAW=[
    monthly:{name:'보조 기억 모듈',cost:4900,monthlyAmt:2700,daily:90,desc:'30일간 매일 90'},
    redeemUrl:'https://zenless.hoyoverse.com/redemption'},
 
-  {id:'ba',grp:'kr',name:'블루아카이브',short:'블루아카',color:'#60a5fa',rgb:'96,165,250',
+  {id:'ba',name:'블루아카이브',short:'블루아카',color:'#60a5fa',rgb:'96,165,250',
    launchDates:{kr:'2021-11-09',jp:'2021-02-04'},hasHalfAnniversary:true,delayMonths:6,
    officialDomains:['nexon.com','bluearchive.jp','yostar.co.jp'],
    servers:['kr','jp'],
@@ -1545,7 +1313,7 @@ const GAMES_RAW=[
    monthly:{name:'크로노스 패스',cost:3900,monthlyAmt:3600,daily:120,desc:'30일간 매일 120'},
    redeemUrl:'https://bluearchive.nexon.com/coupon'},
 
-  {id:'nikke',grp:'kr',name:'승리의 여신: 니케',short:'니케',color:'#f97316',rgb:'249,115,22',
+  {id:'nikke',name:'승리의 여신: 니케',short:'니케',color:'#f97316',rgb:'249,115,22',
    launchDates:{all:'2022-11-04'},hasHalfAnniversary:true,
    officialDomains:['nikke-en.com','nikke-jp.com','smilegate.com'],
    servers:['all'],
@@ -1559,7 +1327,7 @@ const GAMES_RAW=[
    monthly:{name:'월간 패스',cost:4400,monthlyAmt:1200,daily:40,desc:'월 1200 쥬얼'},
    redeemUrl:''},
 
-  {id:'wuwa',grp:'global',name:'명조: 워더링 웨이브',short:'명조',color:'#38bdf8',rgb:'56,189,248',
+  {id:'wuwa',name:'명조: 워더링 웨이브',short:'명조',color:'#38bdf8',rgb:'56,189,248',
    launchDates:{all:'2024-05-23'},hasHalfAnniversary:false,
    officialDomains:['kurogames.com','wutheringwaves.kurogames.com'],
    servers:['all'],
@@ -1572,7 +1340,7 @@ const GAMES_RAW=[
    monthly:{name:'월광 인증',cost:4900,monthlyAmt:2700,daily:90,desc:'30일간 매일 90'},
    redeemUrl:'https://wutheringwaves.kurogames.com/gift'},
 
-  {id:'czn',grp:'kr',name:'카오스 제로 나이트메어',short:'카제나',color:'#dc2626',rgb:'220,38,38',
+  {id:'czn',name:'카오스 제로 나이트메어',short:'카제나',color:'#dc2626',rgb:'220,38,38',
    launchDates:{kr:'2025-02-13'},hasHalfAnniversary:true,
    officialDomains:['smilegate.com','onstove.com'],
    servers:['kr'],
@@ -1586,7 +1354,7 @@ const GAMES_RAW=[
    monthly:{name:'스타라이트 패스',cost:4900,monthlyAmt:0,daily:0,desc:'월 우주의 결정'},
    redeemUrl:''},
 
-  {id:'fgo',grp:'jp',name:'페이트 그랜드 오더',short:'FGO',color:'#eab308',rgb:'234,179,8',
+  {id:'fgo',name:'페이트 그랜드 오더',short:'FGO',color:'#eab308',rgb:'234,179,8',
    launchDates:{kr:'2017-11-21',jp:'2015-07-30'},hasHalfAnniversary:true,delayMonths:24,
    officialDomains:['fate-go.jp','fate-go.com.kr'],
    servers:['kr','jp'],
@@ -1599,7 +1367,7 @@ const GAMES_RAW=[
    monthly:null,
    redeemUrl:''},
 
-  {id:'pjsk',grp:'jp',name:'프로젝트 세카이',short:'프로세카',color:'#a78bfa',rgb:'167,139,250',
+  {id:'pjsk',name:'프로젝트 세카이',short:'프로세카',color:'#a78bfa',rgb:'167,139,250',
    launchDates:{jp:'2020-09-30'},hasHalfAnniversary:true,delayMonths:null,
    officialDomains:['pjsekai.sega.jp','colorfulpalette.co.jp'],
    servers:['kr','jp'],
@@ -1612,8 +1380,8 @@ const GAMES_RAW=[
    monthly:{name:'마이세카이 멤버십',cost:3900,monthlyAmt:1500,daily:50,desc:'월 1500 크리스탈'},
    redeemUrl:''},
 
-  {id:'uma',grp:'jp',name:'우마무스메',short:'우마무스메',color:'#fbbf24',rgb:'251,191,36',
-   launchDates:{kr:'2022-06-20',jp:'2021-02-24'},hasHalfAnniversary:true,delayMonths:16,
+  {id:'uma',name:'우마무스메',short:'우마무스메',color:'#fbbf24',rgb:'251,191,36',
+   launchDates:{kr:'2024-06-20',jp:'2021-02-24'},hasHalfAnniversary:true,delayMonths:40,
    officialDomains:['umamusume.jp','umamusume.kakaogames.com'],
    servers:['kr','jp'],
    currencies:[
@@ -1622,10 +1390,10 @@ const GAMES_RAW=[
    ],
    gacha:{topRarity:'SSR',offRate:2.25,pickupAbsRate:0.75,pullCost:150,softPity:0,hardPity:200,baseRate:0.03,pickupRate:0.75,pickupSystem:'guaranteed',pickupSysDesc:'200뽑 천장 시 픽업 캐릭 교환 (3% 중 픽업 약 0.75%)',pickupSysProb:100,pityType:'exchange',pityNote:'200뽑 도달 시 픽업 교환 가능 (천장 이월 없음)',pricePerPull:2970,truckPackKRW:99000,truckPackCurrency:5000,truckPackPulls:33,truckDesc:'₩99,000 팩 → 주얼 5,000개',unit:'주얼',
           guarantee:'200연 천장 (픽업 확정)',type:'flat'},
-   monthly:{name:'트레이닝 패스',cost:3900,monthlyAmt:1500,daily:50,desc:'30일간 매일 주얼 50개'},
+   monthly:{name:'월간 패스',cost:3900,monthlyAmt:0,daily:0,desc:'월 주얼'},
    redeemUrl:''},
 
-  {id:'trickcal',grp:'kr',name:'트릭컬 리바이브',short:'트릭컬',color:'#34d399',rgb:'52,211,153',
+  {id:'trickcal',name:'트릭컬 리바이브',short:'트릭컬',color:'#34d399',rgb:'52,211,153',
    launchDates:{kr:'2023-08-23'},hasHalfAnniversary:false,delayMonths:0,
    officialDomains:['trickcal-revive.com','epidgames.com'],
    servers:['kr','jp'],
@@ -1633,12 +1401,12 @@ const GAMES_RAW=[
      {id:'crystal',icon:'💎',name:'크리스탈',desc:'한국 공식',pullCost:120},
      {id:'ticket',icon:'🎫',name:'소환권',pullCost:1},
    ],
-   gacha:{topRarity:'3★',offRate:0.4,pickupAbsRate:0.8,pullCost:120,softPity:0,hardPity:200,baseRate:0.012,pickupRate:0.6667,pickupSystem:'point_only',pickupSysDesc:'신앙심 200포인트 누적 시 픽업 사도 교환 / 엘다인 300포인트 (이월 가능)',pickupSysProb:100,pityType:'point',pityNote:'1뽑 = 신앙심 1점 · 200점에 사도 교환 / 300점에 엘다인 교환 (이월)',pricePerPull:3808,truckPackKRW:119000,truckPackCurrency:3750,truckPackPulls:31,truckDesc:'₩119,000 팩 → 크리스탈 3,750개',unit:'크리스탈',
-          guarantee:'신앙심 200포인트 교환 (이월)',type:'flat'},
+   gacha:{topRarity:'3★',offRate:0.4,pickupAbsRate:0.8,pullCost:120,softPity:0,hardPity:200,baseRate:0.012,pickupRate:0.6667,pickupSystem:'point_only',pickupSysDesc:'200 신앙심 누적 시 픽업 3★ 사도 교환 (엘다인 300)',pickupSysProb:100,pityType:'point',pityNote:'200뽑 누적 시 픽업 교환 (신앙심 이월 가능)',pricePerPull:3808,truckPackKRW:119000,truckPackCurrency:3750,truckPackPulls:31,truckDesc:'₩119,000 팩 → 크리스탈 3,750개',unit:'크리스탈',
+          guarantee:'2연 픽업 (천장 100연)',type:'softpity'},
    monthly:{name:'웰컴 패스',cost:3900,monthlyAmt:3000,daily:100,desc:'월 3000 크리스탈'},
    redeemUrl:''},
 
-  {id:'gfl2',grp:'global',name:'소녀전선2: 망명',short:'소전2',color:'#fb7185',rgb:'251,113,133',
+  {id:'gfl2',name:'소녀전선2: 망명',short:'소전2',color:'#fb7185',rgb:'251,113,133',
    launchDates:{kr:'2024-12-05',global:'2024-12-05'},hasHalfAnniversary:false,delayMonths:0,
    officialDomains:['girlsfrontline2.com','sunborngame.com'],
    servers:['kr','global'],
@@ -1650,132 +1418,10 @@ const GAMES_RAW=[
           guarantee:'2연 픽업제 (천장 80연)',type:'softpity'},
    monthly:{name:'커맨더 패스',cost:4900,monthlyAmt:2400,daily:80,desc:'월 2400 크리스탈'},
    redeemUrl:''},
-
-  {id:'arknights',name:'아크나이츠',short:'아크나이츠',color:'#22d3ee',rgb:'34,211,238',
-   launchDates:{kr:'2020-01-16',jp:'2019-04-30',global:'2019-04-30'},hasHalfAnniversary:true,delayMonths:0,
-   officialDomains:['hypergryph.com','ak.hypergryph.com'],
-   servers:['kr','jp','global'],
-   currencies:[
-     {id:'orundum',icon:'💎',name:'합성옥',desc:'한국 공식',pullCost:600},
-     {id:'permit',icon:'🎫',name:'소환 허가',pullCost:1},
-   ],
-   gacha:{topRarity:'6★',offRate:1.0,pickupAbsRate:0.5,pullCost:600,softPity:50,hardPity:100,baseRate:0.02,pickupRate:0.5,pickupSystem:'5050',pickupSysDesc:'6★ 50% 픽업 / 픽뚫 시 확정 + 300뽑 스파크',pickupSysProb:50,pityType:'soft+hard',pityNote:'50뽑부터 확률 상승 → 100뽑 확정 (300연 누적 시 원하는 픽업 교환)',pricePerPull:2000,truckPackKRW:99000,truckPackCurrency:8000,truckPackPulls:13,truckDesc:'₩99,000 팩 기준 (근삿값)',unit:'합성옥',
-          guarantee:'2연 픽업제 (천장 100연) / 300연 스파크',type:'softpity'},
-   monthly:null,
-   redeemUrl:''},
-
-  {id:'limbus',name:'림버스 컴퍼니',short:'림버스',color:'#f97316',rgb:'249,115,22',
-   launchDates:{kr:'2023-02-27',global:'2023-02-27'},hasHalfAnniversary:false,delayMonths:0,
-   officialDomains:['limbuscompany.com','projectmoon.kr'],
-   servers:['kr','global'],
-   currencies:[
-     {id:'lunacy',icon:'🌙',name:'루나시티',desc:'구매',pullCost:130},
-     {id:'thread',icon:'🧵',name:'실',pullCost:1},
-   ],
-   gacha:{topRarity:'3★',offRate:3.0,pickupAbsRate:3.0,pullCost:1,softPity:0,hardPity:200,baseRate:0.03,pickupRate:0.5,pickupSystem:'point_only',pickupSysDesc:'이상(Ideality) 200포인트 누적 시 픽업 3★ 인격 교환 (이월 가능)',pickupSysProb:100,pityType:'point',pityNote:'실 1개 = 1추출 = 이상 1점 · 200포인트에 픽업 인격 교환 (배너 이월)',pricePerPull:1980,truckPackKRW:99000,truckPackCurrency:760,truckPackPulls:43,truckDesc:'₩99,000 팩 기준 (근삿값)',unit:'실',
-          guarantee:'이상 200포인트 교환 (이월)',type:'flat'},
-   monthly:{name:'월간 뉴문 패스',cost:9900,monthlyAmt:650,daily:0,desc:'유료 루나시티 650 즉시 지급 (월 2회 구매 가능)'},
-   redeemUrl:''},
-
-  {id:'e7',name:'에픽세븐',short:'에픽세븐',color:'#8b5cf6',rgb:'139,92,246',
-   launchDates:{kr:'2018-11-15',global:'2019-03-28'},hasHalfAnniversary:true,delayMonths:0,
-   officialDomains:['epic7.smilegate.com','stove.smilegate.com'],
-   servers:['kr','global'],
-   currencies:[
-     {id:'covenant',icon:'📖',name:'성약의 책장',desc:'한정 소환',pullCost:1},
-     {id:'moonlight',icon:'🌙',name:'신성한 달빛 책장',pullCost:1},
-   ],
-   gacha:{topRarity:'5★',offRate:4.5,pickupAbsRate:1.0,pullCost:1,softPity:0,hardPity:120,baseRate:0.01,pickupRate:0.2222,pickupSystem:'guaranteed',pickupSysDesc:'120뽑 내 픽업 5★ 보장',pickupSysProb:100,pityType:'hard',pityNote:'120뽑 도달 시 5★ 확정 (천장 이월)',pricePerPull:2200,truckPackKRW:99000,truckPackCurrency:45,truckPackPulls:45,truckDesc:'₩99,000 팩 기준 (근삿값)',unit:'성약의 책장',
-          guarantee:'120연 천장',type:'flat'},
-   monthly:{name:'성약 패스',cost:4900,monthlyAmt:30,daily:1,desc:'월 30 성약의 책장'},
-   redeemUrl:''},
-
-  {id:'hi3',name:'붕괴3rd',short:'붕괴3rd',color:'#ec4899',rgb:'236,72,153',
-   launchDates:{kr:'2017-10-17',all:'2016-10-14'},hasHalfAnniversary:false,
-   officialDomains:['hoyoverse.com','honkaiimpact3.com'],
-   servers:['all'],
-   currencies:[
-     {id:'crystal',icon:'💎',name:'크리스탈',desc:'구매',pullCost:280},
-     {id:'voucher',icon:'🎫',name:'확장 공급 소환권',pullCost:1},
-   ],
-   gacha:{topRarity:'S급',offRate:1.5,pickupAbsRate:1.5,pullCost:280,softPity:75,hardPity:90,baseRate:0.015,pickupRate:0.5,pickupSystem:'5050',pickupSysDesc:'S급 50% 픽업 / 픽뚫 시 다음 S급 픽업 확정',pickupSysProb:50,pityType:'soft+hard',pityNote:'75뽑부터 확률 상승 → 90뽑 확정 · Part2 개편 기준 (픽뚫 시 180뽑 보장)',pricePerPull:2500,truckPackKRW:99000,truckPackCurrency:9800,truckPackPulls:35,truckDesc:'₩99,000 팩 기준 (근삿값)',unit:'크리스탈',
-          guarantee:'2연 픽업제 (천장 90연, Part2 기준)',type:'softpity'},
-   monthly:{name:'공급 보조',cost:4900,monthlyAmt:2160,daily:72,desc:'30일간 매일 72'},
-   redeemUrl:'https://honkaiimpact3.hoyoverse.com/gift'},
-
-  {id:'pcr',name:'프린세스 커넥트 Re:Dive',short:'프리코네',color:'#f59e0b',rgb:'245,158,11',
-   launchDates:{jp:'2018-02-15'},hasHalfAnniversary:true,delayMonths:0,
-   officialDomains:['priconne-redive.jp'],
-   servers:['jp'],
-   currencies:[
-     {id:'jewel',icon:'💎',name:'보석',pullCost:150},
-   ],
-   gacha:{topRarity:'3★',offRate:2.5,pickupAbsRate:0.4,pullCost:150,softPity:0,hardPity:200,baseRate:0.025,pickupRate:0.16,pickupSystem:'spark',pickupSysDesc:'200뽑 스파크 — 가챠 포인트 누적 시 픽업 3★ 교환',pickupSysProb:100,pityType:'hard',pityNote:'200뽑 누적 시 픽업 3★ 교환 (스파크, 2021.03 이후)',pricePerPull:3000,truckPackKRW:99000,truckPackCurrency:5000,truckPackPulls:33,truckDesc:'₩99,000 팩 기준 (근삿값)',unit:'보석',
-          guarantee:'200연 스파크',type:'flat'},
-   monthly:{name:'월정액 패스',cost:4900,monthlyAmt:0,daily:0,desc:'월 보석'},
-   redeemUrl:''},
-
-  {id:'stellasora',name:'스텔라 소라',short:'스텔라 소라',color:'#818cf8',rgb:'129,140,248',
-   launchDates:{kr:'2025-10-20',jp:'2025-10-21',global:'2025-10-19'},hasHalfAnniversary:false,delayMonths:0,
-   officialDomains:['stellasora.kr','stellasora.jp','stellasora.global'],
-   servers:['kr','jp','global'],
-   currencies:[
-     {id:'fragment',icon:'⭐',name:'별의 파편',desc:'기본 가챠 화폐',pullCost:300},
-     {id:'cerulean',icon:'🎫',name:'세룰리안 티켓',pullCost:2},
-   ],
-   gacha:{topRarity:'5★',offRate:2.0,pickupAbsRate:1.0,pullCost:300,softPity:0,hardPity:120,baseRate:0.02,pickupRate:0.5,pickupSystem:'5050',pickupSysDesc:'5★ 중 픽업 50% / 픽뚫 시 스택 160연 이월 확정',pickupSysProb:50,pityType:'hard',pityNote:'120연 마일리지 천장 (배너 이월 불가) / 160연 스택 천장 (이월 가능)',pricePerPull:2200,truckPackKRW:99000,truckPackCurrency:13500,truckPackPulls:45,truckDesc:'₩99,000 팩 기준 (근삿값)',unit:'별의 파편',
-          guarantee:'120연 마일리지 / 160연 스택',type:'flat'},
-   monthly:{name:'프리미엄 지원금',cost:11000,monthlyAmt:0,daily:0,desc:'별의 파편·티켓 포함 패스'},
-   redeemUrl:''},
-
-  {id:'cs',name:'카운터사이드',short:'카운터사이드',color:'#3b82f6',rgb:'59,130,246',
-   launchDates:{kr:'2020-11-26',jp:'2022-05-19',global:'2022-05-19'},hasHalfAnniversary:true,delayMonths:0,
-   officialDomains:['counterside.com','nexon.com'],
-   servers:['kr','jp','global'],
-   currencies:[
-     {id:'quartz',icon:'💎',name:'수정',desc:'한국 공식',pullCost:300},
-     {id:'ticket',icon:'🎫',name:'소환권',pullCost:1},
-   ],
-   gacha:{topRarity:'SSR',offRate:2.0,pickupAbsRate:2.0,pullCost:300,softPity:0,hardPity:150,baseRate:0.02,pickupRate:0.5,pickupSystem:'guaranteed',pickupSysDesc:'150뽑 내 픽업 SSR 보장 (천장 이월)',pickupSysProb:100,pityType:'hard',pityNote:'150뽑 도달 시 픽업 SSR 확정 (천장 이월 가능)',pricePerPull:2000,truckPackKRW:99000,truckPackCurrency:15000,truckPackPulls:50,truckDesc:'₩99,000 팩 기준 (근삿값)',unit:'수정',
-          guarantee:'150연 천장 (이월)',type:'flat'},
-   monthly:{name:'지휘관 패스',cost:4900,monthlyAmt:2400,daily:80,desc:'월 2400 수정'},
-   redeemUrl:''},
-
-  {id:'endfield',name:'명일방주: 엔드필드',short:'엔드필드',color:'#e8a020',rgb:'232,160,32',
-   launchDates:{all:'2026-01-22'},hasHalfAnniversary:false,delayMonths:0,
-   officialDomains:['endfield.gryphline.com'],
-   servers:['all'],
-   currencies:[
-     {id:'oroberyl',icon:'💎',name:'오로베릴',desc:'뽑기 화폐',pullCost:500},
-     {id:'arsenal',icon:'🎫',name:'아세날 티켓',pullCost:1},
-   ],
-   gacha:{topRarity:'6★',offRate:0.8,pickupAbsRate:0.8,pullCost:500,softPity:65,hardPity:80,baseRate:0.008,pickupRate:0.5,pickupSystem:'5050',pickupSysDesc:'6성 50% 픽업 / 픽뚫 시 120연 내 픽업 확정 (120연 이월 X)',pickupSysProb:50,pityType:'soft+hard',pityNote:'65뽑부터 확률 상승 → 80뽑 6성 확정 (이월) / 120뽑 픽업 확정 (이월 X)',pricePerPull:2022,truckPackKRW:93000,truckPackCurrency:23000,truckPackPulls:46,truckDesc:'₩93,000 팩 기준 (근삿값)',unit:'오로베릴',
-          guarantee:'2연 픽업제 (천장 80연+120연)',type:'softpity'},
-   monthly:{name:'달빛 관측 카드',cost:7000,monthlyAmt:6000,daily:200,desc:'30일간 매일 오로베릴 200 (총 6,000 = 12연)'},
-   redeemUrl:''},
-
-  {id:'nte',name:'이환',short:'이환',color:'#a855f7',rgb:'168,85,247',
-   launchDates:{all:'2026-04-29'},hasHalfAnniversary:false,delayMonths:0,
-   officialDomains:['nte.perfectworld.com'],
-   servers:['all'],
-   currencies:[
-     {id:'annulith',icon:'💎',name:'이상 수정',desc:'기본 뽑기 화폐',pullCost:160},
-     {id:'trikey',icon:'🎫',name:'트라이키',pullCost:1},
-   ],
-   gacha:{topRarity:'S급',offRate:1.87,pickupAbsRate:1.87,pullCost:160,softPity:70,hardPity:90,baseRate:0.0187,pickupRate:1.0,pickupSystem:'guaranteed',pickupSysDesc:'S급 획득 시 100% 픽업 확정 (50/50 없음) · 천장 이월',pickupSysProb:100,pityType:'soft+hard',pityNote:'70뽑부터 확률 급상승 → 90뽑 S급 픽업 확정 (이월)',pricePerPull:2938,truckPackKRW:119000,truckPackCurrency:6480,truckPackPulls:40,truckDesc:'₩119,000 팩 → 이상 수정 6,480개',unit:'이상 수정',
-          guarantee:'90연 픽업 확정 (이월, 50/50 없음)',type:'softpity'},
-   monthly:{name:'정예 헌터 보급',cost:12000,monthlyAmt:680,daily:0,desc:'이상 수정 680 즉시 지급'},
-   redeemUrl:''},
 ];
 
-// ✨ Sort 가나다순 by Korean locale — customGames는 init() 이후에 채워짐
-let customGames = [];
-let GAMES = [...GAMES_RAW].sort((a,b) => a.name.localeCompare(b.name, 'ko-KR'));
-function rebuildGames(){
-  customGames = safeLoad('gv8-custom-games', []);
-  GAMES = [...GAMES_RAW, ...customGames].sort((a,b) => a.name.localeCompare(b.name, 'ko-KR'));
-  populateSels();
-}
+// ✨ Sort 가나다순 by Korean locale
+const GAMES = [...GAMES_RAW].sort((a,b) => a.name.localeCompare(b.name, 'ko-KR'));
 
 const CATS=['daily','weekly','event','reward','monthly','misc'];
 const CLBL={daily:'일간',weekly:'주간',event:'이벤트',reward:'보상',monthly:'월정액',misc:'기타'};
@@ -1808,8 +1454,6 @@ let coupons=safeLoad('gv8-coupons',[]);
 let customEvents=safeLoad('gv8-custom-events',[]);
 let favs=safeLoad('gv8-favs',[]);
 let alarms=safeLoad('gv8-alarms',{});
-let gfExpanded={};   // 섹션 열림/닫힘 상태 (kr/jp/gl/custom)
-let _gfGrouped={};   // renderGF에서 캐시, selectAllSec에서 사용
 let inventory=safeLoad('gv8-inv',{});
 let monthlyOn=safeLoad('gv8-monthly',{});
 let monthlyStart=safeLoad('gv8-monthly-start',{});
@@ -1820,9 +1464,6 @@ let calDate=new Date();
 let evtIdx=-1,cpnIdx=-1,cpnFilter='all',page='schedule',aiLast='';
 
 function init(){
-  // 커스텀 게임 로드 후 GAMES 재구성
-  rebuildGames();
-
   // 즐겨찾기 마이그레이션: 다중 서버 게임의 gameId만 저장된 구버전 키 → gameId-srv 분리
   let migrated=false;
   GAMES.forEach(g=>{
@@ -1880,20 +1521,6 @@ function setupCardClickHandler(){
       setAlarmsById(eid);
     } else if(action === 'ical' && eid){
       exportIcalById(eid);
-    } else if(action === 'success' && eid){
-      quickMarkResult(eid, 'success');
-    } else if(action === 'fail' && eid){
-      quickMarkResult(eid, 'fail');
-    } else if(action === 'archive' && eid){
-      archiveEvt(eid);
-    } else if(action==='pulls-add1'&&eid){
-      addPulls(eid,1);
-    } else if(action==='pulls-add10'&&eid){
-      addPulls(eid,10);
-    } else if(action==='pulls-sub1'&&eid){
-      addPulls(eid,-1);
-    } else if(action==='pulls-sub10'&&eid){
-      addPulls(eid,-10);
     } else if(action === 'redeem'){
       const url = target.getAttribute('data-url');
       if(url) window.open(url, '_blank');
@@ -2145,93 +1772,38 @@ function updateBadges(){
   }
 }
 function renderGF(){
-  const SEC_ORDER=['kr','jp','gl','custom'];
-  const SEC_LABEL={kr:'🇰🇷 한섭',jp:'🇯🇵 일섭',gl:'🌐 글로벌',custom:'⚙️ 커스텀'};
-  const grouped={kr:[],jp:[],gl:[],custom:[]};
-
+  // 게임-서버 조합으로 칩 생성
+  const chips=[];
   GAMES.filter(gameMatchesSrvFilter).forEach(g=>{
-    const isCust=!!g.isCustom;
     const hasMultiSrv=g.servers.length>1;
     if(hasMultiSrv){
+      // 서버별 분리 칩
       g.servers.forEach(srv=>{
+        // 현재 서버 필터에 안 맞으면 건너뜀
         if(serverFilter==='kr'&&srv!=='kr')return;
         if(serverFilter==='jp'&&srv!=='jp'&&srv!=='global')return;
         const favKey=`${g.id}-${srv}`;
-        const isFav=favs.includes(favKey)||favs.includes(g.id);
-        const sec=isCust?'custom':(srv==='kr'?'kr':srv==='jp'?'jp':'gl');
-        grouped[sec].push({g,srv,favKey,isFav});
+        const isFav=favs.includes(favKey)||favs.includes(g.id); // 구버전 호환
+        chips.push({g,srv,favKey,isFav,label:`${g.short} (${SRV_LBL[srv]||srv})`});
       });
     } else {
-      const srv=g.servers[0];
+      // 단일 서버 게임
       const favKey=g.id;
       const isFav=favs.includes(favKey);
-      const sec=isCust?'custom':(srv==='kr'?'kr':srv==='jp'?'jp':'gl');
-      grouped[sec].push({g,srv,favKey,isFav});
+      chips.push({g,srv:'all',favKey,isFav,label:g.short});
     }
   });
-
-  _gfGrouped=grouped;
-
-  // 처음 로드 시: 즐겨찾기 있는 섹션은 기본 열림
-  SEC_ORDER.forEach(sec=>{
-    if(!(sec in gfExpanded)){
-      gfExpanded[sec]=grouped[sec].some(x=>x.isFav);
-    }
-  });
-
-  const chipHtml=({g,favKey,isFav})=>`<div class="gc${isFav?' on':''}" style="--gc:${g.color};--gcr:${g.rgb}" onclick="toggleFav('${favKey}')"><div class="dot"></div><span>${g.short}</span></div>`;
-
-  let html='';
-  SEC_ORDER.forEach(sec=>{
-    const items=grouped[sec];
-    if(!items||!items.length)return;
-    const favCnt=items.filter(x=>x.isFav).length;
-    const isOpen=gfExpanded[sec];
-    const allFav=favCnt===items.length;
-    html+=`<div class="gf-sec${isOpen?' open':''}">
-      <div class="gf-sec-hd" onclick="toggleGfSec('${sec}')">
-        <span class="gf-sec-arrow">▶</span>
-        <span class="gf-sec-name">${SEC_LABEL[sec]}</span>
-        <span class="gf-sec-count${favCnt>0?' has-fav':''}">${favCnt}/${items.length}</span>
-        <button class="gf-sec-allbtn" onclick="event.stopPropagation();selectAllSec('${sec}',${!allFav})">${allFav?'전체 해제':'전체 선택'}</button>
-      </div>
-      ${isOpen?`<div class="gf-sec-body">${items.map(chipHtml).join('')}</div>`:''}
+  
+  document.getElementById('gfBar').innerHTML=chips.map(({g,srv,favKey,isFav,label})=>{
+    const srvTagHtml=srv!=='all'?`<span class="srv-tag srv-tag-${srv}">${SRV_LBL[srv]||srv}</span>`:'';
+    return `<div class="gc ${isFav?'on':''}" style="--gc:${g.color};--gcr:${g.rgb}" onclick="toggleFav('${favKey}')">
+      <div class="dot"></div><span>${g.short}</span>${srvTagHtml}<span style="font-size:9px;opacity:.7">${isFav?'★':'☆'}</span>
     </div>`;
-  });
-  document.getElementById('gfBar').innerHTML=html;
-}
-
-function toggleGfSec(sec){
-  gfExpanded[sec]=!gfExpanded[sec];
-  renderGF();
-}
-
-function selectAllSec(sec, doSelect){
-  const items=_gfGrouped[sec]||[];
-  items.forEach(({favKey})=>{
-    if(doSelect&&!favs.includes(favKey)) favs.push(favKey);
-    else if(!doSelect) favs=favs.filter(x=>x!==favKey);
-  });
-  localStorage.setItem('gv8-favs',JSON.stringify(favs));
-  renderAll();
+  }).join('');
 }
 
 function toggleFav(id){
   favs=favs.includes(id)?favs.filter(x=>x!==id):[...favs,id];
-  localStorage.setItem('gv8-favs',JSON.stringify(favs));
-  renderAll();
-}
-
-function resetGameFilter(){
-  // 모든 게임-서버 조합을 즐겨찾기에 추가
-  favs=[];
-  GAMES.forEach(g=>{
-    if(g.servers.length>1){
-      g.servers.forEach(srv=>favs.push(`${g.id}-${srv}`));
-    } else {
-      favs.push(g.id);
-    }
-  });
   localStorage.setItem('gv8-favs',JSON.stringify(favs));
   renderAll();
 }
@@ -2256,7 +1828,6 @@ function isFavored(gameId, srv){
 }
 
 function renderSchedule(){
-  renderDashWidget();
   // 검색 쿼리 갱신
   const searchEl=document.getElementById('scheduleSearch');
   if(searchEl){
@@ -2266,42 +1837,33 @@ function renderSchedule(){
   }
   
   const now=new Date();
-  // archived=true 인 픽업만 스케줄에서 제외 (성공/픽뚫 표기만으로는 제외 안 됨)
-  const totalAll=events.filter(e=>!e.predicted&&!e.archived); // 필터 무관 전체 집계용
-  const base=events.filter(e=>!e.predicted&&isFavored(e.game, e.srv)&&matchSrv(e.srv)&&!e.archived);
+  // 성공/픽뚫 완료된 픽업은 스케줄에서 제외 → 픽업 기록 탭으로 자동 이동
+  const isCompleted=e=>(e.result==='success'||e.result==='fail');
+  const base=events.filter(e=>!e.predicted&&isFavored(e.game, e.srv)&&matchSrv(e.srv)&&!isCompleted(e));
   const vis=base.filter(e=>eventMatchesSearch(e)&&eventMatchesResult(e));
-  const archivedCount=events.filter(e=>!e.predicted&&e.archived).length;
-  const hiddenByFilter=totalAll.length>0&&base.length===0; // 게임/서버 필터 때문에 숨겨진 경우
-
+  const all=events.filter(e=>!e.predicted&&isFavored(e.game, e.srv)&&matchSrv(e.srv));
+  const completedCount=all.filter(isCompleted).length;
+  
   const ongoing=vis.filter(e=>new Date(e.start)<=now&&new Date(e.end)>=now).sort((a,b)=>new Date(a.end)-new Date(b.end));
   const upcoming=vis.filter(e=>new Date(e.start)>now).sort((a,b)=>new Date(a.start)-new Date(b.start));
   const ended=vis.filter(e=>new Date(e.end)<now).sort((a,b)=>new Date(b.end)-new Date(a.end));
-
+  
   // 검색 결과 없는 경우
   const isFiltered=scheduleSearchQuery||scheduleResultFilter!=='all';
   let html='';
-  if(hiddenByFilter){
-    html=`<div class="empty-big"><div class="empty-icon-big">🔍</div><h3>게임 필터로 인해 숨겨짐</h3><p>등록된 픽업 ${totalAll.length}건이 있지만 현재 게임/서버 필터에 맞지 않습니다.</p><button class="btn btn-ghost" onclick="resetGameFilter()">🔓 필터 전체 해제</button></div>`;
-  } else if(!totalAll.length){
-    html=`<div class="empty-big"><div class="empty-icon-big">📋</div><h3>등록된 픽업이 없습니다</h3><p>＋ 새 픽업 등록 버튼으로 추가하세요.</p>${archivedCount?`<div style="margin-top:12px;padding:10px 16px;background:rgba(95,217,156,.08);border:1px solid rgba(95,217,156,.25);border-radius:10px;font-size:12px;color:var(--g)">✅ 보관 처리된 픽업 ${archivedCount}건은 <strong>📊 픽업 기록</strong> 탭에서 확인하세요.</div>`:''}<button class="btn btn-primary" style="margin-top:12px" onclick="openEvt()">＋ 첫 픽업 등록</button></div>`;
+  if(!all.length){
+    html=`<div class="empty-big"><div class="empty-icon-big">📋</div><h3>등록된 픽업이 없습니다</h3><p>＋ 새 픽업 등록 버튼으로 추가하세요.</p>${completedCount?`<div style="margin-top:12px;padding:10px 16px;background:rgba(95,217,156,.08);border:1px solid rgba(95,217,156,.25);border-radius:10px;font-size:12px;color:var(--g)">✅ 성공/픽뚫 완료된 픽업 ${completedCount}건은 <strong>📊 픽업 기록</strong> 탭에서 확인하세요.</div>`:''}<button class="btn btn-primary" style="margin-top:12px" onclick="openEvt()">＋ 첫 픽업 등록</button></div>`;
   } else if(isFiltered&&!vis.length){
     html=`<div class="empty-big"><div class="empty-icon-big">🔍</div><h3>검색 결과 없음</h3><p>"${scheduleSearchQuery||scheduleResultFilter}" 에 해당하는 픽업이 없습니다.</p><button class="btn btn-ghost" onclick="clearSearch();setResultFilter('all',document.querySelector('.sfb-btn'))">필터 초기화</button></div>`;
   } else {
     if(ongoing.length){html+=`<h3 style="font-family:'Orbitron',monospace;font-size:11px;color:var(--g);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px">🟢 진행 중 <span style="opacity:.5">${ongoing.length}건</span></h3><div class="cards">${ongoing.map(e=>buildCard(e,events.indexOf(e))).join('')}</div>`;}
     if(upcoming.length){html+=`<h3 style="font-family:'Orbitron',monospace;font-size:11px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;margin-top:24px">🟡 출시 예정 <span style="opacity:.5">${upcoming.length}건</span></h3><div class="cards">${upcoming.map(e=>buildCard(e,events.indexOf(e))).join('')}</div>`;}
-    if(ended.length){
-      const endedVisible=showAllEnded?ended:ended.slice(0,6);
-      const moreCount=ended.length-6;
-      const moreBtn=!showAllEnded&&moreCount>0
-        ?`<button class="btn btn-ghost" style="width:100%;margin-top:8px;font-size:12px" onclick="showAllEnded=true;renderSchedule()">▼ 더보기 (${moreCount}건 더)</button>`
-        :(showAllEnded&&ended.length>6?`<button class="btn btn-ghost" style="width:100%;margin-top:8px;font-size:12px" onclick="showAllEnded=false;renderSchedule()">▲ 접기</button>`:'');
-      html+=`<h3 style="font-family:'Orbitron',monospace;font-size:11px;color:var(--mu);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;margin-top:24px">⚫ 종료 <span style="opacity:.5">${ended.length}건</span></h3><div class="cards">${endedVisible.map(e=>buildCard(e,events.indexOf(e))).join('')}</div>${moreBtn}`;
-    }
+    if(ended.length){html+=`<h3 style="font-family:'Orbitron',monospace;font-size:11px;color:var(--mu);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;margin-top:24px">⚫ 종료 <span style="opacity:.5">${ended.length}건</span></h3><div class="cards">${ended.slice(0,6).map(e=>buildCard(e,events.indexOf(e))).join('')}</div>`;}
   }
   document.getElementById('schedule-content').innerHTML=html+
-    (archivedCount&&!scheduleSearchQuery?`<div style="margin-top:16px;padding:10px 16px;background:rgba(95,217,156,.06);border:1px solid rgba(95,217,156,.2);border-radius:10px;display:flex;align-items:center;gap:12px;font-size:12px">
-      <span style="font-size:18px">📦</span>
-      <div style="flex:1">보관 처리된 픽업 <strong style="color:var(--g)">${archivedCount}건</strong>이 있습니다.</div>
+    (completedCount&&!scheduleSearchQuery?`<div style="margin-top:16px;padding:10px 16px;background:rgba(95,217,156,.06);border:1px solid rgba(95,217,156,.2);border-radius:10px;display:flex;align-items:center;gap:12px;font-size:12px">
+      <span style="font-size:18px">✅</span>
+      <div style="flex:1">성공/픽뚫 완료된 픽업 <strong style="color:var(--g)">${completedCount}건</strong>은 스케줄에서 자동 제외됩니다.</div>
       <button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;white-space:nowrap" onclick="navTo('stats')">📊 기록 보기</button>
     </div>`:'');
 }
@@ -2388,15 +1950,15 @@ function buildCard(e,idx){
     </div>`;
   }
   
-  const ceilHtml = (maxCeil > 0) ? `
-    <div class="ceil-bar-wrap" data-ceil-eid="${eid}">
+  const ceilHtml = (ceilRemain !== null && totalPulls > 0) ? `
+    <div class="ceil-bar-wrap">
       <div class="ceil-bar-inner">
-        <span class="ceil-bar-label">현재 ${curPity}천장</span>
+        <span class="ceil-bar-label">보유 ${totalPulls}뽑</span>
         <div class="ceil-bar-track">
-          <div class="ceil-bar-fill" style="width:${Math.min(100,Math.round(curPity/maxCeil*100))}%;background:${curPity>=maxCeil?'var(--g)':g.color}88"></div>
+          <div class="ceil-bar-fill" style="width:${Math.min(100,Math.round(totalPulls/maxCeil*100))}%;background:${totalPulls>=maxCeil?'var(--g)':g.color}88"></div>
         </div>
-        <span class="ceil-bar-remain" style="color:${ceilRemain!==null&&ceilRemain===0?'var(--g)':ceilRemain!==null&&ceilRemain<=10?'var(--gold)':'var(--mu2)'}">
-          ${ceilRemain===null?`${maxCeil}천장`:ceilRemain===0?'천장 도달':`천장 -${ceilRemain}뽑`}
+        <span class="ceil-bar-remain" style="color:${ceilRemain===0?'var(--g)':ceilRemain<=10?'var(--gold)':'var(--mu2)'}">
+          ${ceilRemain===0?'천장 도달':`천장 -${ceilRemain}뽑`}
         </span>
       </div>
     </div>` : '';
@@ -2426,32 +1988,11 @@ function buildCard(e,idx){
       </div>
       ${spentHtml}
       ${e.memo?`<div style="font-size:11px;color:var(--mu);line-height:1.6;margin-top:8px;padding:8px 10px;background:rgba(167,139,250,.04);border-left:2px solid rgba(167,139,250,.3);border-radius:4px;font-style:italic">📝 ${e.memo}</div>`:''}
-      <div class="pull-ctr${maxCeil>0?' has-pity':''}">
-        <div class="pull-ctr-label" style="display:flex;align-items:center;justify-content:space-between">
-          <span>🎲 뽑기 카운터</span>
-          ${maxCeil>0?`<span class="pc-pity-label" data-pcpity="${eid}" style="color:${curPity>=maxCeil*0.9?'var(--rd)':curPity>=maxCeil*0.7?'var(--gold)':curPity>=maxCeil*0.5?'#fb923c':'var(--mu)'}">천장 ${curPity}/${maxCeil}</span>`:''}
-        </div>
-        <div class="pull-ctr-row">
-          <button class="pc-btn pc-sub" data-action="pulls-sub10" data-eid="${eid}">−10</button>
-          <button class="pc-btn pc-sub" data-action="pulls-sub1" data-eid="${eid}">−1</button>
-          <div class="pc-num" style="color:${maxCeil>0&&curPity>=maxCeil*0.9?'var(--rd)':maxCeil>0&&curPity>=maxCeil*0.7?'var(--gold)':'var(--tx)'}"><span data-pceid="${eid}">${e.spentPulls||0}</span><span class="pc-unit">뽑</span></div>
-          <button class="pc-btn pc-add" data-action="pulls-add1" data-eid="${eid}">+1</button>
-          <button class="pc-btn pc-add pc-add10" data-action="pulls-add10" data-eid="${eid}">+10</button>
-        </div>
-        ${maxCeil>0?`<div class="pc-pity-bar"><div class="pc-pity-fill" data-pcpitybar="${eid}" style="width:${Math.min(100,Math.round(curPity/maxCeil*100))}%;background:${curPity>=maxCeil*0.9?'var(--rd)':curPity>=maxCeil*0.7?'var(--gold)':'var(--bl)'}"></div></div>`:''}
-      </div>
       <div class="arow">
-        <div class="arow-util">
-          <button class="ab ${alarms[alarmKey]?'set':''}" data-action="alarm" data-eid="${eid}">🔔 ${alarms[alarmKey]?'알람ON':'알람'}</button>
-          <button class="ab" data-action="ical" data-eid="${eid}">📅 캘린더</button>
-          ${g.redeemUrl?`<button class="ab" data-action="redeem" data-url="${g.redeemUrl}">🎁 리딤</button>`:''}
-        </div>
-        <div class="arow-outcome">
-          <button class="ab ab-success" data-action="success" data-eid="${eid}">✨ 성공</button>
-          <button class="ab ab-fail" data-action="fail" data-eid="${eid}">💔 픽뚫</button>
-          <button class="ab ab-archive" data-action="archive" data-eid="${eid}">📦 완료</button>
-          <button class="ab ab-del" data-action="del" data-eid="${eid}">🗑</button>
-        </div>
+        <button class="ab ${alarms[alarmKey]?'set':''}" data-action="alarm" data-eid="${eid}">🔔 ${alarms[alarmKey]?'설정됨':'알람'}</button>
+        <button class="ab" data-action="ical" data-eid="${eid}">📅 캘린더</button>
+        ${g.redeemUrl?`<button class="ab" data-action="redeem" data-url="${g.redeemUrl}">🎁 리딤</button>`:''}
+        <button class="ab ab-del" data-action="del" data-eid="${eid}">🗑 삭제</button>
       </div>
     </div>
   </div>`;
@@ -3846,10 +3387,6 @@ function renderStats(){
               <small style="color:var(--mu);font-size:8px;font-weight:500">${freeU?`🆓${freeU.toLocaleString()}`:''}${freeU&&paidU?' · ':''}${paidU?`💳${paidU.toLocaleString()}`:''}${krw?` · ₩${krw>=10000?Math.round(krw/1000)+'K':krw.toLocaleString()}`:''}</small>
             </div>
             <span class="sgc-pr-result ${r.cls}">${r.txt}</span>
-            <div class="sgc-pr-actions">
-              <button class="sgc-pr-btn" onclick="openEvtById('${p.id}')" title="수정">✏️</button>
-              <button class="sgc-pr-btn del" onclick="delEvtById('${p.id}')" title="삭제">🗑</button>
-            </div>
           </div>`;
         }).join('')}
       </div>
@@ -3859,89 +3396,6 @@ function renderStats(){
 }
 
 // ── ID 기반 이벤트 조작 (인덱스 불일치 방지) ──────────────────
-function quickMarkResult(eid, result){
-  const i=findEvtIdx(eid);
-  if(i<0){toast('⚠️ 픽업을 찾을 수 없습니다');return;}
-  const label=result==='success'?'✨ 성공':'💔 픽뚫';
-  events[i].result=result;
-  save();
-  renderAll();
-  toast(`${label} 표기 완료`);
-}
-
-function archiveEvt(eid){
-  const i=findEvtIdx(eid);
-  if(i<0){toast('⚠️ 픽업을 찾을 수 없습니다');return;}
-  if(!confirm(`"${events[i].char}" 을(를) 보관 처리하시겠습니까?\n스케줄에서 제외되며 픽업 기록에서 확인할 수 있습니다.`))return;
-  events[i].archived=true;
-  save();
-  renderAll();
-  toast('📦 보관 처리 완료 — 픽업 기록에서 확인하세요');
-}
-
-let _pullTimer=null;
-function addPulls(eid, delta){
-  const i=findEvtIdx(eid);
-  if(i<0)return;
-  const prev=events[i].spentPulls||0;
-  events[i].spentPulls=Math.max(0,prev+delta);
-  const actual=events[i].spentPulls-prev; // 실제 변화량 (0 클램핑 고려)
-  // 카운터 숫자 즉시 반영 (스크롤 유지)
-  const numEl=document.querySelector(`[data-pceid="${eid}"]`);
-  if(numEl) numEl.textContent=events[i].spentPulls;
-  // _pity 동기화: delta>0이면 천장 카운터도 증가
-  if(actual!==0){
-    const ev=events[i];
-    const g=GAMES.find(x=>x.id===ev.game);
-    if(g){
-      const srvKey=ev.srv==='all'?g.servers[0]:ev.srv;
-      const invKey=`${ev.game}-${srvKey}`;
-      if(!inventory[invKey]) inventory[invKey]={};
-      const maxPity=g.gacha.hardPity||0;
-      if(maxPity>0){
-        const newPity=Math.min(maxPity,(inventory[invKey]._pity||0)+actual);
-        inventory[invKey]._pity=Math.max(0,newPity);
-        localStorage.setItem('gv8-inv',JSON.stringify(inventory));
-        // 천장 바 즉시 업데이트
-        const ceilEl=document.querySelector(`[data-ceil-eid="${eid}"]`);
-        if(ceilEl){
-          const curP=inventory[invKey]._pity;
-          const totalP=Math.floor(((inventory[invKey][g.currencies[0].id]||0)+(inventory[invKey][g.currencies[0].id+'_paid']||0))/g.gacha.pullCost)+(g.currencies[1]?(inventory[invKey][g.currencies[1].id]||0):0);
-          const remain=Math.max(0,maxPity-curP-totalP);
-          const fillEl=ceilEl.querySelector('.ceil-bar-fill');
-          const labelEl=ceilEl.querySelector('.ceil-bar-label');
-          const remainEl=ceilEl.querySelector('.ceil-bar-remain');
-          if(fillEl) fillEl.style.width=Math.min(100,Math.round(curP/maxPity*100))+'%';
-          if(labelEl) labelEl.textContent=`현재 ${curP}천장`;
-          if(remainEl){
-            remainEl.textContent=remain===0?'천장 도달':`천장 -${remain}뽑`;
-            remainEl.style.color=remain===0?'var(--g)':remain<=10?'var(--gold)':'var(--mu2)';
-          }
-        }
-        // 미니 pity 바 + 라벨 즉시 업데이트
-        const pityColor=inventory[invKey]._pity>=maxPity*0.9?'var(--rd)':inventory[invKey]._pity>=maxPity*0.7?'var(--gold)':'var(--bl)';
-        const pityPct=Math.min(100,Math.round((inventory[invKey]._pity/maxPity)*100));
-        const pityBarEl=document.querySelector(`[data-pcpitybar="${eid}"]`);
-        if(pityBarEl){pityBarEl.style.width=pityPct+'%';pityBarEl.style.background=pityColor;}
-        const pityLabelEl=document.querySelector(`[data-pcpity="${eid}"]`);
-        if(pityLabelEl){
-          pityLabelEl.textContent=`천장 ${inventory[invKey]._pity}/${maxPity}`;
-          const lc=inventory[invKey]._pity>=maxPity*0.9?'var(--rd)':inventory[invKey]._pity>=maxPity*0.7?'var(--gold)':inventory[invKey]._pity>=maxPity*0.5?'#fb923c':'var(--mu)';
-          pityLabelEl.style.color=lc;
-        }
-        // pc-num 색상도 업데이트
-        const pcNumEl=document.querySelector(`[data-pceid="${eid}"]`)?.closest('.pc-num');
-        if(pcNumEl){pcNumEl.style.color=inventory[invKey]._pity>=maxPity*0.9?'var(--rd)':inventory[invKey]._pity>=maxPity*0.7?'var(--gold)':'var(--tx)';}
-      }
-    }
-  }
-  // 저장 + 전체 재렌더는 0.8s 디바운스
-  clearTimeout(_pullTimer);
-  _pullTimer=setTimeout(()=>{save();renderSchedule();},800);
-}
-
-function isCompleted(e){ return e.result==='success'||e.result==='fail'; }
-
 function findEvtIdx(eid){
   return events.findIndex(e=>e.id===eid || (!e.id && 'ev-legacy-'+events.indexOf(e)===eid));
 }
@@ -4171,19 +3625,7 @@ function saveEvt(){
   }
   // ──────────────────────────────────────────────────────────────
   
-  if(evtIdx>=0){
-    if(events[evtIdx].archived) entry.archived=events[evtIdx].archived;
-    events[evtIdx]=entry;
-  } else events.push(entry);
-  // 픽업 저장 시 게임-서버 콤보 자동 즐겨찾기 등록
-  {
-    const eg=GAMES.find(x=>x.id===entry.game);
-    const fk=eg&&eg.servers.length>1?`${entry.game}-${entry.srv}`:entry.game;
-    if(fk&&!favs.includes(fk)){
-      favs.push(fk);
-      localStorage.setItem('gv8-favs',JSON.stringify(favs));
-    }
-  }
+  if(evtIdx>=0)events[evtIdx]=entry;else events.push(entry);
   save();closeEvt();renderAll();
   toast(newSpentCurrency>0?`✅ 저장${toastSuffix}`:'✅ 저장!');
 }
@@ -4381,9 +3823,47 @@ function refreshApiStatus(){
     status.textContent='✗ 미설정';
     if(input) input.placeholder='AIza...';
   }
+  const ml=document.getElementById('curModelLabel');
+  if(ml) ml.textContent=getAiModel();
 }
 function getAiModel(){
-  return 'gemini-2.5-flash';
+  return localStorage.getItem('gv8-ai-model')||'gemini-1.5-flash';
+}
+function applyAiModel(name){
+  localStorage.setItem('gv8-ai-model',name);
+  refreshApiStatus();
+  const el=document.getElementById('modelListResult');
+  if(el) el.style.display='none';
+  toast(`✅ 모델 변경: ${name}`);
+}
+async function listAvailableModels(){
+  const apiKey=getApiKey();
+  if(!apiKey){toast('⚠️ API 키를 먼저 저장하세요');return;}
+  const el=document.getElementById('modelListResult');
+  if(el){el.innerHTML='<span style="color:var(--mu)">불러오는 중...</span>';el.style.display='block';}
+  try{
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data=await res.json();
+    // 텍스트 생성 지원 + flash/pro 계열만 표시
+    const ALLOW=/^gemini-(2\.5|2\.0|1\.5)-(flash|pro)/;
+    const models=(data.models||[])
+      .filter(m=>m.supportedGenerationMethods?.includes('generateContent'))
+      .map(m=>m.name.replace('models/',''))
+      .filter(m=>ALLOW.test(m))
+      .sort();
+    if(!models.length){el.innerHTML='<span style="color:var(--mu)">모델 없음</span>';return;}
+    const cur=getAiModel();
+    el.style.display='block';
+    el.style.flexDirection='column';
+    el.innerHTML=models.map(m=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:6px;background:${m===cur?'rgba(95,217,156,.08)':'transparent'}">
+        <span style="font-size:12px;color:${m===cur?'var(--g)':'var(--tx)'};font-weight:${m===cur?'700':'400'}">${m===cur?'✓ ':''}${m}</span>
+        <button class="btn-xs" style="${m===cur?'color:var(--g);border-color:var(--g)':''}" onclick="applyAiModel('${m}')">${m===cur?'사용 중':'선택'}</button>
+      </div>`).join('');
+  }catch(e){
+    if(el) el.innerHTML=`<span style="color:var(--rd)">오류: ${e.message}</span>`;
+  }
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -4456,42 +3936,28 @@ function extractGeminiText(data){
 function renderMd(text){
   if(!text) return '';
   const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const inline=s=>s
-    .replace(/\*\*(.+?)\*\*/g,'<strong style="color:var(--tx);font-weight:700">$1</strong>')
-    .replace(/\*(.+?)\*/g,'<em style="color:var(--mu2)">$1</em>')
-    .replace(/`(.+?)`/g,'<code style="background:rgba(255,255,255,.06);border:1px solid var(--bd2);padding:1px 6px;border-radius:4px;font-size:11px;font-family:monospace;color:var(--g)">$1</code>');
-
-  const lines=text.split('\n');
-  let out='', inList=false;
-
-  for(let i=0;i<lines.length;i++){
-    const line=lines[i];
-    const isBullet=/^\s*[-*•]\s/.test(line);
-
-    if(!isBullet && inList){ out+='</div>'; inList=false; }
-
-    if(/^##\s/.test(line)){
-      // ## 섹션 헤더 — 왼쪽 라인 강조
-      const t=inline(esc(line.slice(3)));
-      out+=`<div style="font-size:12px;font-weight:800;color:var(--tx);letter-spacing:.4px;padding:8px 0 6px 10px;border-left:3px solid var(--pu);margin:14px 0 6px;background:rgba(167,139,250,.04);border-radius:0 6px 6px 0">${t}</div>`;
-    } else if(/^###\s/.test(line)){
-      const t=inline(esc(line.slice(4)));
-      out+=`<div style="font-size:11px;font-weight:700;color:var(--bl);letter-spacing:.3px;padding:4px 0 4px 8px;border-left:2px solid var(--bl);margin:10px 0 4px">${t}</div>`;
-    } else if(/^---+$/.test(line.trim())){
-      out+=`<div style="border-top:1px solid var(--bd2);margin:12px 0 8px;opacity:.5"></div>`;
-    } else if(isBullet){
-      if(!inList){ out+='<div style="display:flex;flex-direction:column;gap:3px;margin:4px 0">'; inList=true; }
-      const t=inline(esc(line.replace(/^\s*[-*•]\s/,'')));
-      out+=`<div style="display:flex;gap:7px;align-items:baseline"><span style="color:var(--pu);font-size:10px;flex-shrink:0;margin-top:1px">◆</span><span style="color:var(--mu2);line-height:1.7">${t}</span></div>`;
-    } else if(!line.trim()){
-      out+=`<div style="height:5px"></div>`;
-    } else {
-      const t=inline(esc(line));
-      out+=`<div style="line-height:1.75;color:var(--mu2)">${t}</div>`;
-    }
-  }
-  if(inList) out+='</div>';
-  return out;
+  return text
+    .split('\n')
+    .map(line=>{
+      // 제목
+      if(/^###\s/.test(line)) return `<div style="font-size:13px;font-weight:900;color:var(--bl);margin:10px 0 4px">${esc(line.slice(4))}</div>`;
+      if(/^##\s/.test(line))  return `<div style="font-size:14px;font-weight:900;color:var(--pu);margin:12px 0 4px">${esc(line.slice(3))}</div>`;
+      if(/^#\s/.test(line))   return `<div style="font-size:15px;font-weight:900;color:var(--pk);margin:14px 0 6px">${esc(line.slice(2))}</div>`;
+      // 구분선
+      if(/^---+$/.test(line.trim())) return `<hr style="border:none;border-top:1px solid var(--bd2);margin:8px 0">`;
+      // 불릿
+      const isBullet=/^\s*[-*•]\s/.test(line);
+      let processed=esc(isBullet?line.replace(/^\s*[-*•]\s/,''):line);
+      // 인라인: **bold**, *italic*, `code`
+      processed=processed
+        .replace(/\*\*(.+?)\*\*/g,'<strong style="color:var(--tx);font-weight:700">$1</strong>')
+        .replace(/\*(.+?)\*/g,'<em style="color:var(--mu2)">$1</em>')
+        .replace(/`(.+?)`/g,'<code style="background:var(--sf2);padding:1px 5px;border-radius:4px;font-size:11px;font-family:monospace">$1</code>');
+      if(isBullet) return `<div style="display:flex;gap:6px;margin:2px 0;padding-left:4px"><span style="color:var(--bl);flex-shrink:0">•</span><span>${processed}</span></div>`;
+      if(!processed.trim()) return `<div style="height:6px"></div>`;
+      return `<div style="margin:2px 0;line-height:1.6">${processed}</div>`;
+    })
+    .join('');
 }
 
 // Gemini 응답에서 검색 소스 추출
@@ -4536,14 +4002,8 @@ async function doAi(){
       const {text,sources,ts}=JSON.parse(cached);
       const age=(Date.now()-ts)/1000/3600;
       if(age<24){
+        el.innerHTML=renderMd(text);
         const ageStr=age<1?`${Math.round(age*60)}분`:`${Math.round(age)}시간`;
-        if(type==='pickup'&&text){
-          el.style.display='none';
-          aiExtractPickups(text,gid,srv);
-        } else {
-          el.style.display='';
-          el.innerHTML=renderMd(text);
-        }
         if(sources&&sources.length){
           const srcHtml=sources.map(s=>`<a href="${s.uri}" target="_blank" class="ai-source-chip" title="${s.uri}">${s.title||s.uri}</a>`).join('');
           act.innerHTML=`<div style="width:100%;font-size:10px;color:var(--mu);margin-bottom:4px;font-weight:700">📎 검색 출처 <span style="color:var(--g);margin-left:6px">⚡ 캐시 (${ageStr} 전)</span></div>${srcHtml}<button class="btn-xs" style="margin-top:8px" onclick="clearAiCache('${cacheKey}')">🔄 새로 검색</button>`;
@@ -4551,7 +4011,7 @@ async function doAi(){
           act.innerHTML=`<span style="font-size:10px;color:var(--g)">⚡ 캐시 (${ageStr} 전)</span> <button class="btn-xs" onclick="clearAiCache('${cacheKey}')">🔄 새로 검색</button>`;
         }
         aiLast=text;
-        if(type==='pickup'&&text) aiExtractPickups(text,gid,srv);
+        if(type==='pickup'&&text) await aiExtractPickups(text,gid,srv);
         return;
       }
     }
@@ -4622,8 +4082,6 @@ async function doAi(){
 - 위 양식을 반드시 지켜줘. 양식 외 설명은 최소화.
 - 날짜는 YYYY-MM-DD 또는 MM-DD 형식
 - 불확실한 정보는 [미확인] 표시
-- 캐릭터명·이벤트명은 반드시 한국 서버 공식 한글 표기 사용 (영문 표기 금지)
-- 한국 서버가 없는 게임은 일본어 공식 표기 또는 한글 음차 사용
 - 공식 홈페이지, 공식 트위터/X, 공식 유튜브만 참고
 - 나무위키, 인벤, 루리웹, 디시, 아카라이브, 개인 블로그 참고 금지
 - 한국어로 답변`;
@@ -4635,25 +4093,22 @@ async function doAi(){
     
     el.classList.remove('loading');
     aiLast=text;
-
-    // 픽업 타입: 카드가 메인 — raw 텍스트 숨김
-    if(type==='pickup'&&text){
-      el.style.display='none';
-      aiExtractPickups(text,gid,srv);
-    } else {
-      el.style.display='';
-      el.innerHTML=text?renderMd(text):'결과를 찾을 수 없습니다.';
-    }
-
+    el.innerHTML=text?renderMd(text):'결과를 찾을 수 없습니다.';
+    
     // 캐시 저장
     try{localStorage.setItem(cacheKey,JSON.stringify({text,sources,ts:Date.now()}));}catch(e){}
-
+    
     // 출처 표시
     if(sources.length){
       const srcHtml=sources.map(s=>
         `<a href="${s.uri}" target="_blank" class="ai-source-chip" title="${s.uri}">${s.title||s.uri}</a>`
       ).join('');
       act.innerHTML=`<div style="width:100%;font-size:10px;color:var(--mu);margin-bottom:4px;font-weight:700">📎 검색 출처</div>${srcHtml}`;
+    }
+    
+    // 픽업 타입이면 자동 카드 생성
+    if(type==='pickup'&&text){
+      await aiExtractPickups(text,gid,srv);
     }
     if(type==='coupon'&&text){
       const cpnBtn=document.createElement('button');
@@ -4691,88 +4146,57 @@ async function doAi(){
   }
 }
 
-// 날짜 문자열 정규화 (MM-DD → YYYY-MM-DD)
-function normalizePickupDate(s){
-  if(!s) return '';
-  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-  if(/^\d{2}-\d{2}$/.test(s)){
-    const y=new Date().getFullYear();
-    return `${y}-${s}`;
-  }
-  return s;
-}
-
-// AI 검색 결과 텍스트를 API 추가 호출 없이 직접 파싱해서 픽업 카드 생성
-function aiExtractPickups(text,gid,srv){
+// 픽업 정보 구조화 추출 (Gemini, 검색 없이 JSON 파싱만)
+async function aiExtractPickups(text,gid,srv){
   const g=GAMES.find(x=>x.id===gid);
   const pickupCards=document.getElementById('aiPickupCards');
-  const typeKoToEn={'한정':'limited','통상':'standard','복각':'rerun','페스':'fes','콜라보':'collab'};
-  const typeLabel={limited:'한정',rerun:'복각',standard:'통상',fes:'페스',collab:'콜라보'};
-  const typeClass={limited:'lim',rerun:'rerun',standard:'std',fes:'lim',collab:'rerun'};
+  
+  const prompt=`다음 텍스트에서 ${g.name} 픽업 배너 정보를 JSON 배열로만 응답해:
 
-  const parsed=[];
-  const lines=text.split('\n');
+[
+  {"char":"캐릭터명","event":"이벤트/배너명","start":"YYYY-MM-DD","end":"YYYY-MM-DD","type":"limited"}
+]
 
-  for(const line of lines){
-    // **캐릭터명** 이 있는 줄만 처리
-    const charMatch=line.match(/\*\*(.+?)\*\*/);
-    if(!charMatch) continue;
-    const char=charMatch[1].trim();
-    if(!char||char==='없음') continue;
+type: limited(한정) / standard(통상) / rerun(복각) / fes(페스) / collab(콜라보)
+- 날짜가 명확한 것만 포함. 미확인 날짜는 제외.
+- JSON 배열만 응답. 설명 없이.
 
-    // 기간 추출: MM-DD ~ MM-DD 또는 YYYY-MM-DD ~ YYYY-MM-DD
-    const dateMatch=line.match(/기간\s*[：:]\s*([\d]{2,4}-\d{2}(?:-\d{2})?)\s*~\s*([\d]{2,4}-\d{2}(?:-\d{2})?)?/);
-    const start=dateMatch?normalizePickupDate(dateMatch[1]):'';
-    const end=dateMatch&&dateMatch[2]?normalizePickupDate(dateMatch[2]):'';
-
-    // 유형 추출
-    const typeMatch=line.match(/[·•]\s*(한정|통상|복각|페스|콜라보)/);
-    const type=typeMatch?(typeKoToEn[typeMatch[1]]||'limited'):'limited';
-
-    // 이벤트명 추출 (배너명이 별도로 있을 경우)
-    const eventMatch=line.match(/이벤트\s*[：:]\s*(.+?)(?:\s*·|$)/);
-    const event=eventMatch?eventMatch[1].trim():'';
-
-    parsed.push({char,start,end,type,event,game:gid,srv});
+텍스트:
+${text}`;
+  
+  try{
+    const data=await callGemini(prompt, false); // 추출은 검색 없이
+    let raw=extractGeminiText(data);
+    raw=raw.replace(/```json|```/g,'').trim();
+    const arrMatch=raw.match(/\[[\s\S]*\]/);
+    if(arrMatch) raw=arrMatch[0];
+    const parsed=JSON.parse(raw);
+    
+    if(!Array.isArray(parsed)||!parsed.length){
+      pickupCards.innerHTML='';
+      return;
+    }
+    
+    pickupCards.innerHTML=
+      `<div style="grid-column:1/-1;font-size:11px;color:var(--mu2);margin:12px 0 6px;font-weight:700">
+        📋 검색된 픽업 ${parsed.length}건 — 버튼 클릭 시 등록 모달에 자동 입력
+      </div>`+
+      parsed.map(p=>{
+        const typeLabel={limited:'한정',rerun:'복각',standard:'통상',fes:'페스',collab:'콜라보'}[p.type||'limited']||'한정';
+        const typeClass={limited:'lim',rerun:'rerun',standard:'std',fes:'lim',collab:'rerun'}[p.type||'limited']||'lim';
+        return `<div class="ai-pickup-card">
+          <div class="aip-game" style="color:${g.color}">${g.short}${srv!=='all'?` · ${SRV_LBL[srv]}`:''}</div>
+          <div class="aip-char">${p.char||''}</div>
+          ${p.event?`<div class="aip-event">${p.event}</div>`:''}
+          ${p.start&&p.end?`<div class="aip-period">${p.start} ~ ${p.end}</div>`:''}
+          <div class="aip-tags"><span class="aip-tag ${typeClass}">${typeLabel}</span></div>
+          <button class="btn btn-ai" style="font-size:11px;padding:6px 10px;width:100%" onclick='aiRegPickup(${JSON.stringify({...p,game:gid,srv}).replace(/'/g,"&#39;")})'>＋ 픽업 등록</button>
+        </div>`;
+      }).join('');
+  }catch(err){
+    console.error('aiExtractPickups 실패:', err);
+    pickupCards.innerHTML='<div style="font-size:11px;color:var(--mu2);padding:8px">픽업 카드 자동 생성 실패 — 위 결과를 보고 직접 등록하세요.</div>';
   }
-
-  if(!parsed.length){
-    pickupCards.innerHTML='';
-    return;
-  }
-
-  const now=new Date();
-  const ongoing=parsed.filter(p=>p.end&&new Date(p.end+'T23:59:59')>=now&&(!p.start||new Date(p.start)<=now));
-  const upcoming=parsed.filter(p=>p.start&&new Date(p.start)>now);
-  const other=parsed.filter(p=>!ongoing.includes(p)&&!upcoming.includes(p));
-
-  const cardHtml=p=>{
-    const tl=typeLabel[p.type||'limited']||'한정';
-    const tc=typeClass[p.type||'limited']||'lim';
-    const isOngoing=ongoing.includes(p);
-    return `<div class="ai-pickup-card" style="--gc:${g.color}">
-      <div class="aip-top">
-        <div class="aip-head">
-          <div class="aip-game" style="color:${g.color}">${g.short}${p.srv&&p.srv!=='all'?` · ${SRV_LBL[p.srv]||p.srv}`:''}</div>
-          ${isOngoing?'<span class="aip-status ongoing">진행 중</span>':upcoming.includes(p)?'<span class="aip-status upcoming">예정</span>':''}
-        </div>
-        <div class="aip-char">${p.char}</div>
-        ${p.event?`<div class="aip-event">${p.event}</div>`:''}
-        <div class="aip-period-row">
-          <span style="font-size:9px">📅</span>
-          <span class="aip-period">${p.start||'?'}${p.end?' ~ '+p.end:''}</span>
-        </div>
-        <div class="aip-tags"><span class="aip-tag ${tc}">${tl}</span></div>
-      </div>
-      <button class="aip-btn" onclick='aiRegPickup(${JSON.stringify({...p,game:gid,srv}).replace(/'/g,"&#39;")})'>＋ 픽업 등록</button>
-    </div>`;
-  };
-
-  let html=`<div class="ai-pickup-header"><span style="font-size:11px;color:var(--mu2);font-weight:700">📋 ${parsed.length}건 검색됨</span><span style="font-size:10px;color:var(--mu)">클릭 시 등록 모달 자동 입력</span></div>`;
-  if(ongoing.length) html+=`<div class="ai-pickup-section">🟢 진행 중 · ${ongoing.length}건</div>`+ongoing.map(cardHtml).join('');
-  if(upcoming.length) html+=`<div class="ai-pickup-section">🟡 예정 · ${upcoming.length}건</div>`+upcoming.map(cardHtml).join('');
-  if(other.length) html+=`<div class="ai-pickup-section">⚫ 기타 · ${other.length}건</div>`+other.map(cardHtml).join('');
-  pickupCards.innerHTML=html;
 }
 
 function aiRegPickup(data){
@@ -4831,7 +4255,6 @@ const PAGE_INFO={
   coupon:{icon:'🎟',label:'쿠폰'},
   tasks:{icon:'✅',label:'할일 체크'},
   search:{icon:'🤖',label:'AI 검색'},
-  settings:{icon:'⚙️',label:'설정'},
 };
 
 function toggleNav(){
@@ -4854,7 +4277,7 @@ function navTo(name){
 
 function showPage(name){
   page=name;
-  ['schedule','inventory','calc','stats','calendar','coupon','tasks','search','settings'].forEach(p=>{document.getElementById(`page-${p}`).style.display=p===name?'block':'none';});
+  ['schedule','inventory','calc','stats','calendar','coupon','tasks','search'].forEach(p=>{document.getElementById(`page-${p}`).style.display=p===name?'block':'none';});
   // Update nav-toggle display
   const info=PAGE_INFO[name]||{icon:'📅',label:'페이지'};
   document.getElementById('navCurIcon').textContent=info.icon;
@@ -4868,7 +4291,6 @@ function showPage(name){
   if(name==='stats')renderStats();
   if(name==='tasks')renderTasks();
   if(name==='search')refreshApiStatus();
-  if(name==='settings'){rebuildGames();renderSettingsGameList();}
   // Update top badge for current page
   const badges={schedule:document.getElementById('nav-cnt-active'),stats:document.getElementById('nav-cnt-stats'),coupon:document.getElementById('nav-cnt-cpn')};
   const cb=document.getElementById('navCurBadge');
@@ -5095,7 +4517,7 @@ async function gistDownload(){
 // ════════════════════════════════════════════════════════════════
 //  SEARCH & FILTER
 // ════════════════════════════════════════════════════════════════
-let scheduleSearchQuery='', scheduleResultFilter='all', showAllEnded=false;
+let scheduleSearchQuery='', scheduleResultFilter='all';
 function clearSearch(){
   document.getElementById('scheduleSearch').value='';
   scheduleSearchQuery='';
@@ -5310,132 +4732,6 @@ function schedulePushAlarms(){
       }
     });
   });
-}
-
-// ════════════════════════════════════════════════════════════════
-//  대시보드 위젯
-// ════════════════════════════════════════════════════════════════
-function renderDashWidget(){
-  const el=document.getElementById('dashWidget');
-  if(!el) return;
-  const now=new Date(); now.setHours(0,0,0,0);
-  const active=events.filter(e=>!e.predicted&&matchSrv(e.srv)&&new Date(e.start)<=new Date()&&new Date(e.end)>=now);
-  const upcoming=events.filter(e=>!e.predicted&&matchSrv(e.srv)&&new Date(e.start)>new Date());
-  const endingSoon=active.filter(e=>{const d=(new Date(e.end)-now)/86400000;return d>=0&&d<=3;});
-  const recorded=events.filter(e=>!e.predicted&&(e.result==='success'||e.result==='fail'));
-  const succ=recorded.filter(e=>e.result==='success').length;
-  const successRate=recorded.length?Math.round(succ/recorded.length*100):null;
-
-  const tile=(typeClass,icon,label,value,onclick)=>`
-    <div class="dash-tile ${typeClass}" ${onclick?`onclick="${onclick}"`:''} ${!onclick?'style="cursor:default"':''}>
-      <div class="dash-tile-icon">${icon}</div>
-      <div class="dash-tile-value">${value}</div>
-      <div class="dash-tile-label">${label}</div>
-    </div>`;
-
-  el.innerHTML=
-    tile('active','🎯','진행 중',active.length,'')+
-    tile(endingSoon.length?'warning':'upcoming','⚠️','3일 내 종료',endingSoon.length,'')+
-    tile('upcoming','📅','예정',upcoming.length,'')+
-    tile('stats','📊','성공률',successRate!==null?successRate+'%':'--',"navTo('stats')");
-}
-
-// ════════════════════════════════════════════════════════════════
-//  게임 관리 (추가/삭제)
-// ════════════════════════════════════════════════════════════════
-function renderSettingsGameList(){
-  const el=document.getElementById('settings-game-list');
-  if(!el) return;
-  const all=[...GAMES_RAW.map(g=>({...g,isCustom:false})),...customGames.map(g=>({...g,isCustom:true}))];
-  const srvLabel={kr:'🇰🇷 한섭',jp:'🇯🇵 일섭',global:'🌐 글로벌',all:'전서버'};
-  el.innerHTML=all.map(g=>`
-    <div class="settings-game-row">
-      <div class="settings-game-dot" style="background:${g.color};box-shadow:0 0 8px ${g.color}60"></div>
-      <div class="settings-game-info">
-        <div class="settings-game-name">${g.name}</div>
-        <div class="settings-game-srv">${(g.servers||[]).map(s=>srvLabel[s]||s).join(' · ')}</div>
-      </div>
-      ${g.isCustom
-        ? `<button class="btn-danger" onclick="deleteCustomGame('${g.id}')">삭제</button>`
-        : `<span class="settings-badge">기본</span>`
-      }
-    </div>`).join('');
-}
-
-function openGameAddModal(){
-  document.getElementById('gameAddOvl').classList.add('open');
-  ['gam-name','gam-short','gam-cur-icon','gam-cur-name','gam-cur-cost','gam-pity','gam-redeem'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.value='';
-  });
-  document.getElementById('gam-color').value='#60a5fa';
-  ['gam-srv-kr','gam-srv-jp','gam-srv-global'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
-  document.getElementById('gam-srv-all').checked=true;
-}
-function closeGameAddModal(){ document.getElementById('gameAddOvl').classList.remove('open'); }
-
-function saveCustomGame(){
-  const name=document.getElementById('gam-name').value.trim();
-  const short=document.getElementById('gam-short').value.trim();
-  if(!name||!short){toast('⚠️ 게임 이름과 줄임말은 필수입니다');return;}
-  const color=document.getElementById('gam-color').value;
-  const srvChecks=['gam-srv-kr','gam-srv-jp','gam-srv-global','gam-srv-all'];
-  const servers=srvChecks.map(id=>document.getElementById(id)).filter(el=>el.checked).map(el=>el.value);
-  if(!servers.length){toast('⚠️ 서버를 하나 이상 선택하세요');return;}
-  const curIcon=document.getElementById('gam-cur-icon').value.trim()||'💎';
-  const curName=document.getElementById('gam-cur-name').value.trim()||'재화';
-  const curCost=parseInt(document.getElementById('gam-cur-cost').value)||160;
-  const hardPity=parseInt(document.getElementById('gam-pity').value)||90;
-  const redeemUrl=document.getElementById('gam-redeem').value.trim();
-
-  // hex → rgb 변환
-  const r=parseInt(color.slice(1,3),16),gv=parseInt(color.slice(3,5),16),b=parseInt(color.slice(5,7),16);
-
-  const newGame={
-    id:'custom_'+Date.now(),
-    name,short,color,rgb:`${r},${gv},${b}`,
-    launchDates:{[servers[0]]:new Date().toISOString().slice(0,10)},
-    hasHalfAnniversary:false,
-    officialDomains:[],
-    servers,
-    currencies:[{id:'currency1',icon:curIcon,name:curName,desc:'',pullCost:curCost}],
-    gacha:{
-      topRarity:'★',offRate:0.3,pickupAbsRate:0.3,pullCost:curCost,
-      softPity:0,hardPity,baseRate:0.01,pickupRate:0.5,
-      pickupSystem:'guaranteed',pickupSysDesc:`${hardPity}뽑 천장`,pickupSysProb:100,
-      pityType:'hard',pityNote:`${hardPity}뽑 도달 시 픽업 확정`,
-      pricePerPull:0,truckPackKRW:0,truckPackCurrency:0,truckPackPulls:0,truckDesc:'',
-      unit:curName,guarantee:`${hardPity}연 천장`,type:'flat'
-    },
-    monthly:null,
-    redeemUrl,
-    isCustom:true
-  };
-
-  customGames.push(newGame);
-  localStorage.setItem('gv8-custom-games',JSON.stringify(customGames));
-  rebuildGames();
-  // 새 게임 자동 즐겨찾기 등록
-  servers.forEach(srv=>{
-    const fk=servers.length>1||srv!=='all'?`${newGame.id}-${srv}`:newGame.id;
-    if(!favs.includes(fk)) favs.push(fk);
-  });
-  if(servers.includes('all')){
-    if(!favs.includes(newGame.id)) favs.push(newGame.id);
-  }
-  localStorage.setItem('gv8-favs',JSON.stringify(favs));
-  renderSettingsGameList();
-  closeGameAddModal();
-  toast(`✅ ${name} 추가됨`);
-}
-
-function deleteCustomGame(id){
-  const g=customGames.find(x=>x.id===id);
-  if(!g||!confirm(`"${g.name}"을 삭제하시겠습니까?\n(이 게임의 픽업 기록은 유지됩니다)`)) return;
-  customGames=customGames.filter(x=>x.id!==id);
-  localStorage.setItem('gv8-custom-games',JSON.stringify(customGames));
-  rebuildGames();
-  renderSettingsGameList();
-  toast(`🗑 ${g.name} 삭제됨`);
 }
 
 init();
