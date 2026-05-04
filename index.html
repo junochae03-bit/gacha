@@ -1646,6 +1646,32 @@ const GAMES_RAW=[
           guarantee:'150연 천장 (이월)',type:'flat'},
    monthly:{name:'지휘관 패스',cost:4900,monthlyAmt:2400,daily:80,desc:'월 2400 수정'},
    redeemUrl:''},
+
+  {id:'endfield',name:'명일방주: 엔드필드',short:'엔드필드',color:'#e8a020',rgb:'232,160,32',
+   launchDates:{all:'2026-01-22'},hasHalfAnniversary:false,delayMonths:0,
+   officialDomains:['endfield.gryphline.com'],
+   servers:['all'],
+   currencies:[
+     {id:'oroberyl',icon:'💎',name:'오로베릴',desc:'뽑기 화폐',pullCost:500},
+     {id:'arsenal',icon:'🎫',name:'아세날 티켓',pullCost:1},
+   ],
+   gacha:{topRarity:'6★',offRate:0.8,pickupAbsRate:0.8,pullCost:500,softPity:65,hardPity:80,baseRate:0.008,pickupRate:0.5,pickupSystem:'5050',pickupSysDesc:'6성 50% 픽업 / 픽뚫 시 120연 내 픽업 확정 (120연 이월 X)',pickupSysProb:50,pityType:'soft+hard',pityNote:'65뽑부터 확률 상승 → 80뽑 6성 확정 (이월) / 120뽑 픽업 확정 (이월 X)',pricePerPull:2022,truckPackKRW:93000,truckPackCurrency:23000,truckPackPulls:46,truckDesc:'₩93,000 팩 기준 (근삿값)',unit:'오로베릴',
+          guarantee:'2연 픽업제 (천장 80연+120연)',type:'softpity'},
+   monthly:{name:'달빛 관측 카드',cost:7000,monthlyAmt:6000,daily:200,desc:'30일간 매일 오로베릴 200 (총 6,000 = 12연)'},
+   redeemUrl:''},
+
+  {id:'nte',name:'이환',short:'이환',color:'#a855f7',rgb:'168,85,247',
+   launchDates:{all:'2026-04-29'},hasHalfAnniversary:false,delayMonths:0,
+   officialDomains:['nte.perfectworld.com'],
+   servers:['all'],
+   currencies:[
+     {id:'annulith',icon:'💎',name:'이상 수정',desc:'기본 뽑기 화폐',pullCost:160},
+     {id:'trikey',icon:'🎫',name:'트라이키',pullCost:1},
+   ],
+   gacha:{topRarity:'S급',offRate:1.87,pickupAbsRate:1.87,pullCost:160,softPity:70,hardPity:90,baseRate:0.0187,pickupRate:1.0,pickupSystem:'guaranteed',pickupSysDesc:'S급 획득 시 100% 픽업 확정 (50/50 없음) · 천장 이월',pickupSysProb:100,pityType:'soft+hard',pityNote:'70뽑부터 확률 급상승 → 90뽑 S급 픽업 확정 (이월)',pricePerPull:2938,truckPackKRW:119000,truckPackCurrency:6480,truckPackPulls:40,truckDesc:'₩119,000 팩 → 이상 수정 6,480개',unit:'이상 수정',
+          guarantee:'90연 픽업 확정 (이월, 50/50 없음)',type:'softpity'},
+   monthly:{name:'정예 헌터 보급',cost:12000,monthlyAmt:680,daily:0,desc:'이상 수정 680 즉시 지급'},
+   redeemUrl:''},
 ];
 
 // ✨ Sort 가나다순 by Korean locale — customGames는 init() 이후에 채워짐
