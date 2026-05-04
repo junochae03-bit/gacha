@@ -679,6 +679,22 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 .task-progress{position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(255,255,255,.03)}
 .task-prog-fill{height:100%;background:linear-gradient(90deg,var(--g),#a7f3d0);transition:width .3s ease}
 .task-empty{text-align:center;padding:18px;color:var(--mu);font-size:12px;background:var(--sf);border:1px dashed var(--bd2);border-radius:10px}
+.task-game-nav{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.tgn-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--bd2);background:var(--sf);color:var(--mu2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.tgn-btn:hover:not(:disabled){border-color:var(--bl);color:var(--bl);background:rgba(96,165,250,.08)}
+.tgn-btn:disabled{opacity:.25;cursor:default}
+.tgn-center{flex:1;background:var(--sf);border:1px solid var(--bd2);border-radius:10px;padding:9px 14px;display:flex;align-items:center;gap:10px;min-width:0}
+.tgn-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.tgn-name{font-size:15px;font-weight:800;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tgn-progress{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.tgn-prog-bar{width:50px;height:5px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden}
+.tgn-prog-fill{height:100%;background:linear-gradient(90deg,var(--g),#a7f3d0);border-radius:3px;transition:width .3s}
+.tgn-prog-txt{font-family:'Orbitron',monospace;font-size:9px;font-weight:700;color:var(--mu2);white-space:nowrap}
+.tgn-prog-txt.done{color:var(--g)}
+.tgn-dots{display:flex;justify-content:center;gap:5px;margin-bottom:14px}
+.tgn-dot-item{width:6px;height:6px;border-radius:50%;background:var(--sf3);border:1px solid var(--bd2);cursor:pointer;transition:all .15s}
+.tgn-dot-item.act{background:var(--bl);border-color:var(--bl);transform:scale(1.3)}
+.tgn-dot-item.has-remain{background:var(--gold);border-color:var(--gold)}
 </style>
 </head>
 <body>
@@ -3008,6 +3024,8 @@ function delCpn(i){if(!confirm('삭제?'))return;coupons.splice(i,1);save();rend
 // ════════════════════════════════════════════════════════════════
 //  TASK SCHEDULER
 // ════════════════════════════════════════════════════════════════
+let taskGameIdx=0;
+
 function initTaskResets(){
   const now=new Date();
   const todayStr=now.toDateString();
@@ -3028,20 +3046,96 @@ function initTaskResets(){
   if(changed) localStorage.setItem('gv8-tasks',JSON.stringify(tasks));
 }
 
+function getTaskGameList(){
+  const ids=[...new Set(tasks.map(t=>t.game||''))];
+  const list=[];
+  if(ids.includes('')) list.push({id:'',label:'공통',color:'var(--mu2)'});
+  GAMES.forEach(g=>{ if(ids.includes(g.id)) list.push({id:g.id,label:g.short,color:g.color}); });
+  return list;
+}
+
+function buildTaskRow(t){
+  const max=t.max||1, done=t.done||0;
+  const isDoneAll=done>=max, pct=Math.round(done/max*100);
+  if(max===1){
+    return `<div class="task-row${isDoneAll?' done-all':''}" data-tid="${t.id}">
+      <div class="task-check${isDoneAll?' checked':''}" onclick="toggleTask('${t.id}')">${isDoneAll?'✓':''}</div>
+      <div class="task-info"><div class="task-name">${t.name}</div></div>
+      <div></div>
+      <button class="task-del" onclick="deleteTask('${t.id}')" title="삭제">🗑</button>
+      <div class="task-progress"><div class="task-prog-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }
+  return `<div class="task-row${isDoneAll?' done-all':''}" data-tid="${t.id}">
+    <div class="task-check${isDoneAll?' checked':''}" onclick="stepTask('${t.id}',1)">${isDoneAll?'✓':''}</div>
+    <div class="task-info"><div class="task-name">${t.name}</div></div>
+    <div class="task-counter">
+      <button class="tc-btn" onclick="stepTask('${t.id}',-1)">−</button>
+      <span class="tc-val${isDoneAll?' maxed':''}">${done}/${max}</span>
+      <button class="tc-btn" onclick="stepTask('${t.id}',1)">＋</button>
+    </div>
+    <button class="task-del" onclick="deleteTask('${t.id}')" title="삭제">🗑</button>
+    <div class="task-progress"><div class="task-prog-fill" style="width:${pct}%"></div></div>
+  </div>`;
+}
+
 function renderTasks(){
   const wrap=document.getElementById('tasksWrap');
   if(!wrap)return;
   initTaskResets();
+
+  if(!tasks.length){
+    wrap.innerHTML=`<div class="task-empty" style="padding:40px">
+      <div style="font-size:36px;margin-bottom:12px">✅</div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:6px">등록된 할일이 없습니다</div>
+      <div style="font-size:12px">＋ 할일 추가 버튼으로 게임별 컨텐츠를 등록해보세요</div>
+    </div>`;
+    document.getElementById('nav-cnt-tasks').textContent='';
+    return;
+  }
+
+  const gameList=getTaskGameList();
+  taskGameIdx=Math.max(0,Math.min(taskGameIdx,gameList.length-1));
+  const cur=gameList[taskGameIdx];
+  const curTasks=tasks.filter(t=>(t.game||'')===cur.id);
+  const curDone=curTasks.filter(t=>(t.done||0)>=(t.max||1)).length;
+  const curPct=curTasks.length?Math.round(curDone/curTasks.length*100):0;
+
+  // 게임 네비게이션
+  const dotsHtml=gameList.map((g,i)=>{
+    const gt=tasks.filter(t=>(t.game||'')===g.id);
+    const hasRemain=gt.some(t=>(t.done||0)<(t.max||1));
+    return `<div class="tgn-dot-item${i===taskGameIdx?' act':hasRemain?' has-remain':''}" onclick="taskGameIdx=${i};renderTasks()" title="${g.label}"></div>`;
+  }).join('');
+
+  let html=`
+    <div class="task-game-nav">
+      <button class="tgn-btn" onclick="prevTaskGame()" ${taskGameIdx===0?'disabled':''}>◀</button>
+      <div class="tgn-center">
+        <div class="tgn-dot" style="background:${cur.color}"></div>
+        <span class="tgn-name" style="color:${cur.color}">${cur.label}</span>
+        <div class="tgn-progress">
+          <div class="tgn-prog-bar"><div class="tgn-prog-fill" style="width:${curPct}%"></div></div>
+          <span class="tgn-prog-txt${curDone===curTasks.length?' done':''}">${curDone}/${curTasks.length}</span>
+        </div>
+      </div>
+      <button class="tgn-btn" onclick="nextTaskGame()" ${taskGameIdx===gameList.length-1?'disabled':''}>▶</button>
+    </div>
+    <div class="tgn-dots">${dotsHtml}</div>`;
+
+  // 섹션별 렌더
   const sections=[
-    {key:'daily',label:'일일 컨텐츠',icon:'☀️',reset:'매일 자정 초기화'},
-    {key:'weekly',label:'주간 컨텐츠',icon:'📅',reset:'매주 월요일 초기화'},
-    {key:'monthly',label:'월간 컨텐츠',icon:'🗓',reset:'매월 1일 초기화'},
+    {key:'daily',label:'일일',icon:'☀️',reset:'매일 자정'},
+    {key:'weekly',label:'주간',icon:'📅',reset:'매주 월요일'},
+    {key:'monthly',label:'월간',icon:'🗓',reset:'매월 1일'},
   ];
-  let html='';
+  let hasSections=false;
   sections.forEach(sec=>{
-    const items=tasks.filter(t=>t.freq===sec.key);
+    const items=curTasks.filter(t=>t.freq===sec.key);
+    if(!items.length)return;
+    hasSections=true;
     const doneCount=items.filter(t=>(t.done||0)>=(t.max||1)).length;
-    const allDone=items.length>0&&doneCount===items.length;
+    const allDone=doneCount===items.length;
     html+=`<div class="task-section">
       <div class="task-sec-hd">
         <span class="task-sec-icon">${sec.icon}</span>
@@ -3049,54 +3143,19 @@ function renderTasks(){
         <span class="task-sec-reset">${sec.reset}</span>
         <span class="task-sec-count${allDone?' all-done':''}">${doneCount}/${items.length}</span>
       </div>
-      <div class="task-rows">`;
-    if(!items.length){
-      html+=`<div class="task-empty">할일이 없습니다 — ＋ 할일 추가 버튼으로 등록하세요</div>`;
-    } else {
-      items.forEach(t=>{
-        const max=t.max||1;
-        const done=t.done||0;
-        const isDoneAll=done>=max;
-        const pct=Math.round(done/max*100);
-        const g=t.game?GAMES.find(x=>x.id===t.game):null;
-        const gameLabel=g?g.short:'공통';
-        const gameColor=g?g.color:'var(--mu)';
-        if(max===1){
-          html+=`<div class="task-row${isDoneAll?' done-all':''}" data-tid="${t.id}">
-            <div class="task-check${isDoneAll?' checked':''}" onclick="toggleTask('${t.id}')">${isDoneAll?'✓':''}</div>
-            <div class="task-info">
-              <div class="task-game" style="color:${gameColor}">${gameLabel}</div>
-              <div class="task-name">${t.name}</div>
-            </div>
-            <div></div>
-            <button class="task-del" onclick="deleteTask('${t.id}')" title="삭제">🗑</button>
-            <div class="task-progress"><div class="task-prog-fill" style="width:${pct}%"></div></div>
-          </div>`;
-        } else {
-          html+=`<div class="task-row${isDoneAll?' done-all':''}" data-tid="${t.id}">
-            <div class="task-check${isDoneAll?' checked':''}" onclick="stepTask('${t.id}',1)">${isDoneAll?'✓':''}</div>
-            <div class="task-info">
-              <div class="task-game" style="color:${gameColor}">${gameLabel}</div>
-              <div class="task-name">${t.name}</div>
-            </div>
-            <div class="task-counter">
-              <button class="tc-btn" onclick="stepTask('${t.id}',-1)">−</button>
-              <span class="tc-val${isDoneAll?' maxed':''}">${done}/${max}</span>
-              <button class="tc-btn" onclick="stepTask('${t.id}',1)">＋</button>
-            </div>
-            <button class="task-del" onclick="deleteTask('${t.id}')" title="삭제">🗑</button>
-            <div class="task-progress"><div class="task-prog-fill" style="width:${pct}%"></div></div>
-          </div>`;
-        }
-      });
-    }
-    html+='</div></div>';
+      <div class="task-rows">${items.map(buildTaskRow).join('')}</div>
+    </div>`;
   });
+  if(!hasSections) html+=`<div class="task-empty">이 게임에 등록된 할일이 없습니다</div>`;
+
   wrap.innerHTML=html;
   const remaining=tasks.filter(t=>(t.done||0)<(t.max||1)).length;
   const badge=document.getElementById('nav-cnt-tasks');
   if(badge) badge.textContent=remaining>0?remaining:'';
 }
+
+function prevTaskGame(){taskGameIdx=Math.max(0,taskGameIdx-1);renderTasks();}
+function nextTaskGame(){taskGameIdx=Math.min(getTaskGameList().length-1,taskGameIdx+1);renderTasks();}
 
 function openTaskModal(editId){
   const ovl=document.getElementById('taskOvl');
@@ -3118,7 +3177,10 @@ function openTaskModal(editId){
       document.getElementById('taskModalTitle').textContent='✏️ 할일 수정';
     }
   } else {
-    sel.value='';
+    // 현재 보고 있는 게임을 기본값으로
+    const gameList=getTaskGameList();
+    const curGame=gameList[taskGameIdx]?.id||'';
+    sel.value=curGame;
     document.getElementById('tm-name').value='';
     document.getElementById('tm-freq').value='daily';
     document.getElementById('tm-max').value='1';
@@ -3134,22 +3196,16 @@ function saveTask(){
   if(!name){toast('할일 이름을 입력하세요.');return;}
   const ovl=document.getElementById('taskOvl');
   const editId=ovl.dataset.editId;
+  const gameVal=document.getElementById('tm-game').value;
   if(editId){
     const t=tasks.find(x=>x.id===editId);
-    if(t){
-      t.game=document.getElementById('tm-game').value;
-      t.name=name;
-      t.freq=document.getElementById('tm-freq').value;
-      t.max=parseInt(document.getElementById('tm-max').value)||1;
-    }
+    if(t){t.game=gameVal;t.name=name;t.freq=document.getElementById('tm-freq').value;t.max=parseInt(document.getElementById('tm-max').value)||1;}
   } else {
-    tasks.push({
-      id:'t'+Date.now(),
-      game:document.getElementById('tm-game').value,
-      name,freq:document.getElementById('tm-freq').value,
-      max:parseInt(document.getElementById('tm-max').value)||1,
-      done:0,
-    });
+    tasks.push({id:'t'+Date.now(),game:gameVal,name,freq:document.getElementById('tm-freq').value,max:parseInt(document.getElementById('tm-max').value)||1,done:0});
+    // 저장 후 해당 게임 탭으로 이동
+    const list=getTaskGameList();
+    const newIdx=list.findIndex(x=>x.id===gameVal);
+    if(newIdx>=0) taskGameIdx=newIdx;
   }
   localStorage.setItem('gv8-tasks',JSON.stringify(tasks));
   closeTaskModal();
@@ -3173,6 +3229,7 @@ function stepTask(id,delta){
 function deleteTask(id){
   tasks=tasks.filter(x=>x.id!==id);
   localStorage.setItem('gv8-tasks',JSON.stringify(tasks));
+  taskGameIdx=Math.max(0,Math.min(taskGameIdx,getTaskGameList().length-1));
   renderTasks();
   toast('🗑 삭제되었습니다.');
 }
