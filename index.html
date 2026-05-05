@@ -828,12 +828,14 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
       <p>현재 진행 중인 픽업과 출시 예정 일정. 우상단 서버 토글로 한섭/글로벌 분리 보기.</p>
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
-      <button class="btn btn-ghost" onclick="requestPushPermission()" style="font-size:11px;padding:7px 12px">🔔 픽업 알림 설정</button>
+      <button class="btn btn-ghost" onclick="openWishlist()" style="font-size:11px;padding:7px 12px" title="원하는 캐릭터 미리 등록 → 픽업 출시 시 강조">⭐ 위시리스트</button>
+      <button class="btn btn-ghost" onclick="openAlarmConfig()" style="font-size:11px;padding:7px 12px">🔔 알림 설정</button>
       <button class="btn btn-ghost" onclick="exportAllIcal()" style="font-size:11px;padding:7px 12px" title="즐겨찾기 픽업 일정을 한 번에 .ics로 내보내기">📅 전체 캘린더 내보내기</button>
       <button class="btn btn-primary" onclick="openEvt()">＋ 새 픽업 등록</button>
     </div>
   </div>
   <div id="todayWidget"></div>
+  <div id="wishlistMatchBanner"></div>
   <div class="search-filter-bar">
     <div class="sfb-search">
       <span class="sfb-icon">🔍</span>
@@ -1167,6 +1169,113 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 </div></div>
 
 <button class="fab" id="fabBtn" onclick="fabAction()" title="새 픽업 등록 (단축키: N)" aria-label="새 픽업 등록">＋</button>
+
+<!-- WISHLIST MODAL -->
+<div class="overlay" id="wishOvl"><div class="modal" style="max-width:520px">
+  <h2>⭐ 위시리스트</h2>
+  <div style="font-size:11px;color:var(--mu2);margin-bottom:14px;line-height:1.6">
+    뽑고 싶은 캐릭터를 미리 등록해두면 해당 캐릭터가 픽업으로 출시될 때 ⭐ 표시로 강조됩니다.
+  </div>
+  <div class="frow">
+    <div class="fg"><label>게임</label><select class="fi" id="wish-game"></select></div>
+    <div class="fg"><label>캐릭터명</label><input class="fi" id="wish-char" placeholder="예: 푸리나" onkeydown="if(event.key==='Enter')addWishlist()"></div>
+  </div>
+  <div class="fg"><label>메모 (선택)</label><input class="fi" id="wish-memo" placeholder="예: 한정 / 명함만 / 무기까지"></div>
+  <button class="btn btn-primary" onclick="addWishlist()" style="width:100%;margin-bottom:14px">＋ 위시리스트에 추가</button>
+  <div id="wishlistGrid" style="max-height:340px;overflow-y:auto"></div>
+  <div class="mfoot">
+    <button class="btn btn-ghost" onclick="closeWishlist()">닫기</button>
+  </div>
+</div></div>
+
+<!-- ALARM CONFIG MODAL -->
+<div class="overlay" id="alarmOvl"><div class="modal" style="max-width:480px">
+  <h2>🔔 알림 시점 설정</h2>
+  <div style="font-size:11px;color:var(--mu2);margin-bottom:14px;line-height:1.6">
+    픽업이 시작/종료되기 전 어느 시점에 알림을 받을지 선택하세요. 새로 알림을 설정할 때 적용됩니다.
+  </div>
+  <div class="fg"><label>📅 픽업 시작 전</label>
+    <div id="alarm-before-start" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+  </div>
+  <div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none">
+    <input type="checkbox" id="alarm-on-start" style="width:16px;height:16px;cursor:pointer;accent-color:var(--bl)"> 🟢 픽업 시작 당일 알림
+  </label></div>
+  <div class="fg"><label>⏰ 픽업 종료 전</label>
+    <div id="alarm-before-end" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+  </div>
+  <div style="background:rgba(96,165,250,.06);border:1px solid rgba(96,165,250,.2);border-radius:8px;padding:10px;font-size:11px;color:var(--mu2);margin-top:8px">
+    💡 알림은 브라우저가 켜진 상태에서만 동작합니다. (PWA 알림은 백엔드 서버 필요)
+  </div>
+  <div class="mfoot">
+    <button class="btn btn-ghost" onclick="resetAlarmConfig()" style="margin-right:auto">기본값</button>
+    <button class="btn btn-ghost" onclick="closeAlarmConfig()">취소</button>
+    <button class="btn btn-primary" onclick="saveAlarmConfig()">저장</button>
+  </div>
+</div></div>
+
+<!-- BUDGET MODAL -->
+<div class="overlay" id="budgetOvl"><div class="modal" style="max-width:420px">
+  <h2>🎯 월 예산 설정</h2>
+  <div style="font-size:11px;color:var(--mu2);margin-bottom:14px;line-height:1.6">
+    이번 달 가챠에 쓸 한도 예산을 설정하면 픽업 기록 페이지에서 진행률이 표시됩니다.
+  </div>
+  <div class="fg"><label>월 예산 (₩)</label>
+    <input class="fi" id="bud-amount" type="number" inputmode="numeric" min="0" placeholder="예: 50000">
+    <div style="font-size:10px;color:var(--mu);margin-top:4px">0 또는 빈 값 = 예산 미설정</div>
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+    <button class="btn-xs" onclick="document.getElementById('bud-amount').value=30000">3만원</button>
+    <button class="btn-xs" onclick="document.getElementById('bud-amount').value=50000">5만원</button>
+    <button class="btn-xs" onclick="document.getElementById('bud-amount').value=100000">10만원</button>
+    <button class="btn-xs" onclick="document.getElementById('bud-amount').value=200000">20만원</button>
+    <button class="btn-xs" onclick="document.getElementById('bud-amount').value=0">미설정</button>
+  </div>
+  <div class="mfoot">
+    <button class="btn btn-ghost" onclick="closeBudget()">취소</button>
+    <button class="btn btn-primary" onclick="saveBudget()">저장</button>
+  </div>
+</div></div>
+
+<!-- ONBOARDING MODAL -->
+<div class="overlay" id="onbOvl"><div class="modal" style="max-width:560px">
+  <h2 style="background:linear-gradient(135deg,var(--bl),var(--pu),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">🎉 가챠 트래커에 오신 것을 환영합니다!</h2>
+  <div style="font-size:13px;line-height:1.9;color:var(--mu2);margin:14px 0">
+    여러 가챠 게임의 픽업 일정·재화·뽑기를 한 곳에서 관리하는 도구입니다.
+  </div>
+  <div style="display:grid;gap:10px;margin:14px 0">
+    <div style="display:flex;gap:12px;padding:10px;background:var(--sf2);border-radius:10px;align-items:flex-start">
+      <span style="font-size:24px;flex-shrink:0">📅</span>
+      <div><div style="font-weight:700;font-size:13px;margin-bottom:2px">픽업 스케줄</div>
+        <div style="font-size:11px;color:var(--mu)">즐겨찾기한 게임의 진행/예정 픽업을 한눈에. 게임 칩을 클릭해 ★ 즐겨찾기 추가.</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;padding:10px;background:var(--sf2);border-radius:10px;align-items:flex-start">
+      <span style="font-size:24px;flex-shrink:0">🤖</span>
+      <div><div style="font-weight:700;font-size:13px;margin-bottom:2px">AI 검색 (무료)</div>
+        <div style="font-size:11px;color:var(--mu)">Gemini API 키만 있으면 게임별 픽업 정보를 자동 조회·등록.</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;padding:10px;background:var(--sf2);border-radius:10px;align-items:flex-start">
+      <span style="font-size:24px;flex-shrink:0">⌨️</span>
+      <div><div style="font-weight:700;font-size:13px;margin-bottom:2px">단축키</div>
+        <div style="font-size:11px;color:var(--mu)"><span class="kbd">1</span>~<span class="kbd">8</span> 페이지 / <span class="kbd">N</span> 새 등록 / <span class="kbd">?</span> 도움말</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;padding:10px;background:var(--sf2);border-radius:10px;align-items:flex-start">
+      <span style="font-size:24px;flex-shrink:0">☁️</span>
+      <div><div style="font-weight:700;font-size:13px;margin-bottom:2px">데이터 동기화 (선택)</div>
+        <div style="font-size:11px;color:var(--mu)">GitHub Gist로 PC↔모바일 데이터 공유. 자동 백업도 가능.</div>
+      </div>
+    </div>
+  </div>
+  <div style="background:rgba(95,217,156,.08);border:1px solid rgba(95,217,156,.25);border-radius:10px;padding:10px 12px;font-size:11px;color:var(--g);margin:12px 0">
+    💡 <strong>샘플 데이터를 추가</strong>해서 어떻게 동작하는지 미리 보시겠어요?
+  </div>
+  <div class="mfoot">
+    <button class="btn btn-ghost" onclick="finishOnboarding(false)">건너뛰기</button>
+    <button class="btn btn-primary" onclick="finishOnboarding(true)">✨ 샘플 데이터로 시작</button>
+  </div>
+</div></div>
 
 <!-- KEYBOARD SHORTCUTS HELP MODAL -->
 <div class="overlay" id="kbdOvl"><div class="modal" style="max-width:460px">
@@ -1698,6 +1807,9 @@ let taskState=safeLoad('gv8-taskstate',{});
 let taskHidden=safeLoad('gv8-task-hidden',[]);
 let taskOverrides=safeLoad('gv8-task-overrides',{});
 let customTasks=safeLoad('gv8-custom-tasks',[]);
+let wishlist=safeLoad('gv8-wishlist',[]);
+let alarmConfig=safeLoad('gv8-alarm-config',{daysBeforeStart:[3,1],daysBeforeEnd:[1],onStart:true});
+let monthlyBudget=safeLoad('gv8-monthly-budget',0);
 let taskEditTid=null, taskEditType='predefined';
 let serverFilter=localStorage.getItem('gv8-srv')||'all';
 let calDate=new Date();
@@ -2163,6 +2275,7 @@ function buildCard(e,idx){
   else if(now>en){badge='<span class="tag t-end">종료</span>';dday='<span class="dday dd-end">종료됨</span>';}
   else{const d=Math.ceil((en-now)/86400000);badge=`<span class="tag t-on">진행 중 D-${d}</span>`;dday=`<span class="dday dd-on">D-${d} 남음</span>`;}
   const typeBadge={limited:'<span class="tag t-lim">⚡ 한정</span>',standard:'<span class="tag t-std">🔄 통상</span>',rerun:'<span class="tag t-rerun">♻️ 복각</span>',fes:'<span class="tag t-fes">🎪 페스</span>',collab:'<span class="tag t-collab">🤝 콜라보</span>'}[e.type||'limited']||'';
+  const wishBadge=isWishlistMatch(e)?`<span class="tag" style="background:linear-gradient(135deg,rgba(251,191,36,.85),rgba(244,114,182,.7));color:#fff;border:1px solid rgba(251,191,36,.6);font-weight:900">⭐ 위시</span>`:'';
   const srvBadge=e.srv&&e.srv!=='all'?`<span class="t-srv-${e.srv}">${SRV_LBL[e.srv]||e.srv}</span>`:'';
   const isImg=e.art&&/\.(jpg|jpeg|png|gif|webp|avif)$/i.test(e.art);
   const artHtml=isImg?`<img class="banner-img" src="${e.art}" alt="${e.char}" onerror="this.style.display='none'"><div class="banner-gradient"></div>`:genArt(g,e.char,e.type);
@@ -2239,7 +2352,7 @@ function buildCard(e,idx){
   return `<div class="card${e.predicted?' predicted':''}" style="--gc:${g.color}">
     <div class="banner banner-clickable" data-action="edit" data-eid="${eid}" title="클릭해서 수정">
       ${artHtml}
-      <div class="banner-tags">${srvBadge}${typeBadge}</div>
+      <div class="banner-tags">${srvBadge}${typeBadge}${wishBadge}</div>
       <div class="banner-status">${badge}</div>
       ${resultBadgeHtml}
       <div class="banner-info">
@@ -5230,7 +5343,7 @@ function showPage(name){
 }
 
 function toast(msg){const el=document.createElement('div');el.className='toast';el.innerHTML=msg.replace(/\n/g,'<br>');document.getElementById('tw').appendChild(el);setTimeout(()=>el.remove(),2500);}
-['evtOvl','cpnOvl','gevOvl','customEvtOvl','taskEditOvl','addTaskOvl'].forEach(id=>document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
+['evtOvl','cpnOvl','gevOvl','customEvtOvl','taskEditOvl','addTaskOvl','wishOvl','alarmOvl','budgetOvl','onbOvl'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});
 
 // Color picker event delegation
 document.getElementById('cevColorPicker').addEventListener('click', e => {
@@ -5303,7 +5416,7 @@ function checkStorageSize(){
 }
 
 function exportData(){
-  const data={version:'v20',exportedAt:new Date().toISOString(),events,coupons,gameEvents,customEvents,inventory,monthlyOn,monthlyStart,favs,alarms,hiddenAutoMira,serverFilter};
+  const data={version:'v21',exportedAt:new Date().toISOString(),events,coupons,gameEvents,customEvents,inventory,monthlyOn,monthlyStart,favs,alarms,hiddenAutoMira,serverFilter,wishlist,alarmConfig,monthlyBudget};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -5336,6 +5449,9 @@ function applyImportedData(d){
   if(d.monthlyOn) monthlyOn=d.monthlyOn; if(d.monthlyStart) monthlyStart=d.monthlyStart;
   if(d.favs) favs=d.favs; if(d.alarms) alarms=d.alarms;
   if(d.hiddenAutoMira) hiddenAutoMira=d.hiddenAutoMira;
+  if(d.wishlist) {wishlist=d.wishlist; localStorage.setItem('gv8-wishlist',JSON.stringify(wishlist));}
+  if(d.alarmConfig) {alarmConfig=d.alarmConfig; localStorage.setItem('gv8-alarm-config',JSON.stringify(alarmConfig));}
+  if(typeof d.monthlyBudget==='number') {monthlyBudget=d.monthlyBudget; localStorage.setItem('gv8-monthly-budget',JSON.stringify(monthlyBudget));}
 }
 
 // ── GitHub Gist 동기화 ────────────────────────────────────
@@ -5375,7 +5491,7 @@ async function gistUpload(){
   
   localStorage.setItem('gv8-gist-token',tk);
   
-  const data={version:'v20',exportedAt:new Date().toISOString(),events,coupons,gameEvents,customEvents,inventory,monthlyOn,monthlyStart,favs,alarms,hiddenAutoMira,serverFilter};
+  const data={version:'v21',exportedAt:new Date().toISOString(),events,coupons,gameEvents,customEvents,inventory,monthlyOn,monthlyStart,favs,alarms,hiddenAutoMira,serverFilter,wishlist,alarmConfig,monthlyBudget};
   const content=JSON.stringify(data,null,2);
   
   const btn=document.getElementById('gist-upload-btn');
@@ -5838,7 +5954,7 @@ async function autoGistUpload(){
   const token=localStorage.getItem('gv8-gist-token');
   const gistId=localStorage.getItem('gv8-gist-id');
   if(!token||!gistId) return;
-  const data={version:'v20',exportedAt:new Date().toISOString(),events,coupons,gameEvents,customEvents,inventory,monthlyOn,monthlyStart,favs,alarms,hiddenAutoMira,serverFilter};
+  const data={version:'v21',exportedAt:new Date().toISOString(),events,coupons,gameEvents,customEvents,inventory,monthlyOn,monthlyStart,favs,alarms,hiddenAutoMira,serverFilter,wishlist,alarmConfig,monthlyBudget};
   const body={files:{'gacha-tracker.json':{content:JSON.stringify(data,null,2)}}};
   const res=await fetch(`https://api.github.com/gists/${gistId}`,{
     method:'PATCH',
@@ -5873,6 +5989,484 @@ window.addEventListener('load',()=>{
     const btn=document.getElementById('aiFavToggle');
     if(btn){btn.classList.toggle('act',favOnly);btn.textContent=favOnly?'⭐ 즐겨찾기만':'⭐ 전체';}
   },100);
+});
+
+// ════════════════════════════════════════════════════════════════
+//  WISHLIST (위시리스트)
+// ════════════════════════════════════════════════════════════════
+function openWishlist(){
+  const sel=document.getElementById('wish-game');
+  sel.innerHTML='<option value="">게임 선택...</option>'+GAMES.map(g=>`<option value="${g.id}">${g.name}</option>`).join('');
+  document.getElementById('wish-char').value='';
+  document.getElementById('wish-memo').value='';
+  renderWishlistGrid();
+  document.getElementById('wishOvl').classList.add('open');
+}
+function closeWishlist(){document.getElementById('wishOvl').classList.remove('open');}
+
+function addWishlist(){
+  const game=document.getElementById('wish-game').value;
+  const char=document.getElementById('wish-char').value.trim();
+  const memo=document.getElementById('wish-memo').value.trim();
+  if(!game){toast('⚠️ 게임을 선택하세요');return;}
+  if(!char){toast('⚠️ 캐릭터명을 입력하세요');return;}
+  // 중복 체크
+  if(wishlist.some(w=>w.game===game && w.char.toLowerCase()===char.toLowerCase())){
+    toast('⚠️ 이미 위시리스트에 있는 캐릭터입니다');return;
+  }
+  wishlist.push({id:'w-'+Date.now()+'-'+Math.random().toString(36).slice(2,5),game,char,memo,addedAt:new Date().toISOString()});
+  localStorage.setItem('gv8-wishlist',JSON.stringify(wishlist));
+  document.getElementById('wish-char').value='';
+  document.getElementById('wish-memo').value='';
+  renderWishlistGrid();
+  renderSchedule();
+  renderWishlistMatchBanner();
+  toast(`⭐ 위시리스트 추가: ${char}`);
+}
+function delWishlist(id){
+  const w=wishlist.find(x=>x.id===id);
+  if(!w)return;
+  if(!confirm(`'${w.char}' 위시리스트에서 제거할까요?`)) return;
+  wishlist=wishlist.filter(x=>x.id!==id);
+  localStorage.setItem('gv8-wishlist',JSON.stringify(wishlist));
+  renderWishlistGrid();
+  renderSchedule();
+  renderWishlistMatchBanner();
+}
+function renderWishlistGrid(){
+  const el=document.getElementById('wishlistGrid');
+  if(!el) return;
+  if(!wishlist.length){
+    el.innerHTML='<div style="text-align:center;padding:24px;font-size:12px;color:var(--mu)">아직 등록된 캐릭터가 없습니다</div>';
+    return;
+  }
+  // 게임별 그룹
+  const groups={};
+  wishlist.forEach(w=>{(groups[w.game]=groups[w.game]||[]).push(w);});
+  el.innerHTML=Object.keys(groups).map(gid=>{
+    const g=GAMES.find(x=>x.id===gid)||{name:gid,short:gid,color:'#888'};
+    return `<div style="margin-bottom:14px">
+      <div style="font-size:11px;font-weight:800;color:${g.color};margin-bottom:6px;letter-spacing:.5px">${g.short}</div>
+      ${groups[gid].map(w=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--sf2);border-radius:8px;margin-bottom:4px;border-left:3px solid ${g.color}">
+        <span style="flex:1">
+          <div style="font-size:13px;font-weight:700">${w.char}</div>
+          ${w.memo?`<div style="font-size:10px;color:var(--mu);margin-top:2px">${w.memo}</div>`:''}
+        </span>
+        <button class="btn-xs del" onclick="delWishlist('${w.id}')" title="제거">🗑</button>
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+// 픽업이 위시리스트와 매칭되는지 확인
+function isWishlistMatch(e){
+  return wishlist.some(w=>w.game===e.game && (e.char||'').toLowerCase().includes(w.char.toLowerCase()));
+}
+
+// 스케줄 상단 — 위시리스트 매칭 픽업 강조 배너
+function renderWishlistMatchBanner(){
+  const wrap=document.getElementById('wishlistMatchBanner');
+  if(!wrap) return;
+  if(!wishlist.length){wrap.innerHTML='';return;}
+  const now=new Date();
+  const matched=events.filter(e=>!e.predicted&&isWishlistMatch(e)&&new Date(e.end)>=now&&matchSrv(e.srv));
+  if(!matched.length){wrap.innerHTML='';return;}
+  wrap.innerHTML=`<div style="background:linear-gradient(135deg,rgba(251,191,36,.12),rgba(244,114,182,.08));border:1.5px solid rgba(251,191,36,.4);border-radius:14px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:14px">
+    <span style="font-size:28px;flex-shrink:0">⭐</span>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:800;color:var(--gold);margin-bottom:3px">위시리스트 픽업 ${matched.length}건!</div>
+      <div style="font-size:11px;color:var(--mu2);line-height:1.5">${matched.slice(0,3).map(e=>{const g=GAMES.find(x=>x.id===e.game);return `<strong style="color:${g?.color||'var(--tx)'}">${e.char}</strong>(${g?.short||''})`;}).join(' · ')}${matched.length>3?` 외 ${matched.length-3}건`:''}</div>
+    </div>
+  </div>`;
+}
+
+// 픽업 등록 모달에서 위시리스트 자동 제안
+function suggestFromWishlist(){
+  const gid=document.getElementById('em-game').value;
+  if(!gid) return [];
+  return wishlist.filter(w=>w.game===gid).map(w=>w.char);
+}
+
+// ════════════════════════════════════════════════════════════════
+//  ALARM CONFIG (알림 시점 커스터마이즈)
+// ════════════════════════════════════════════════════════════════
+const ALARM_DAY_OPTIONS=[7,5,3,2,1];
+function openAlarmConfig(){
+  // 현재 설정으로 체크박스 렌더
+  document.getElementById('alarm-on-start').checked=!!alarmConfig.onStart;
+  ['alarm-before-start','alarm-before-end'].forEach((id,i)=>{
+    const arr=i===0?alarmConfig.daysBeforeStart:alarmConfig.daysBeforeEnd;
+    document.getElementById(id).innerHTML=ALARM_DAY_OPTIONS.map(d=>`
+      <label style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:var(--sf2);border:1px solid var(--bd2);border-radius:7px;cursor:pointer;font-size:12px">
+        <input type="checkbox" data-day="${d}" ${arr.includes(d)?'checked':''} style="width:14px;height:14px;cursor:pointer;accent-color:var(--bl)"> D-${d}
+      </label>`).join('');
+  });
+  document.getElementById('alarmOvl').classList.add('open');
+}
+function closeAlarmConfig(){document.getElementById('alarmOvl').classList.remove('open');}
+function resetAlarmConfig(){
+  alarmConfig={daysBeforeStart:[3,1],daysBeforeEnd:[1],onStart:true};
+  localStorage.setItem('gv8-alarm-config',JSON.stringify(alarmConfig));
+  openAlarmConfig();
+  toast('🔔 기본값으로 복원');
+}
+function saveAlarmConfig(){
+  const getSelected=id=>Array.from(document.querySelectorAll(`#${id} input:checked`)).map(c=>parseInt(c.dataset.day));
+  alarmConfig={
+    daysBeforeStart:getSelected('alarm-before-start'),
+    daysBeforeEnd:getSelected('alarm-before-end'),
+    onStart:document.getElementById('alarm-on-start').checked
+  };
+  localStorage.setItem('gv8-alarm-config',JSON.stringify(alarmConfig));
+  closeAlarmConfig();
+  toast('✅ 알림 설정 저장됨');
+}
+
+// 기존 setAlarms 함수가 alarmConfig 사용하도록 래핑
+const _origSetAlarms=typeof setAlarms==='function'?setAlarms:null;
+if(_origSetAlarms){
+  setAlarms=function(idx){
+    const e=events[idx];if(!e)return;
+    if(!('Notification'in window)){toast('⚠️ 알림 미지원');return;}
+    Notification.requestPermission().then(p=>{
+      if(p!=='granted'){toast('❌ 권한 필요');return;}
+      const s=new Date(e.start),en=new Date(e.end);
+      const now=new Date(),cnt=[];
+      const messages=[];
+      // 시작 전
+      (alarmConfig.daysBeforeStart||[]).forEach(d=>{
+        const t=new Date(s);t.setDate(t.getDate()-d);
+        messages.push([t,`📅 [${e.char}] 픽업 D-${d}`]);
+      });
+      // 시작 당일
+      if(alarmConfig.onStart){
+        messages.push([s,`🎴 [${e.char}] 오늘 출시!`]);
+      }
+      // 종료 전
+      (alarmConfig.daysBeforeEnd||[]).forEach(d=>{
+        const t=new Date(en);t.setDate(t.getDate()-d);
+        messages.push([t,`⚠️ [${e.char}] 마감 D-${d}!`]);
+      });
+      messages.forEach(([t,msg])=>{
+        if(t>now){setTimeout(()=>new Notification('가챠 트래커',{body:msg}),t-now);cnt.push(t);}
+      });
+      alarms[`e-${idx}`]={char:e.char,n:cnt.length};
+      localStorage.setItem('gv8-alarms',JSON.stringify(alarms));
+      renderSchedule();toast(`🔔 알람 ${cnt.length}개!`);
+    });
+  };
+}
+
+// ════════════════════════════════════════════════════════════════
+//  BUDGET (월 예산)
+// ════════════════════════════════════════════════════════════════
+function openBudget(){
+  document.getElementById('bud-amount').value=monthlyBudget||'';
+  document.getElementById('budgetOvl').classList.add('open');
+}
+function closeBudget(){document.getElementById('budgetOvl').classList.remove('open');}
+function saveBudget(){
+  const v=parseInt(document.getElementById('bud-amount').value)||0;
+  monthlyBudget=v;
+  localStorage.setItem('gv8-monthly-budget',JSON.stringify(monthlyBudget));
+  closeBudget();
+  renderStats();
+  toast(v?`🎯 월 예산 ₩${v.toLocaleString()} 설정`:'예산 미설정');
+}
+function getCurrentMonthSpending(){
+  const now=new Date();
+  const ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  let total=0;
+  events.forEach(e=>{
+    if(!e.spentPulls||!e.start) return;
+    if(!e.start.startsWith(ym)) return;
+    const g=GAMES.find(x=>x.id===e.game);
+    if(!g) return;
+    total += (e.spentPulls||0) * g.gacha.pricePerPull;
+  });
+  return total;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  ONBOARDING (첫 방문 가이드)
+// ════════════════════════════════════════════════════════════════
+function maybeShowOnboarding(){
+  if(localStorage.getItem('gv8-onboarded')) return;
+  if(events.length>0||favs.length>0) {
+    // 기존 사용자면 자동으로 완료 처리
+    localStorage.setItem('gv8-onboarded','1');
+    return;
+  }
+  setTimeout(()=>{document.getElementById('onbOvl').classList.add('open');},500);
+}
+function finishOnboarding(addSample){
+  document.getElementById('onbOvl').classList.remove('open');
+  localStorage.setItem('gv8-onboarded','1');
+  if(addSample) addSampleData();
+}
+function addSampleData(){
+  // 샘플 게임 즐겨찾기
+  if(!favs.includes('gi')) favs.push('gi');
+  if(!favs.includes('hsr')) favs.push('hsr');
+  // 샘플 픽업 (오늘 기준 진행 + 예정)
+  const today=new Date();
+  const fmt=d=>d.toISOString().slice(0,10);
+  const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x;};
+  const sample=[
+    {id:'sample-1',game:'gi',srv:'all',char:'푸리나',event:'환상 사슬의 노래자',type:'limited',start:fmt(addDays(today,-7)),end:fmt(addDays(today,14)),result:'untried',predicted:false,memo:'샘플 데이터 (자유롭게 삭제하세요)'},
+    {id:'sample-2',game:'hsr',srv:'all',char:'반디',event:'침몰의 빛',type:'limited',start:fmt(addDays(today,-3)),end:fmt(addDays(today,18)),result:'untried',predicted:false,memo:'샘플 데이터'},
+    {id:'sample-3',game:'gi',srv:'all',char:'알베도',event:'복각',type:'rerun',start:fmt(addDays(today,15)),end:fmt(addDays(today,36)),result:'untried',predicted:false,memo:'샘플 데이터'}
+  ];
+  events.push(...sample);
+  localStorage.setItem('gv8-favs',JSON.stringify(favs));
+  localStorage.setItem('gv8-events',JSON.stringify(events));
+  renderAll();
+  toast('✨ 샘플 데이터 3개 추가됨!');
+}
+
+// ════════════════════════════════════════════════════════════════
+//  INDEXEDDB 미러 백업 (안전망)
+// ════════════════════════════════════════════════════════════════
+const IDB_DB='gachaTrackerBackup', IDB_STORE='kv', IDB_VER=1;
+function idbOpen(){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open(IDB_DB,IDB_VER);
+    req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(IDB_STORE))db.createObjectStore(IDB_STORE);};
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
+  });
+}
+async function idbBackup(){
+  if(!('indexedDB' in window)) return;
+  try{
+    const db=await idbOpen();
+    const tx=db.transaction(IDB_STORE,'readwrite');
+    const store=tx.objectStore(IDB_STORE);
+    // 큰 데이터만 미러 저장
+    ['gv8-events','gv8-coupons','gv8-game-events','gv8-custom-events','gv8-inv','gv8-favs','gv8-wishlist','gv8-custom-tasks','gv8-taskstate'].forEach(k=>{
+      const v=localStorage.getItem(k);
+      if(v) store.put(v,k);
+    });
+    store.put(new Date().toISOString(),'_lastBackup');
+    return new Promise(r=>{tx.oncomplete=()=>r();tx.onerror=()=>r();});
+  }catch(e){console.warn('idbBackup 실패:',e);}
+}
+async function idbRestore(){
+  if(!('indexedDB' in window)) return null;
+  try{
+    const db=await idbOpen();
+    const tx=db.transaction(IDB_STORE,'readonly');
+    const store=tx.objectStore(IDB_STORE);
+    return new Promise((resolve)=>{
+      const restored={};
+      const keys=['gv8-events','gv8-coupons','gv8-game-events','gv8-custom-events','gv8-inv','gv8-favs','gv8-wishlist','gv8-custom-tasks','gv8-taskstate'];
+      let done=0;
+      keys.forEach(k=>{
+        const r=store.get(k);
+        r.onsuccess=()=>{if(r.result)restored[k]=r.result;if(++done===keys.length)resolve(restored);};
+        r.onerror=()=>{if(++done===keys.length)resolve(restored);};
+      });
+    });
+  }catch(e){console.warn('idbRestore 실패:',e);return null;}
+}
+
+// 용량 경고 인디케이터 — 4MB 초과 시 표시
+function checkIDBQuota(){
+  let total=0;
+  for(let k in localStorage){if(localStorage.hasOwnProperty(k))total+=localStorage[k].length;}
+  const mb=total/1024/1024;
+  if(mb>4){
+    const warn=document.createElement('div');
+    warn.style.cssText='position:fixed;top:60px;right:16px;z-index:200;background:rgba(248,113,113,.95);color:#fff;padding:8px 14px;border-radius:8px;font-size:11px;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,.4);max-width:280px;line-height:1.5';
+    warn.innerHTML=`⚠️ 데이터 용량 ${mb.toFixed(1)}MB / 5MB<br><span style="font-weight:400;font-size:10px">Gist 백업 후 옛 픽업 정리 권장</span><button onclick="this.parentElement.remove()" style="position:absolute;top:4px;right:4px;background:none;border:none;color:#fff;cursor:pointer">✕</button>`;
+    document.body.appendChild(warn);
+    setTimeout(()=>warn.remove(),12000);
+  }
+}
+
+// save() 한번 더 래핑해서 IndexedDB 미러 호출
+const _origSave2=save;
+save=function(){_origSave2();idbBackup();};
+
+// ════════════════════════════════════════════════════════════════
+//  통계 페이지 강화 (월별 그래프 + 예산 + ROI)
+// ════════════════════════════════════════════════════════════════
+function buildEnhancedStats(){
+  // 진행중인 달의 지출 + 예산 카드
+  const monthSpent=getCurrentMonthSpending();
+  const now=new Date();
+  const monthStr=`${now.getFullYear()}년 ${now.getMonth()+1}월`;
+
+  let budgetHtml='';
+  if(monthlyBudget>0){
+    const pct=Math.min(100,Math.round(monthSpent/monthlyBudget*100));
+    const over=monthSpent>monthlyBudget;
+    const warn=pct>=80;
+    const color=over?'var(--rd)':warn?'var(--gold)':'var(--g)';
+    budgetHtml=`<div style="background:linear-gradient(135deg,rgba(96,165,250,.06),rgba(167,139,250,.04));border:1px solid ${color}55;border-radius:12px;padding:14px 16px;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div><span style="font-size:14px;font-weight:800">🎯 ${monthStr} 예산</span></div>
+        <button class="btn-xs" onclick="openBudget()">설정</button>
+      </div>
+      <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:800;color:${color};margin-bottom:6px">
+        ₩${monthSpent.toLocaleString()} / ₩${monthlyBudget.toLocaleString()} <span style="font-size:13px;opacity:.7">(${pct}%)</span>
+      </div>
+      <div style="background:rgba(255,255,255,.05);height:8px;border-radius:99px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,${color},${color}88);transition:width .5s"></div>
+      </div>
+      ${over?`<div style="font-size:11px;color:var(--rd);margin-top:6px;font-weight:700">⚠️ 예산 초과 ₩${(monthSpent-monthlyBudget).toLocaleString()}</div>`
+        :warn?`<div style="font-size:11px;color:var(--gold);margin-top:6px;font-weight:700">⚠️ 예산 80% 도달 — 신중히!</div>`
+        :`<div style="font-size:11px;color:var(--mu2);margin-top:6px">남은 예산 ₩${(monthlyBudget-monthSpent).toLocaleString()}</div>`}
+    </div>`;
+  } else {
+    budgetHtml=`<div style="background:var(--sf2);border:1px dashed var(--bd2);border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--mu2)">
+      <span>🎯 월 예산을 설정하면 진행률이 표시됩니다</span>
+      <button class="btn-xs" onclick="openBudget()">＋ 예산 설정</button>
+    </div>`;
+  }
+
+  // 월별 지출 그래프 (최근 6개월)
+  const months=[];
+  for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({key:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`,label:`${d.getMonth()+1}월`});}
+  const monthData=months.map(m=>{
+    const total={};
+    let sum=0;
+    events.forEach(e=>{
+      if(!e.spentPulls||!e.start||!e.start.startsWith(m.key))return;
+      const g=GAMES.find(x=>x.id===e.game);
+      if(!g)return;
+      const krw=e.spentPulls*g.gacha.pricePerPull;
+      total[g.id]=(total[g.id]||0)+krw;
+      sum+=krw;
+    });
+    return {...m,total,sum};
+  });
+  const maxSum=Math.max(...monthData.map(m=>m.sum),1);
+
+  let chartHtml='';
+  if(monthData.some(m=>m.sum>0)){
+    const W=320,H=140,bW=Math.floor(W/months.length)-8;
+    chartHtml=`<div style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:800;margin-bottom:10px">📊 최근 6개월 지출</div>
+      <div style="overflow-x:auto"><svg viewBox="0 0 ${W} ${H+30}" style="width:100%;max-width:${W*1.5}px;height:auto;display:block">
+        ${monthData.map((m,i)=>{
+          const x=i*Math.floor(W/months.length)+4;
+          const barH=m.sum?Math.max(2,Math.round(m.sum/maxSum*H)):0;
+          const y=H-barH;
+          let acc=0;
+          const segments=Object.keys(m.total).map(gid=>{
+            const g=GAMES.find(x=>x.id===gid);
+            const segH=Math.round(m.total[gid]/maxSum*H);
+            const segY=H-acc-segH;
+            acc+=segH;
+            return `<rect x="${x}" y="${segY}" width="${bW}" height="${segH}" fill="${g?.color||'#888'}" opacity="0.85"><title>${g?.short||gid}: ₩${m.total[gid].toLocaleString()}</title></rect>`;
+          }).join('');
+          return `${segments}
+            <text x="${x+bW/2}" y="${H+12}" font-size="9" fill="${m.key.startsWith(now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0'))?'var(--bl)':'var(--mu)'}" text-anchor="middle" font-weight="700">${m.label}</text>
+            ${m.sum?`<text x="${x+bW/2}" y="${y-3}" font-size="8" fill="var(--mu2)" text-anchor="middle" font-family="Orbitron">${m.sum>=10000?Math.round(m.sum/10000)+'만':Math.round(m.sum/1000)+'K'}</text>`:''}`;
+        }).join('')}
+        <line x1="0" y1="${H}" x2="${W}" y2="${H}" stroke="var(--bd)" stroke-width="0.5"/>
+      </svg></div>
+    </div>`;
+  }
+
+  // 게임별 ROI / 성공률 vs 이론 확률
+  const recorded=events.filter(e=>!e.predicted&&(e.result==='success'||e.result==='fail'));
+  const byGame={};
+  recorded.forEach(e=>{
+    const g=GAMES.find(x=>x.id===e.game);
+    if(!g) return;
+    if(!byGame[g.id]) byGame[g.id]={g,success:0,fail:0,pulls:0,krw:0};
+    if(e.result==='success') byGame[g.id].success++;
+    if(e.result==='fail') byGame[g.id].fail++;
+    byGame[g.id].pulls += e.spentPulls||0;
+    byGame[g.id].krw += (e.spentPulls||0) * g.gacha.pricePerPull;
+  });
+  let roiHtml='';
+  if(Object.keys(byGame).length){
+    roiHtml=`<div style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:800;margin-bottom:10px">🎯 게임별 픽업 성공률 vs 이론 확률</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${Object.values(byGame).sort((a,b)=>(b.success+b.fail)-(a.success+a.fail)).map(d=>{
+          const total=d.success+d.fail;
+          const myRate=total?Math.round(d.success/total*100):0;
+          const theoryRate=Math.round((d.g.gacha.pickupRate||0.5)*100);
+          const diff=myRate-theoryRate;
+          const diffColor=diff>=0?'var(--g)':'var(--rd)';
+          const diffSign=diff>=0?'+':'';
+          const krwPerPickup=d.success?Math.round(d.krw/d.success):0;
+          return `<div style="background:var(--sf2);border-radius:8px;padding:10px 12px;border-left:3px solid ${d.g.color}">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <span style="font-size:12px;font-weight:800;color:${d.g.color}">${d.g.short}</span>
+              <span style="font-size:10px;color:var(--mu)">총 ${total}회 (성공 ${d.success} · 픽뚫 ${d.fail})</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:10px">
+              <div><span style="color:var(--mu)">내 성공률</span><br><strong style="font-family:'Orbitron',monospace;font-size:14px;color:var(--bl)">${myRate}%</strong></div>
+              <div><span style="color:var(--mu)">이론</span><br><strong style="font-family:'Orbitron',monospace;font-size:14px;color:var(--mu2)">${theoryRate}%</strong></div>
+              <div><span style="color:var(--mu)">차이</span><br><strong style="font-family:'Orbitron',monospace;font-size:14px;color:${diffColor}">${diffSign}${diff}%p</strong></div>
+            </div>
+            ${d.success>0?`<div style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--bd);font-size:10px;color:var(--mu2)">픽업 1개당 평균 <strong style="color:var(--gold);font-family:'Orbitron',monospace">₩${krwPerPickup.toLocaleString()}</strong> · 누적 <strong style="color:var(--tx)">${d.pulls}뽑</strong> / <strong>₩${d.krw.toLocaleString()}</strong></div>`:''}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+
+  return budgetHtml+chartHtml+roiHtml;
+}
+
+// renderStats를 강화
+const _origRenderStats=renderStats;
+renderStats=function(){
+  _origRenderStats();
+  // 강화된 통계를 통계 페이지 상단에 prepend
+  const el=document.getElementById('statsContent');
+  if(!el || !el.firstChild) return;
+  // 진행률 게이지 + 그래프 prepend (이미 있으면 갱신)
+  const enhId='enhStatsBlock';
+  const existing=document.getElementById(enhId);
+  const html=buildEnhancedStats();
+  if(existing){existing.innerHTML=html;}
+  else if(html){
+    const wrap=document.createElement('div');
+    wrap.id=enhId;
+    wrap.innerHTML=html;
+    el.insertBefore(wrap, el.firstChild);
+  }
+};
+
+// 픽업 등록 모달에 위시리스트 자동 제안 datalist 갱신
+const _origOnGameChange=typeof onGameChange==='function'?onGameChange:null;
+if(_origOnGameChange){
+  onGameChange=function(){
+    _origOnGameChange();
+    const dl=document.getElementById('event-suggestions');
+    if(!dl) return;
+    const wishChars=suggestFromWishlist();
+    if(wishChars.length){
+      // 기존 옵션 보존하며 위시리스트 항목 추가
+      const existingChar=document.getElementById('em-char');
+      if(existingChar && !existingChar.dataset.wishHinted){
+        existingChar.placeholder=wishChars.length?`예: ${wishChars.slice(0,2).join(', ')} (위시리스트)`:'예: 에바네시아';
+      }
+    }
+  };
+}
+
+// 매번 navigation 시 위시리스트 배너 갱신
+const _origShowPage2=showPage;
+showPage=function(name){
+  _origShowPage2(name);
+  if(name==='schedule') renderWishlistMatchBanner();
+};
+
+// 페이지 로드 시 초기화
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    renderWishlistMatchBanner();
+    maybeShowOnboarding();
+    checkIDBQuota();
+  },500);
 });
 
 init();
