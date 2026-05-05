@@ -2002,19 +2002,18 @@ function toggleFav(id){
 
 // 게임의 어떤 서버 조합이라도 즐겨찾기됐는지
 function gameHasAnyFav(g){
-  if(g.servers.length<=1) return favs.includes(g.id);
-  return g.servers.some(srv=>favs.includes(`${g.id}-${srv}`));
+  if(g.servers.includes('all')) return favs.includes(g.id);
+  // 'all'이 아니면 서버별 키 (kr/jp/global) 사용 — renderGF 저장 방식과 일치
+  return g.servers.some(srv=>favs.includes(`${g.id}-${srv}`)) || favs.includes(g.id);
 }
 
 // 게임-서버 조합이 즐겨찾기인지 확인
 function isFavored(gameId, srv){
   const g=GAMES.find(x=>x.id===gameId);
-  if(g && g.servers.length>1){
-    // 다중 서버: gameId-srv 정확 매칭
-    return favs.includes(`${gameId}-${srv}`);
-  }
-  // 단일 서버: gameId만
-  return favs.includes(gameId);
+  if(!g) return false;
+  if(g.servers.includes('all')) return favs.includes(g.id);
+  // 서버별 키 우선, 레거시 g.id도 호환
+  return favs.includes(`${gameId}-${srv}`) || favs.includes(gameId);
 }
 
 function renderSchedule(){
@@ -3336,8 +3335,8 @@ let taskGameIdx=0;
 function getFavGameList(){
   const seen=new Set(); const list=[];
   GAMES.forEach(g=>{
-    const faved=g.servers.length>1?g.servers.some(s=>favs.includes(`${g.id}-${s}`)):favs.includes(g.id);
-    if(faved&&!seen.has(g.id)&&GAME_TASKS[g.id]){seen.add(g.id);list.push(g);}
+    if(seen.has(g.id) || !GAME_TASKS[g.id]) return;
+    if(gameHasAnyFav(g)){seen.add(g.id);list.push(g);}
   });
   return list;
 }
@@ -4130,7 +4129,7 @@ function saveEvt(){
   if(evtIdx>=0)events[evtIdx]=entry;else events.push(entry);
   // 픽업 저장 시 해당 게임/서버 자동 즐겨찾기
   if(g){
-    const favKey=g.servers.length>1?`${entry.game}-${entry.srv}`:entry.game;
+    const favKey=g.servers.includes('all')?entry.game:`${entry.game}-${entry.srv}`;
     if(!favs.includes(favKey)){favs.push(favKey);localStorage.setItem('gv8-favs',JSON.stringify(favs));}
   }
   save();closeEvt();renderAll();
@@ -4217,6 +4216,7 @@ function openCpn(idx=-1){
   document.getElementById('cm-game').innerHTML=opts;
   ['cm-code','cm-reward','cm-src','cm-exp'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('cm-srv').value=serverFilter==='all'?'all':serverFilter;
+  document.getElementById('cpnMTitle').textContent=idx>=0?'쿠폰 수정':'쿠폰 추가';
   if(idx>=0){const c=coupons[idx];document.getElementById('cm-game').value=c.game;document.getElementById('cm-srv').value=c.srv||'all';document.getElementById('cm-code').value=c.code;document.getElementById('cm-reward').value=c.reward;document.getElementById('cm-src').value=c.src||'';document.getElementById('cm-exp').value=c.exp||'';}
   document.getElementById('cpnOvl').classList.add('open');
 }
@@ -4224,9 +4224,10 @@ function closeCpn(){document.getElementById('cpnOvl').classList.remove('open');}
 function saveCpn(){
   const code=document.getElementById('cm-code').value.trim().toUpperCase();
   if(!code){toast('⚠️ 코드 필요');return;}
-  const entry={game:document.getElementById('cm-game').value,srv:document.getElementById('cm-srv').value,code,reward:document.getElementById('cm-reward').value.trim(),src:document.getElementById('cm-src').value.trim(),exp:document.getElementById('cm-exp').value,used:false};
+  const existing=cpnIdx>=0?coupons[cpnIdx]:{};
+  const entry={game:document.getElementById('cm-game').value,srv:document.getElementById('cm-srv').value,code,reward:document.getElementById('cm-reward').value.trim(),src:document.getElementById('cm-src').value.trim(),exp:document.getElementById('cm-exp').value,used:!!existing.used};
   if(cpnIdx>=0)coupons[cpnIdx]=entry;else coupons.push(entry);
-  save();closeCpn();renderCoupons();updateBadges();toast('🎟 저장!');
+  save();closeCpn();renderEventList();updateBadges();toast('🎟 저장!');
 }
 
 function setAlarms(idx){
@@ -4961,7 +4962,7 @@ function aiRegPickupBulk(){
     // 즐겨찾기 자동 추가
     const g=GAMES.find(x=>x.id===p.game);
     if(g){
-      const favKey=g.servers.length>1?`${p.game}-${p.srv}`:p.game;
+      const favKey=g.servers.includes('all')?p.game:`${p.game}-${p.srv}`;
       if(!favs.includes(favKey)){favs.push(favKey);}
     }
   });
