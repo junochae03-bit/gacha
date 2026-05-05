@@ -5845,50 +5845,102 @@ async function aiExtractPickups(text,gid,srv){
   const g=GAMES.find(x=>x.id===gid);
   const pickupCards=document.getElementById('aiPickupCards');
 
-  const prompt=`다음 텍스트에서 ${g.name} 픽업 배너 정보를 JSON 배열로만 응답해:
+  // 강건한 프롬프트: 한 픽업에 캐릭터 여러 명 / 특수 문자 / 기간 미상도 처리
+  const prompt=`아래 텍스트에서 ${g.name} 픽업 정보를 JSON 배열로만 응답.
 
-[
-  {"char":"캐릭터명","event":"이벤트/배너명","start":"YYYY-MM-DD","end":"YYYY-MM-DD","type":"limited","status":"ongoing"}
-]
-
-type: limited(한정) / standard(통상) / rerun(복각) / fes(페스) / collab(콜라보)
-status: ongoing(현재 진행중) / upcoming(다음 예정)
-- 날짜가 명확한 것만 포함. 미확인 날짜는 제외.
-- JSON 배열만 응답. 설명 없이.
+규칙:
+1. 응답은 [ ... ] JSON 배열 하나만. 설명·주석·코드블록·접두사 절대 금지.
+2. 각 객체 스키마: {"char":"문자열","event":"문자열","start":"YYYY-MM-DD","end":"YYYY-MM-DD","type":"문자열","status":"문자열"}
+3. char에 캐릭터 여러 명이면 " / " 로 구분 (예: "테그 에페메로스 / 잭 더 리퍼")
+4. 특수 괄호(〔〕、（）、())는 그대로 유지하되 JSON 문자열로 정상 escape (큰따옴표 안에 들어가면 됨)
+5. type: limited / standard / rerun / fes / collab 중 하나
+6. status: ongoing / upcoming / ended 중 하나
+7. 시작/종료 날짜가 명확하지 않으면 해당 픽업은 결과에서 제외 (start/end는 항상 YYYY-MM-DD 8자리 형식 필수)
+8. 진행 중/예정 중 어느 것도 없으면 빈 배열 [] 반환
 
 텍스트:
 ${text}`;
 
+  // JSON 파싱 헬퍼 (다단계 fallback)
+  const tryParseJson=(s)=>{
+    if(!s) return null;
+    // 1차: 그대로
+    try{ return JSON.parse(s); } catch(_){}
+    // 2차: 첫 [ ~ 마지막 ] 추출
+    const m=s.match(/\[[\s\S]*\]/);
+    if(m){ try{ return JSON.parse(m[0]); } catch(_){} }
+    // 3차: trailing comma 제거 후
+    if(m){
+      const cleaned=m[0].replace(/,(\s*[}\]])/g,'$1');
+      try{ return JSON.parse(cleaned); } catch(_){}
+    }
+    // 4차: 단일 객체로 시도
+    const objM=s.match(/\{[\s\S]*\}/);
+    if(objM){ try{ return [JSON.parse(objM[0])]; } catch(_){} }
+    return null;
+  };
+
   try{
     const data=await callGemini(prompt, false, false); // 추출은 검색 없이, 백그라운드 (재시도 UI 숨김)
     let raw=extractGeminiText(data);
-    raw=raw.replace(/```json|```/g,'').trim();
-    const arrMatch=raw.match(/\[[\s\S]*\]/);
-    if(arrMatch) raw=arrMatch[0];
-    const parsed=JSON.parse(raw);
+    raw=(raw||'').replace(/```json|```/g,'').trim();
+
+    if(!raw){
+      console.warn('[aiExtractPickups] Gemini가 빈 응답 반환');
+      pickupCards.innerHTML='<div style="font-size:11px;color:var(--mu2);padding:8px">📋 추출된 픽업이 없습니다 — 위 결과를 보고 직접 등록하세요.</div>';
+      return;
+    }
+
+    const parsed=tryParseJson(raw);
+    if(!parsed){
+      console.error('[aiExtractPickups] JSON 파싱 실패. 원본 응답:\n', raw);
+      pickupCards.innerHTML=`<div style="font-size:11px;color:var(--mu2);padding:10px;background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.3);border-radius:6px;line-height:1.6">
+        ⚠️ 픽업 카드 자동 생성 실패 — JSON 파싱 오류<br>
+        <span style="font-size:10px;opacity:0.7">위 검색 결과를 보고 직접 ＋ 새 픽업 등록 으로 입력해주세요.<br>(F12 콘솔에서 자세한 응답 확인 가능)</span><br>
+        <button class="btn-xs" style="margin-top:8px" onclick='aiRetryExtract(${JSON.stringify(text).replace(/'/g,"&#39;")},${JSON.stringify(gid).replace(/'/g,"&#39;")},${JSON.stringify(srv).replace(/'/g,"&#39;")})'>🔄 다시 시도</button>
+      </div>`;
+      return;
+    }
 
     if(!Array.isArray(parsed)||!parsed.length){
-      pickupCards.innerHTML='';
+      pickupCards.innerHTML='<div style="font-size:11px;color:var(--mu2);padding:8px">📋 추출된 픽업이 없습니다 — 위 결과를 보고 직접 등록하세요.</div>';
+      return;
+    }
+
+    // 유효한 항목만 필터링 (start/end YYYY-MM-DD 형식 검사)
+    const datePattern=/^\d{4}-\d{2}-\d{2}$/;
+    const validParsed=parsed.filter(p=>{
+      if(!p || typeof p!=='object') return false;
+      // start/end 둘 다 유효하지 않으면 제외
+      if(!p.start || !datePattern.test(p.start)) return false;
+      if(!p.end || !datePattern.test(p.end)) return false;
+      return true;
+    });
+
+    if(!validParsed.length){
+      console.warn('[aiExtractPickups] 유효한 날짜 형식 없음:', parsed);
+      pickupCards.innerHTML='<div style="font-size:11px;color:var(--mu2);padding:8px">📋 명확한 기간을 가진 픽업이 없습니다 — 위 결과를 보고 직접 등록하세요.</div>';
       return;
     }
 
     // status 자동 보정 (날짜 기준)
     const today=new Date();
-    parsed.forEach(p=>{
-      if(p.status) return;
-      if(p.start && p.end){
-        const s=new Date(p.start), en=new Date(p.end);
-        if(s<=today && en>=today) p.status='ongoing';
-        else if(s>today) p.status='upcoming';
-        else p.status='ended';
-      }
+    validParsed.forEach(p=>{
+      if(p.status==='ongoing'||p.status==='upcoming'||p.status==='ended') return;
+      const s=new Date(p.start), en=new Date(p.end);
+      if(s<=today && en>=today) p.status='ongoing';
+      else if(s>today) p.status='upcoming';
+      else p.status='ended';
     });
 
-    const ongoing=parsed.filter(p=>p.status==='ongoing');
-    const upcoming=parsed.filter(p=>p.status==='upcoming');
+    // 이하 기존 로직 — validParsed 사용
+    const parsedFinal=validParsed;
+
+    const ongoing=parsedFinal.filter(p=>p.status==='ongoing');
+    const upcoming=parsedFinal.filter(p=>p.status==='upcoming');
 
     // 전역에 임시 저장 (등록 시 사용)
-    window._aiPickupResults=parsed.map((p,i)=>({...p,_idx:i,game:gid,srv}));
+    window._aiPickupResults=parsedFinal.map((p,i)=>({...p,_idx:i,game:gid,srv}));
 
     const buildCard=(p,idx)=>{
       const typeLabel={limited:'한정',rerun:'복각',standard:'통상',fes:'페스',collab:'콜라보'}[p.type||'limited']||'한정';
@@ -5933,7 +5985,7 @@ ${text}`;
         </div>
       </div>`;
       ongoing.forEach((p,i)=>{
-        const idx=parsed.indexOf(p);
+        const idx=parsedFinal.indexOf(p);
         html+=buildCard(p,idx);
       });
     }
@@ -5944,7 +5996,7 @@ ${text}`;
         </div>
       </div>`;
       upcoming.forEach((p,i)=>{
-        const idx=parsed.indexOf(p);
+        const idx=parsedFinal.indexOf(p);
         html+=buildCard(p,idx);
       });
     }
@@ -5972,6 +6024,11 @@ ${text}`;
 }
 
 // 픽업 카드 체크박스 일괄 토글
+// 추출 재시도 (에러 복구 버튼용)
+function aiRetryExtract(text, gid, srv){
+  aiExtractPickups(text, gid, srv);
+}
+
 function aiTogglePickupAll(checked){
   document.querySelectorAll('.ai-pickup-chk').forEach(c=>{c.checked=checked;});
 }
