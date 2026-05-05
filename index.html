@@ -5359,7 +5359,7 @@ async function listAvailableModels(){
 // ════════════════════════════════════════════════════════════════
 //  GEMINI API 호출 헬퍼
 // ════════════════════════════════════════════════════════════════
-async function callGemini(prompt, useSearch=true){
+async function callGemini(prompt, useSearch=true, showRetryUi=true){
   const apiKey=getApiKey();
   if(!apiKey) throw new Error('API_KEY_MISSING');
 
@@ -5400,8 +5400,14 @@ async function callGemini(prompt, useSearch=true){
         const isOverload=m.includes('503')||m.includes('500');
         if(isOverload && attempt<delays.length){
           const wait=delays[attempt];
-          const el=document.getElementById('aiRes');
-          if(el) el.textContent=`⏳ Gemini 서버 혼잡 — ${wait/1000}초 후 자동 재시도 (${attempt+1}/${delays.length})...`;
+          // 메인 검색일 때만 사용자에게 재시도 메시지 표시
+          // (백그라운드 추출 호출은 조용히 재시도해서 메인 결과를 덮지 않게 함)
+          if(showRetryUi){
+            const el=document.getElementById('aiRes');
+            if(el) el.textContent=`⏳ Gemini 서버 혼잡 — ${wait/1000}초 후 자동 재시도 (${attempt+1}/${delays.length})...`;
+          } else {
+            console.info(`[callGemini 백그라운드] 503 재시도 ${attempt+1}/${delays.length} (${wait/1000}s 대기)`);
+          }
           await new Promise(r=>setTimeout(r,wait));
           continue;
         }
@@ -5834,7 +5840,7 @@ status: ongoing(현재 진행중) / upcoming(다음 예정)
 ${text}`;
 
   try{
-    const data=await callGemini(prompt, false); // 추출은 검색 없이
+    const data=await callGemini(prompt, false, false); // 추출은 검색 없이, 백그라운드 (재시도 UI 숨김)
     let raw=extractGeminiText(data);
     raw=raw.replace(/```json|```/g,'').trim();
     const arrMatch=raw.match(/\[[\s\S]*\]/);
@@ -6018,7 +6024,7 @@ JSON만 응답.
 
 텍스트: ${aiLast}`;
   try{
-    const data=await callGemini(prompt, false);
+    const data=await callGemini(prompt, false, false); // 백그라운드 (재시도 UI 숨김)
     let raw=extractGeminiText(data).replace(/```json|```/g,'').trim();
     const m=raw.match(/\[[\s\S]*\]/);
     if(m) raw=m[0];
@@ -6043,7 +6049,7 @@ async function aiAutoEvents(gid,srv){
 
 텍스트: ${aiLast}`;
   try{
-    const data=await callGemini(prompt, false);
+    const data=await callGemini(prompt, false, false); // 백그라운드 (재시도 UI 숨김)
     let raw=extractGeminiText(data).replace(/```json|```/g,'').trim();
     const m=raw.match(/\[[\s\S]*\]/);
     if(m) raw=m[0];
