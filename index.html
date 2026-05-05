@@ -524,6 +524,25 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 .result-badge.success{background:rgba(95,217,156,.25);color:#86efac;border:1px solid rgba(95,217,156,.5)}
 .result-badge.fail{background:rgba(248,113,113,.25);color:#fca5a5;border:1px solid rgba(248,113,113,.5)}
 
+/* 카드 위 빠른 결과 토글 + 핀 */
+.quick-actions{position:absolute;top:8px;right:8px;display:flex;gap:5px;z-index:6}
+.quick-btn{width:30px;height:30px;border-radius:50%;border:none;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);color:#fff;font-size:14px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.quick-btn:hover{transform:scale(1.12);background:rgba(0,0,0,.75)}
+.quick-btn:active{transform:scale(.92)}
+.quick-btn.success{background:rgba(95,217,156,.85);color:#0a0d14}
+.quick-btn.fail{background:rgba(248,113,113,.85);color:#0a0d14}
+.quick-btn.pinned{background:rgba(251,191,36,.9);color:#0a0d14}
+
+/* 다중 선택 모드 */
+.card.selected{box-shadow:0 0 0 3px var(--bl);transform:translateY(-2px)}
+.select-checkbox{position:absolute;top:8px;left:8px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);border:2px solid #fff;cursor:pointer;z-index:6;display:none;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;transition:all .15s}
+.select-checkbox.show{display:flex}
+.select-checkbox.checked{background:var(--bl);border-color:var(--bl)}
+
+.batch-toolbar{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(100px);background:linear-gradient(135deg,var(--sf2),var(--sf3));border:1.5px solid var(--bd2);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:99;transition:transform .25s ease;flex-wrap:wrap;max-width:90vw}
+.batch-toolbar.show{transform:translateX(-50%) translateY(0)}
+.batch-info{font-size:12px;font-weight:700;color:var(--bl);white-space:nowrap}
+
 /* SPENT INFO box on cards */
 .spent-box{background:linear-gradient(135deg,rgba(251,191,36,.08),rgba(167,139,250,.05));border:1px solid rgba(251,191,36,.2);border-radius:8px;padding:9px 12px;margin-top:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11px}
 .spent-l{color:var(--mu2);font-weight:600;display:flex;align-items:center;gap:5px}
@@ -600,6 +619,36 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
 
 .ai-pickup-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-top:14px}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/*  GALLERY                            */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.gallery-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:18px}
+.gal-stat{background:var(--sf);border:1px solid var(--bd);border-radius:11px;padding:12px 14px;text-align:center;position:relative;overflow:hidden}
+.gal-stat::before{content:'';position:absolute;top:-30px;right:-30px;width:90px;height:90px;border-radius:50%;filter:blur(28px);opacity:.25;background:var(--gameC,var(--bl))}
+.gal-stat-label{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:6px;position:relative}
+.gal-stat-value{font-family:'Orbitron',monospace;font-size:24px;font-weight:900;color:var(--gameC,var(--bl));line-height:1;position:relative}
+.gal-stat-sub{font-size:11px;color:var(--mu2);margin-top:4px;position:relative}
+
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.gal-card{background:var(--sf);border:1px solid var(--bd);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .2s;position:relative}
+.gal-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.4);border-color:var(--gameC,var(--bd2))}
+.gal-art{height:140px;position:relative;overflow:hidden}
+.gal-art .banner-svg{position:absolute;inset:0;width:100%;height:100%}
+.gal-art .banner-gradient{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,13,20,.95) 0%,rgba(10,13,20,.4) 50%,transparent 100%)}
+.gal-copies{position:absolute;top:6px;right:6px;background:linear-gradient(135deg,var(--gold),#fde68a);color:#0a0d14;font-family:'Orbitron',monospace;font-size:10px;font-weight:900;padding:3px 8px;border-radius:99px;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.gal-game-tag{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);color:#fff;font-size:9px;font-weight:700;padding:3px 7px;border-radius:5px;letter-spacing:1px;text-transform:uppercase}
+.gal-name{position:absolute;bottom:6px;left:8px;right:8px;font-size:14px;font-weight:900;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.7);line-height:1.2}
+.gal-body{padding:10px 12px;font-size:11px;color:var(--mu2);display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap}
+.gal-body strong{color:var(--tx);font-family:'Orbitron',monospace;font-weight:700}
+
+.gallery-empty{grid-column:1/-1;text-align:center;padding:40px 24px;background:var(--sf);border:2px dashed var(--bd2);border-radius:14px}
+
+/* 상세 모달 */
+.gd-attempts{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.gd-attempt-row{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--sf2);border-radius:7px;font-size:11px;border-left:3px solid var(--bd)}
+.gd-attempt-row.success{border-left-color:var(--gold)}
+.gd-attempt-row.fail{border-left-color:var(--rd)}
 .ai-pickup-card{background:var(--sf2);border:1px solid var(--bd2);border-radius:10px;padding:12px;transition:all .15s}
 .ai-pickup-card:hover{border-color:var(--bl)}
 .aip-game{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px}
@@ -817,6 +866,12 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
       <span class="nav-label">AI 검색</span>
       <span class="nav-badge"></span>
     </button>
+    <button class="nav-item" data-page="gallery" onclick="navTo('gallery')">
+      <span class="nav-num">9</span>
+      <span class="nav-icon">🎭</span>
+      <span class="nav-label">캐릭터 갤러리</span>
+      <span class="nav-badge" id="nav-cnt-gallery"></span>
+    </button>
   </div>
 </nav>
 <div class="nav-backdrop" id="navBackdrop" onclick="closeNav()"></div>
@@ -830,6 +885,7 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
     <div style="display:flex;gap:6px;flex-wrap:wrap">
       <button class="btn btn-ghost" onclick="openWishlist()" style="font-size:11px;padding:7px 12px" title="원하는 캐릭터 미리 등록 → 픽업 출시 시 강조">⭐ 위시리스트</button>
       <button class="btn btn-ghost" onclick="openAlarmConfig()" style="font-size:11px;padding:7px 12px">🔔 알림 설정</button>
+      <button class="btn btn-ghost" onclick="toggleSelectMode()" style="font-size:11px;padding:7px 12px" title="여러 픽업 일괄 작업">✓ 선택 모드</button>
       <button class="btn btn-ghost" onclick="exportAllIcal()" style="font-size:11px;padding:7px 12px" title="즐겨찾기 픽업 일정을 한 번에 .ics로 내보내기">📅 전체 캘린더 내보내기</button>
       <button class="btn btn-primary" onclick="openEvt()">＋ 새 픽업 등록</button>
     </div>
@@ -1005,7 +1061,39 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
   </div>
 </div>
 
+<div id="page-gallery" style="display:none">
+  <div class="page-intro">
+    <div class="page-intro-text">
+      <h2>🎭 캐릭터 갤러리</h2>
+      <p>지금까지 픽업으로 획득한 캐릭터 라이브러리. 명함 + 돌파 누적 통계 표시.</p>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <select class="ai-sel" id="gal-sort" style="max-width:140px" onchange="renderGallery()">
+        <option value="recent">📅 최근 획득순</option>
+        <option value="name">🔤 가나다순</option>
+        <option value="game">🎮 게임별</option>
+        <option value="copies">⭐ 보유 돌수순</option>
+        <option value="cost">💰 누적 비용순</option>
+      </select>
+      <select class="ai-sel" id="gal-game" style="max-width:140px" onchange="renderGallery()">
+        <option value="all">🌐 전체 게임</option>
+      </select>
+    </div>
+  </div>
+  <div id="gallerySummary"></div>
+  <div id="galleryGrid" class="gallery-grid"></div>
 </div>
+
+</div>
+
+<!-- 캐릭터 상세 모달 -->
+<div class="overlay" id="galDetailOvl"><div class="modal" style="max-width:560px">
+  <h2 id="galDetailTitle">🎴 캐릭터 상세</h2>
+  <div id="galDetailBody"></div>
+  <div class="mfoot">
+    <button class="btn btn-primary" onclick="closeGalDetail()">닫기</button>
+  </div>
+</div></div>
 
 <!-- EVENT MODAL -->
 <div class="overlay" id="evtOvl"><div class="modal">
@@ -1326,11 +1414,12 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 <div class="overlay" id="kbdOvl"><div class="modal" style="max-width:460px">
   <h2>⌨️ 단축키</h2>
   <div style="font-size:12px;color:var(--mu2);line-height:2.2;margin:8px 0">
-    <div><span class="kbd">1</span> ~ <span class="kbd">8</span> &nbsp; 페이지 전환 (스케줄~AI 검색)</div>
+    <div><span class="kbd">1</span> ~ <span class="kbd">9</span> &nbsp; 페이지 전환 (스케줄~갤러리)</div>
     <div><span class="kbd">N</span> &nbsp; 새 픽업 등록</div>
     <div><span class="kbd">S</span> &nbsp; 검색창 포커스 (스케줄)</div>
     <div><span class="kbd">A</span> &nbsp; AI 검색 페이지로</div>
     <div><span class="kbd">T</span> &nbsp; 할일 페이지로</div>
+    <div><span class="kbd">G</span> &nbsp; 캐릭터 갤러리로</div>
     <div><span class="kbd">Esc</span> &nbsp; 모달 닫기</div>
     <div><span class="kbd">?</span> &nbsp; 이 도움말 열기</div>
   </div>
@@ -1378,6 +1467,9 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
       <span style="display:block;font-size:10px;color:var(--mu);margin-top:2px">데이터 변경 시 1분 후 Gist에 자동 업로드 (Token + ID 모두 저장된 경우)</span>
     </span>
   </label>
+
+  <button class="btn btn-ghost" onclick="cleanupOldData()" style="width:100%;margin-top:8px;font-size:11px;color:var(--gold);border-color:rgba(251,191,36,.3)">🧹 1년 이상 된 데이터 정리 (저장 공간 절약)</button>
+  <button class="btn btn-ghost" onclick="toggleGameTheme()" style="width:100%;margin-top:6px;font-size:11px">🎨 게임별 테마 컬러 토글 (즐겨찾기 1순위 게임 색상)</button>
   
   <details style="margin-top:14px">
     <summary style="cursor:pointer;font-size:11px;color:var(--mu2)">💡 사용 방법 (처음 사용 시)</summary>
@@ -1922,6 +2014,16 @@ function setupCardClickHandler(){
     } else if(action === 'delAttempt'){
       const attemptIdx = parseInt(target.getAttribute('data-attempt-idx'));
       if(eid && !isNaN(attemptIdx)) deleteAttempt(eid, attemptIdx);
+    } else if(action === 'quickResult' && eid){
+      e.preventDefault();
+      const wantedResult = target.getAttribute('data-result');
+      quickToggleResult(eid, wantedResult);
+    } else if(action === 'togglePin' && eid){
+      e.preventDefault();
+      togglePin(eid);
+    } else if(action === 'toggleSelect' && eid){
+      e.preventDefault();
+      toggleSelect(eid);
     }
   }, true); // capture phase로 등록 - 다른 핸들러보다 먼저 실행
 }
@@ -2270,9 +2372,11 @@ function renderSchedule(){
   const all=events.filter(e=>!e.predicted&&isFavored(e.game, e.srv)&&matchSrv(e.srv));
   const completedCount=all.filter(isCompleted).length;
   
-  const ongoing=vis.filter(e=>new Date(e.start)<=now&&new Date(e.end)>=now).sort((a,b)=>new Date(a.end)-new Date(b.end));
-  const upcoming=vis.filter(e=>new Date(e.start)>now).sort((a,b)=>new Date(a.start)-new Date(b.start));
-  const ended=vis.filter(e=>new Date(e.end)<now).sort((a,b)=>new Date(b.end)-new Date(a.end));
+  // 핀 고정된 항목을 먼저, 그 다음 기존 정렬 기준
+  const pinFirst=(a,b)=>(b.pinned?1:0)-(a.pinned?1:0);
+  const ongoing=vis.filter(e=>new Date(e.start)<=now&&new Date(e.end)>=now).sort((a,b)=>pinFirst(a,b)||new Date(a.end)-new Date(b.end));
+  const upcoming=vis.filter(e=>new Date(e.start)>now).sort((a,b)=>pinFirst(a,b)||new Date(a.start)-new Date(b.start));
+  const ended=vis.filter(e=>new Date(e.end)<now).sort((a,b)=>pinFirst(a,b)||new Date(b.end)-new Date(a.end));
   
   // 검색 결과 없는 경우
   const isFiltered=scheduleSearchQuery||scheduleResultFilter!=='all';
@@ -2292,6 +2396,8 @@ function renderSchedule(){
       <div style="flex:1">성공/픽뚫 완료된 픽업 <strong style="color:var(--g)">${completedCount}건</strong>은 스케줄에서 자동 제외됩니다.</div>
       <button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;white-space:nowrap" onclick="navTo('stats')">📊 기록 보기</button>
     </div>`:'');
+  // 가상 스크롤 초기화 (카드 많을 때 성능 최적화)
+  if(typeof initVirtualScroll==='function') setTimeout(initVirtualScroll,50);
 }
 
 function genArt(g,charName,evType){
@@ -2415,10 +2521,24 @@ function buildCard(e,idx){
     </div>`;
   })() : '';
   
-  return `<div class="card${e.predicted?' predicted':''}" style="--gc:${g.color}">
+  // 빠른 결과 토글 (카드 우상단 ✨ / 💔) + 핀
+  const isPinned = !!e.pinned;
+  const isSel = !!_selectMode && _selectedEids.has(eid);
+  const successActive = e.result==='success'?'success':'';
+  const failActive = e.result==='fail'?'fail':'';
+  const quickBtns = `<div class="quick-actions">
+    <button class="quick-btn ${successActive}" data-action="quickResult" data-eid="${eid}" data-result="success" title="✨ 성공으로 표시 (현재: ${e.result==='success'?'성공':'미정'})">✨</button>
+    <button class="quick-btn ${failActive}" data-action="quickResult" data-eid="${eid}" data-result="fail" title="💔 픽뚫로 표시 (현재: ${e.result==='fail'?'픽뚫':'미정'})">💔</button>
+    <button class="quick-btn ${isPinned?'pinned':''}" data-action="togglePin" data-eid="${eid}" title="${isPinned?'핀 해제':'핀 고정 (상단 표시)'}">${isPinned?'📌':'📍'}</button>
+  </div>`;
+  const selectBox = `<div class="select-checkbox ${_selectMode?'show':''} ${isSel?'checked':''}" data-action="toggleSelect" data-eid="${eid}">${isSel?'✓':''}</div>`;
+
+  return `<div class="card${e.predicted?' predicted':''}${isPinned?' pinned':''}${isSel?' selected':''}" style="--gc:${g.color}" data-eid="${eid}">
+    ${selectBox}
+    ${quickBtns}
     <div class="banner banner-clickable" data-action="edit" data-eid="${eid}" title="클릭해서 수정">
       ${artHtml}
-      <div class="banner-tags">${srvBadge}${typeBadge}${wishBadge}</div>
+      <div class="banner-tags">${srvBadge}${typeBadge}${wishBadge}${isPinned?'<span class="tag" style="background:rgba(251,191,36,.85);color:#0a0d14;border:1px solid rgba(251,191,36,.6);font-weight:900">📌 고정</span>':''}</div>
       <div class="banner-status">${badge}</div>
       ${resultBadgeHtml}
       <div class="banner-info">
@@ -5385,6 +5505,7 @@ const PAGE_INFO={
   events:{icon:'📰',label:'이벤트 목록'},
   tasks:{icon:'✅',label:'할일 체크'},
   search:{icon:'🤖',label:'AI 검색'},
+  gallery:{icon:'🎭',label:'캐릭터 갤러리'},
 };
 
 function toggleNav(){
@@ -5407,7 +5528,7 @@ function navTo(name){
 
 function showPage(name){
   page=name;
-  ['schedule','inventory','calc','stats','calendar','events','tasks','search'].forEach(p=>{const el=document.getElementById(`page-${p}`);if(el)el.style.display=p===name?'block':'none';});
+  ['schedule','inventory','calc','stats','calendar','events','tasks','search','gallery'].forEach(p=>{const el=document.getElementById(`page-${p}`);if(el)el.style.display=p===name?'block':'none';});
   // Update nav-toggle display
   const info=PAGE_INFO[name]||{icon:'📅',label:'페이지'};
   document.getElementById('navCurIcon').textContent=info.icon;
@@ -5422,8 +5543,9 @@ function showPage(name){
   if(name==='tasks')renderTasks();
   if(name==='events')renderEventList();
   if(name==='search')refreshApiStatus();
+  if(name==='gallery')renderGallery();
   // Update top badge for current page
-  const badges={schedule:document.getElementById('nav-cnt-active'),stats:document.getElementById('nav-cnt-stats'),events:document.getElementById('nav-cnt-events')};
+  const badges={schedule:document.getElementById('nav-cnt-active'),stats:document.getElementById('nav-cnt-stats'),events:document.getElementById('nav-cnt-events'),gallery:document.getElementById('nav-cnt-gallery')};
   const cb=document.getElementById('navCurBadge');
   const b=badges[name];
   if(b&&b.textContent&&b.textContent!=='0'){cb.textContent=b.textContent;cb.classList.add('show');}else{cb.classList.remove('show');cb.textContent='';}
@@ -5431,7 +5553,7 @@ function showPage(name){
 }
 
 function toast(msg){const el=document.createElement('div');el.className='toast';el.innerHTML=msg.replace(/\n/g,'<br>');document.getElementById('tw').appendChild(el);setTimeout(()=>el.remove(),2500);}
-['evtOvl','cpnOvl','gevOvl','customEvtOvl','taskEditOvl','addTaskOvl','wishOvl','alarmOvl','budgetOvl','onbOvl','attemptOvl'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});
+['evtOvl','cpnOvl','gevOvl','customEvtOvl','taskEditOvl','addTaskOvl','wishOvl','alarmOvl','budgetOvl','onbOvl','attemptOvl','galDetailOvl'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});
 
 // Color picker event delegation
 document.getElementById('cevColorPicker').addEventListener('click', e => {
@@ -5965,8 +6087,8 @@ document.addEventListener('keydown',e=>{
   // 단축키 매핑
   const map={
     '1':'schedule','2':'inventory','3':'calc','4':'stats',
-    '5':'calendar','6':'events','7':'tasks','8':'search',
-    'a':'search','A':'search','t':'tasks','T':'tasks'
+    '5':'calendar','6':'events','7':'tasks','8':'search','9':'gallery',
+    'a':'search','A':'search','t':'tasks','T':'tasks','g':'gallery','G':'gallery'
   };
   if(map[e.key]){e.preventDefault();navTo(map[e.key]);return;}
 
@@ -6078,6 +6200,407 @@ window.addEventListener('load',()=>{
     if(btn){btn.classList.toggle('act',favOnly);btn.textContent=favOnly?'⭐ 즐겨찾기만':'⭐ 전체';}
   },100);
 });
+
+// ════════════════════════════════════════════════════════════════
+//  캐릭터 갤러리 (성공한 픽업 캐릭터 라이브러리)
+// ════════════════════════════════════════════════════════════════
+function aggregateCharacters(){
+  // game+char 단위로 그룹핑, 모든 시도(다중 시도 포함) 누적
+  const byKey={};
+  events.filter(e=>!e.predicted&&e.char).forEach(e=>{
+    const all=getAllAttempts(e);
+    const key=`${e.game}::${e.char.trim().toLowerCase()}`;
+    if(!byKey[key]){
+      byKey[key]={
+        game:e.game,
+        char:e.char.trim(),
+        copies:0,
+        fails:0,
+        totalPulls:0,
+        totalKrw:0,
+        firstSuccessDate:null,
+        lastSuccessDate:null,
+        events:[],
+        attempts:[]
+      };
+    }
+    const g=GAMES.find(x=>x.id===e.game);
+    const pricePer=g?g.gacha.pricePerPull:0;
+    all.forEach(a=>{
+      if(a.result==='success'){
+        byKey[key].copies++;
+        const dt=e.start||'';
+        if(!byKey[key].firstSuccessDate || dt<byKey[key].firstSuccessDate) byKey[key].firstSuccessDate=dt;
+        if(!byKey[key].lastSuccessDate || dt>byKey[key].lastSuccessDate) byKey[key].lastSuccessDate=dt;
+      } else if(a.result==='fail'){
+        byKey[key].fails++;
+      }
+      byKey[key].totalPulls += a.spentPulls||0;
+      byKey[key].totalKrw += (a.spentPulls||0)*pricePer;
+      byKey[key].attempts.push({...a, eventDate:e.start, eventId:e.id, eventType:e.type});
+    });
+    byKey[key].events.push(e);
+  });
+  // 성공 1번 이상 있는 캐릭터만 (실패만 한 캐릭터는 갤러리에서 제외)
+  return Object.values(byKey).filter(c=>c.copies>0);
+}
+
+function renderGallery(){
+  const grid=document.getElementById('galleryGrid');
+  const summary=document.getElementById('gallerySummary');
+  if(!grid) return;
+  const chars=aggregateCharacters();
+
+  // 게임 필터 옵션 채우기
+  const gameSel=document.getElementById('gal-game');
+  const presentGames=[...new Set(chars.map(c=>c.game))];
+  const curFilter=gameSel?gameSel.value:'all';
+  if(gameSel){
+    gameSel.innerHTML='<option value="all">🌐 전체 게임</option>'+
+      presentGames.map(gid=>{const g=GAMES.find(x=>x.id===gid);return `<option value="${gid}">${g?g.short:gid}</option>`;}).join('');
+    if(presentGames.includes(curFilter) || curFilter==='all') gameSel.value=curFilter;
+  }
+
+  // 배지 (네비)
+  const badge=document.getElementById('nav-cnt-gallery');
+  if(badge) badge.textContent=chars.length>0?chars.length:'';
+
+  // Empty state
+  if(!chars.length){
+    summary.innerHTML='';
+    grid.innerHTML=`<div class="gallery-empty">
+      <div style="font-size:42px;margin-bottom:12px">🎭</div>
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:6px">아직 획득한 캐릭터가 없습니다</h3>
+      <p style="font-size:12px;color:var(--mu);line-height:1.7;margin-bottom:14px">픽업 등록 시 결과를 ✨ 성공으로 기록하면<br>여기에 자동으로 갤러리가 채워집니다.</p>
+      <button class="btn btn-primary" onclick="navTo('schedule')">📅 픽업 스케줄로 가기</button>
+    </div>`;
+    return;
+  }
+
+  // 통계 요약
+  const totalChars=chars.length;
+  const totalCopies=chars.reduce((s,c)=>s+c.copies,0);
+  const totalKrw=chars.reduce((s,c)=>s+c.totalKrw,0);
+  const totalPulls=chars.reduce((s,c)=>s+c.totalPulls,0);
+  const avgPullsPerChar=totalChars?Math.round(totalPulls/totalCopies):0;
+  summary.innerHTML=`<div class="gallery-summary">
+    <div class="gal-stat" style="--gameC:var(--bl)">
+      <div class="gal-stat-label">획득 캐릭터</div>
+      <div class="gal-stat-value">${totalChars}</div>
+      <div class="gal-stat-sub">고유 캐릭터</div>
+    </div>
+    <div class="gal-stat" style="--gameC:var(--gold)">
+      <div class="gal-stat-label">총 보유</div>
+      <div class="gal-stat-value">${totalCopies}</div>
+      <div class="gal-stat-sub">명함 + 돌파 합산</div>
+    </div>
+    <div class="gal-stat" style="--gameC:var(--g)">
+      <div class="gal-stat-label">평균 뽑기</div>
+      <div class="gal-stat-value">${avgPullsPerChar}</div>
+      <div class="gal-stat-sub">캐릭터 1개당</div>
+    </div>
+    <div class="gal-stat" style="--gameC:var(--rd)">
+      <div class="gal-stat-label">총 지출</div>
+      <div class="gal-stat-value">${totalKrw>=10000?Math.round(totalKrw/10000)+'만':Math.round(totalKrw/1000)+'K'}</div>
+      <div class="gal-stat-sub">~₩${totalKrw.toLocaleString()}</div>
+    </div>
+  </div>`;
+
+  // 정렬 + 필터
+  const sortKey=document.getElementById('gal-sort')?.value||'recent';
+  const gameFilter=document.getElementById('gal-game')?.value||'all';
+  let filtered=gameFilter==='all'?chars:chars.filter(c=>c.game===gameFilter);
+  filtered.sort((a,b)=>{
+    if(sortKey==='recent') return (b.lastSuccessDate||'').localeCompare(a.lastSuccessDate||'');
+    if(sortKey==='name') return a.char.localeCompare(b.char,'ko-KR');
+    if(sortKey==='game'){const ga=GAMES.find(x=>x.id===a.game)?.name||'';const gb=GAMES.find(x=>x.id===b.game)?.name||'';return ga.localeCompare(gb,'ko-KR')||a.char.localeCompare(b.char,'ko-KR');}
+    if(sortKey==='copies') return b.copies-a.copies;
+    if(sortKey==='cost') return b.totalKrw-a.totalKrw;
+    return 0;
+  });
+
+  grid.innerHTML=filtered.map(c=>{
+    const g=GAMES.find(x=>x.id===c.game)||{name:c.game,short:c.game,color:'#888'};
+    const art=genArt(g, c.char, c.events[0]?.type||'limited');
+    const copyLabel=c.copies===1?'명함':`+${c.copies-1}돌`;
+    return `<div class="gal-card" style="--gameC:${g.color}" onclick="openGalDetail('${c.game}', ${JSON.stringify(c.char).replace(/"/g,'&quot;')})">
+      <div class="gal-art">
+        ${art}
+        <div class="gal-game-tag" style="color:${g.color}">${g.short}</div>
+        <div class="gal-copies" title="총 ${c.copies}회 획득">${copyLabel}</div>
+        <div class="gal-name">${c.char}</div>
+      </div>
+      <div class="gal-body">
+        <span>🎲 <strong>${c.totalPulls}</strong>뽑</span>
+        <span>💰 <strong>₩${c.totalKrw>=10000?Math.round(c.totalKrw/10000)+'만':Math.round(c.totalKrw/1000)+'K'}</strong></span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openGalDetail(gameId, charName){
+  const chars=aggregateCharacters();
+  const c=chars.find(x=>x.game===gameId&&x.char===charName);
+  if(!c){toast('⚠️ 캐릭터 정보를 찾을 수 없음');return;}
+  const g=GAMES.find(x=>x.id===c.game)||{name:c.game,short:c.game,color:'#888'};
+  document.getElementById('galDetailTitle').innerHTML=`🎴 <span style="color:${g.color}">${c.char}</span> <span style="font-size:11px;color:var(--mu);font-weight:400">· ${g.short}</span>`;
+
+  const successAttempts=c.attempts.filter(a=>a.result==='success');
+  const failAttempts=c.attempts.filter(a=>a.result==='fail');
+  const avgPullsPerCopy=c.copies?Math.round(c.totalPulls/c.copies):0;
+  const krwPerCopy=c.copies?Math.round(c.totalKrw/c.copies):0;
+
+  // 시도 히스토리 (이벤트 단위로 묶음)
+  const historyHtml=c.events.sort((a,b)=>(b.start||'').localeCompare(a.start||'')).map(ev=>{
+    const all=getAllAttempts(ev);
+    const period=ev.start&&ev.end?`${ev.start} ~ ${ev.end}`:'';
+    const typeLabel={limited:'⚡ 한정',rerun:'♻️ 복각',standard:'🔄 통상',fes:'🎪 페스',collab:'🤝 콜라보'}[ev.type||'limited']||'';
+    return `<div style="background:var(--sf2);border-radius:8px;padding:10px 12px;margin-bottom:6px;border-left:3px solid ${g.color}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:11px;font-weight:700">${typeLabel} ${ev.event||''}</span>
+        <span style="font-size:10px;color:var(--mu)">${period}</span>
+      </div>
+      ${all.map((a,i)=>{
+        const ic=a.result==='success'?'✨':a.result==='fail'?'💔':'⏭';
+        const cls=a.result==='success'?'success':a.result==='fail'?'fail':'';
+        return `<div class="gd-attempt-row ${cls}">
+          <span>${ic}</span>
+          <span style="min-width:50px;font-weight:700">${a.label||(i===0?'명함':`+${i}돌`)}</span>
+          <span style="flex:1;color:var(--mu2)">${a.spentPulls||0}뽑${a.spentCurrency?` · ${a.spentCurrency.toLocaleString()}`:''}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+
+  document.getElementById('galDetailBody').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin:14px 0">
+      <div style="background:var(--sf2);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:9px;color:var(--mu);font-weight:700;letter-spacing:1px;text-transform:uppercase">획득</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--gold)">${c.copies}</div>
+        <div style="font-size:9px;color:var(--mu)">${c.copies===1?'명함':`명함 +${c.copies-1}돌`}</div>
+      </div>
+      <div style="background:var(--sf2);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:9px;color:var(--mu);font-weight:700;letter-spacing:1px;text-transform:uppercase">픽뚫</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:${c.fails?'var(--rd)':'var(--mu)'}">${c.fails}</div>
+      </div>
+      <div style="background:var(--sf2);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:9px;color:var(--mu);font-weight:700;letter-spacing:1px;text-transform:uppercase">총 뽑기</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--bl)">${c.totalPulls}</div>
+        <div style="font-size:9px;color:var(--mu)">평균 ${avgPullsPerCopy}/개</div>
+      </div>
+      <div style="background:var(--sf2);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:9px;color:var(--mu);font-weight:700;letter-spacing:1px;text-transform:uppercase">총 비용</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--rd)">₩${c.totalKrw>=10000?Math.round(c.totalKrw/10000)+'만':Math.round(c.totalKrw/1000)+'K'}</div>
+        <div style="font-size:9px;color:var(--mu)">개당 ₩${krwPerCopy.toLocaleString()}</div>
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--mu);margin:14px 0 6px">📜 시도 히스토리</div>
+    ${historyHtml||'<div style="color:var(--mu);font-size:11px;padding:8px">기록 없음</div>'}
+  `;
+
+  document.getElementById('galDetailOvl').classList.add('open');
+}
+function closeGalDetail(){document.getElementById('galDetailOvl').classList.remove('open');}
+
+// ════════════════════════════════════════════════════════════════
+//  데이터 정리 (저장 공간 절약)
+// ════════════════════════════════════════════════════════════════
+function cleanupOldData(){
+  const before=JSON.stringify({events,coupons,gameEvents}).length;
+  const oneYearAgo=new Date(); oneYearAgo.setFullYear(oneYearAgo.getFullYear()-1);
+  const cutoff=oneYearAgo.toISOString().slice(0,10);
+
+  // 1년 이상 된 종료된 픽업 (성공/픽뚫 결과 있는 것만 제거 — 미정은 보존)
+  const oldEvents=events.filter(e=>!e.predicted&&e.end&&e.end<cutoff&&(e.result==='success'||e.result==='fail'));
+  // 1년 이상 된 사용된 쿠폰
+  const oldCoupons=coupons.filter(c=>c.used && c.exp && c.exp<cutoff);
+  // 1년 이상 된 종료된 게임 이벤트
+  const oldEvts=gameEvents.filter(e=>e.end && e.end<cutoff);
+  // 미래시 (predicted) 중 종료된 것
+  const oldPredicted=events.filter(e=>e.predicted&&e.end&&e.end<cutoff);
+
+  const totalOld=oldEvents.length+oldCoupons.length+oldEvts.length+oldPredicted.length;
+  if(!totalOld){toast('✨ 정리할 오래된 데이터가 없습니다');return;}
+
+  const msg=`📦 1년 이상 된 데이터 정리:\n\n` +
+    (oldEvents.length?`• 완료 픽업: ${oldEvents.length}건\n`:'') +
+    (oldPredicted.length?`• 종료된 미래시: ${oldPredicted.length}건\n`:'') +
+    (oldEvts.length?`• 종료 이벤트: ${oldEvts.length}건\n`:'') +
+    (oldCoupons.length?`• 사용된 쿠폰: ${oldCoupons.length}건\n`:'') +
+    `\n총 ${totalOld}건 삭제. 백업 권장.\n계속하시겠습니까?`;
+  if(!confirm(msg)) return;
+
+  events=events.filter(e=>!oldEvents.includes(e)&&!oldPredicted.includes(e));
+  coupons=coupons.filter(c=>!oldCoupons.includes(c));
+  gameEvents=gameEvents.filter(e=>!oldEvts.includes(e));
+  save();renderAll();
+  const after=JSON.stringify({events,coupons,gameEvents}).length;
+  const savedKB=Math.round((before-after)/1024);
+  toast(`🧹 ${totalOld}건 정리 완료 (-${savedKB}KB)`);
+}
+
+// ════════════════════════════════════════════════════════════════
+//  가상 스크롤 (대량 카드 시 성능 최적화)
+//  IntersectionObserver로 화면 밖 카드는 placeholder로 처리
+// ════════════════════════════════════════════════════════════════
+let _vsObserver=null;
+function initVirtualScroll(){
+  if(_vsObserver) _vsObserver.disconnect();
+  // 카드가 30개 이상일 때만 활성화
+  const cards=document.querySelectorAll('#schedule-content .card');
+  if(cards.length<30) return;
+  _vsObserver=new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      const card=entry.target;
+      if(entry.isIntersecting){
+        card.style.contentVisibility='visible';
+      } else {
+        // CSS content-visibility로 화면 밖 렌더링 비용 절감
+        card.style.contentVisibility='auto';
+        card.style.containIntrinsicSize='0 380px'; // 카드 높이 추정
+      }
+    });
+  },{rootMargin:'200px'});
+  cards.forEach(c=>_vsObserver.observe(c));
+}
+
+// ════════════════════════════════════════════════════════════════
+//  카드 빠른 결과 토글 / 핀 고정 / 다중 선택 모드
+// ════════════════════════════════════════════════════════════════
+let _selectMode=false;
+let _selectedEids=new Set();
+
+function quickToggleResult(eid, wantedResult){
+  const e=events.find(x=>x.id===eid);
+  if(!e){toast('⚠️ 픽업을 찾을 수 없음');return;}
+  // 같은 결과를 다시 누르면 untried로 토글
+  if(e.result===wantedResult){
+    e.result='untried';
+    toast('↺ 결과 미정으로 변경');
+  } else {
+    e.result=wantedResult;
+    toast(wantedResult==='success'?'✨ 성공으로 변경':'💔 픽뚫로 변경');
+  }
+  save();renderAll();
+}
+
+function togglePin(eid){
+  const e=events.find(x=>x.id===eid);
+  if(!e) return;
+  e.pinned=!e.pinned;
+  save();renderAll();
+  toast(e.pinned?'📌 고정됨':'📍 고정 해제');
+}
+
+// 다중 선택 모드
+function toggleSelectMode(){
+  _selectMode=!_selectMode;
+  if(!_selectMode) _selectedEids.clear();
+  renderSchedule();
+  updateBatchToolbar();
+}
+function toggleSelect(eid){
+  if(!_selectMode){_selectMode=true;}
+  if(_selectedEids.has(eid)) _selectedEids.delete(eid);
+  else _selectedEids.add(eid);
+  renderSchedule();
+  updateBatchToolbar();
+}
+function clearSelection(){
+  _selectedEids.clear();
+  _selectMode=false;
+  renderSchedule();
+  updateBatchToolbar();
+}
+function updateBatchToolbar(){
+  let bar=document.getElementById('batchToolbar');
+  if(!bar){
+    bar=document.createElement('div');
+    bar.id='batchToolbar';
+    bar.className='batch-toolbar';
+    bar.innerHTML=`
+      <span class="batch-info" id="batchCount"></span>
+      <button class="btn-xs" onclick="batchSelectAll()">전체 선택</button>
+      <button class="btn-xs" onclick="batchSetResult('success')" style="color:var(--g);border-color:rgba(95,217,156,.4)">✨ 성공으로</button>
+      <button class="btn-xs" onclick="batchSetResult('fail')" style="color:var(--rd);border-color:rgba(248,113,113,.4)">💔 픽뚫로</button>
+      <button class="btn-xs" onclick="batchTogglePin()">📌 핀 토글</button>
+      <button class="btn-xs del" onclick="batchDelete()">🗑 삭제</button>
+      <button class="btn-xs" onclick="clearSelection()">취소</button>
+    `;
+    document.body.appendChild(bar);
+  }
+  if(_selectMode && _selectedEids.size>0){
+    document.getElementById('batchCount').textContent=`${_selectedEids.size}개 선택됨`;
+    bar.classList.add('show');
+  } else {
+    bar.classList.remove('show');
+  }
+}
+function batchSelectAll(){
+  // 현재 보이는 즐겨찾기·서버 일치 픽업 모두 선택
+  events.filter(e=>!e.predicted&&isFavored(e.game,e.srv)&&matchSrv(e.srv)).forEach(e=>{
+    if(e.id) _selectedEids.add(e.id);
+  });
+  renderSchedule();
+  updateBatchToolbar();
+}
+function batchSetResult(result){
+  if(!_selectedEids.size){toast('⚠️ 선택된 항목이 없습니다');return;}
+  const label=result==='success'?'✨ 성공':'💔 픽뚫';
+  if(!confirm(`${_selectedEids.size}개 항목을 ${label}로 일괄 변경할까요?`)) return;
+  let n=0;
+  _selectedEids.forEach(eid=>{
+    const e=events.find(x=>x.id===eid);
+    if(e){e.result=result;n++;}
+  });
+  save();clearSelection();renderAll();
+  toast(`✅ ${n}개 변경됨`);
+}
+function batchTogglePin(){
+  if(!_selectedEids.size) return;
+  let n=0;
+  _selectedEids.forEach(eid=>{
+    const e=events.find(x=>x.id===eid);
+    if(e){e.pinned=!e.pinned;n++;}
+  });
+  save();clearSelection();renderAll();
+  toast(`📌 ${n}개 핀 토글`);
+}
+function batchDelete(){
+  if(!_selectedEids.size) return;
+  if(!confirm(`⚠️ ${_selectedEids.size}개 픽업을 삭제할까요? 되돌릴 수 없습니다.`)) return;
+  events=events.filter(e=>!e.id || !_selectedEids.has(e.id));
+  save();clearSelection();renderAll();
+  toast('🗑 일괄 삭제됨');
+}
+
+// ════════════════════════════════════════════════════════════════
+//  게임별 테마 컬러 모드
+// ════════════════════════════════════════════════════════════════
+function getThemedGameColor(){
+  const mode=localStorage.getItem('gv8-game-theme')||'auto';
+  if(mode==='off') return null;
+  // auto: 즐겨찾기한 첫 번째 게임의 색상
+  const favGame=GAMES.find(g=>gameHasAnyFav(g));
+  return favGame?favGame.color:null;
+}
+function applyGameTheme(){
+  const color=getThemedGameColor();
+  const root=document.documentElement;
+  if(color){
+    root.style.setProperty('--bl', color);
+    // 부드러운 그라데이션을 위해 보색 반영하지 않고 동일 컬러만
+  } else {
+    root.style.removeProperty('--bl');
+  }
+}
+function toggleGameTheme(){
+  const cur=localStorage.getItem('gv8-game-theme')||'auto';
+  const next=cur==='off'?'auto':'off';
+  localStorage.setItem('gv8-game-theme',next);
+  applyGameTheme();
+  toast(next==='off'?'🎨 기본 테마':'🎨 게임 테마 적용 (즐겨찾기 1순위)');
+}
 
 // ════════════════════════════════════════════════════════════════
 //  다중 시도 (명함 + 돌파) 누적 헬퍼
@@ -6754,7 +7277,108 @@ function buildEnhancedStats(){
     </div>`;
   }
 
-  return budgetHtml+chartHtml+roiHtml;
+  // ── 누적 지출 추이 차트 (시간순) ──────────────────────
+  let cumChartHtml='';
+  const allRecords=events.filter(e=>!e.predicted&&e.start)
+    .map(e=>{
+      const all=getAllAttempts(e);
+      const totalPulls=all.reduce((s,a)=>s+(a.spentPulls||0),0);
+      const g=GAMES.find(x=>x.id===e.game);
+      const krw=g?totalPulls*g.gacha.pricePerPull:0;
+      return {date:e.start, krw, gid:e.game};
+    })
+    .filter(r=>r.krw>0)
+    .sort((a,b)=>a.date.localeCompare(b.date));
+  if(allRecords.length>=2){
+    let cum=0;
+    const points=allRecords.map(r=>{cum+=r.krw;return{date:r.date,cum,gid:r.gid};});
+    const maxCum=points[points.length-1].cum;
+    const minDate=new Date(points[0].date);
+    const maxDate=new Date(points[points.length-1].date);
+    const range=Math.max(1,maxDate-minDate);
+    const W=420,H=160;
+    const xPos=d=>(new Date(d)-minDate)/range*W;
+    const yPos=v=>H-(v/maxCum)*H;
+    const pathD='M '+points.map(p=>`${xPos(p.date).toFixed(1)} ${yPos(p.cum).toFixed(1)}`).join(' L ');
+    const dots=points.map(p=>{
+      const g=GAMES.find(x=>x.id===p.gid);
+      return `<circle cx="${xPos(p.date).toFixed(1)}" cy="${yPos(p.cum).toFixed(1)}" r="3" fill="${g?.color||'#888'}"><title>${p.date}: ₩${p.cum.toLocaleString()} (누적)</title></circle>`;
+    }).join('');
+    cumChartHtml=`<div style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:800;margin-bottom:10px">📈 누적 지출 추이 <span style="font-size:10px;color:var(--mu);font-weight:400">최대 ₩${maxCum.toLocaleString()}</span></div>
+      <svg viewBox="0 0 ${W} ${H+24}" style="width:100%;height:auto;display:block">
+        <defs>
+          <linearGradient id="cumGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--bl)" stop-opacity="0.4"/>
+            <stop offset="100%" stop-color="var(--bl)" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="${pathD} L ${W} ${H} L 0 ${H} Z" fill="url(#cumGrad)" stroke="none"/>
+        <path d="${pathD}" fill="none" stroke="var(--bl)" stroke-width="2"/>
+        ${dots}
+        <text x="0" y="${H+16}" font-size="9" fill="var(--mu)">${points[0].date}</text>
+        <text x="${W}" y="${H+16}" font-size="9" fill="var(--mu)" text-anchor="end">${points[points.length-1].date}</text>
+        <line x1="0" y1="${H}" x2="${W}" y2="${H}" stroke="var(--bd)" stroke-width="0.5"/>
+      </svg>
+    </div>`;
+  }
+
+  // ── 픽업 시점 분포 히스토그램 (게임별) ────────────────
+  let histHtml='';
+  const successPullsByGame={};
+  events.filter(e=>!e.predicted).forEach(e=>{
+    const all=getAllAttempts(e);
+    all.filter(a=>a.result==='success'&&a.spentPulls>0).forEach(a=>{
+      if(!successPullsByGame[e.game]) successPullsByGame[e.game]=[];
+      successPullsByGame[e.game].push(a.spentPulls);
+    });
+  });
+  const histGames=Object.keys(successPullsByGame).filter(gid=>successPullsByGame[gid].length>=2);
+  if(histGames.length){
+    histHtml=`<div style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:800;margin-bottom:10px">📊 게임별 픽업 시점 분포 <span style="font-size:10px;color:var(--mu);font-weight:400">성공 시 몇뽑에 먹었는가</span></div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+      ${histGames.map(gid=>{
+        const g=GAMES.find(x=>x.id===gid);
+        if(!g) return '';
+        const pulls=successPullsByGame[gid];
+        const maxPulls=getMaxGuaranteedPulls(g);
+        // 4구간 분포: 0-25%, 25-50%, 50-75%, 75-100% of max
+        const buckets=[0,0,0,0];
+        const labels=[`1-${Math.round(maxPulls*0.25)}뽑`,`-${Math.round(maxPulls*0.5)}뽑`,`-${Math.round(maxPulls*0.75)}뽑`,`-${maxPulls}뽑`];
+        pulls.forEach(p=>{
+          const ratio=p/maxPulls;
+          if(ratio<=0.25) buckets[0]++;
+          else if(ratio<=0.5) buckets[1]++;
+          else if(ratio<=0.75) buckets[2]++;
+          else buckets[3]++;
+        });
+        const totalCount=pulls.length;
+        const maxBucket=Math.max(...buckets,1);
+        const W=380,H=80,bW=Math.floor(W/4)-8;
+        return `<div>
+          <div style="font-size:11px;font-weight:700;color:${g.color};margin-bottom:6px">${g.short} <span style="font-size:9px;color:var(--mu);font-weight:400">총 ${totalCount}개 성공</span></div>
+          <svg viewBox="0 0 ${W} ${H+24}" style="width:100%;height:auto;display:block">
+            ${buckets.map((cnt,i)=>{
+              const x=i*Math.floor(W/4)+4;
+              const h=Math.round(cnt/maxBucket*H);
+              const y=H-h;
+              const colorByZone=['#5fd99c','#60a5fa','#fbbf24','#f87171'];
+              return `<g>
+                <rect x="${x}" y="${y}" width="${bW}" height="${h}" fill="${colorByZone[i]}" opacity="0.85" rx="2"><title>${labels[i]}: ${cnt}개</title></rect>
+                <text x="${x+bW/2}" y="${H+12}" font-size="8" fill="var(--mu)" text-anchor="middle">${labels[i]}</text>
+                ${cnt>0?`<text x="${x+bW/2}" y="${y-3}" font-size="9" fill="var(--tx)" text-anchor="middle" font-weight="700">${cnt}</text>`:''}
+              </g>`;
+            }).join('')}
+            <line x1="0" y1="${H}" x2="${W}" y2="${H}" stroke="var(--bd)" stroke-width="0.5"/>
+          </svg>
+        </div>`;
+      }).join('')}
+      </div>
+    </div>`;
+  }
+
+  return budgetHtml+chartHtml+cumChartHtml+histHtml+roiHtml;
 }
 
 // renderStats를 강화
@@ -6808,6 +7432,7 @@ window.addEventListener('load',()=>{
     renderWishlistMatchBanner();
     maybeShowOnboarding();
     checkIDBQuota();
+    applyGameTheme();
   },500);
 });
 
