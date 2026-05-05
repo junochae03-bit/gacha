@@ -266,8 +266,9 @@ body.light .hdr{border-bottom-color:#d8dfee}
 body.light .card{box-shadow:0 2px 12px rgba(0,0,0,.07)}
 body.light .inv-primary-block{background:#f8faff;border-color:#d8dfee}
 body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,.06),rgba(251,191,36,.04))}
-.theme-toggle{font-size:16px;padding:5px 8px;background:var(--sf2);border:1px solid var(--bd2);border-radius:8px;cursor:pointer;transition:all .2s}
-.theme-toggle:hover{transform:scale(1.1)}
+.theme-toggle{font-size:18px;padding:8px 12px;background:linear-gradient(135deg,var(--sf2),var(--sf3));border:1.5px solid var(--bd2);border-radius:10px;cursor:pointer;transition:all .25s;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.theme-toggle:hover{transform:scale(1.08) rotate(-12deg);border-color:var(--bl);box-shadow:0 4px 16px rgba(96,165,250,.25)}
+.theme-toggle:active{transform:scale(.95)}
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 /*  SEARCH & FILTER BAR               */
@@ -462,7 +463,8 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 .cp-opt.act::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:13px;font-weight:900;text-shadow:0 1px 2px rgba(0,0,0,.6)}
 
 .cpn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
-.cc{background:var(--sf);border:1px solid var(--bd);border-radius:11px;padding:14px 16px;display:flex;flex-direction:column;gap:9px}
+.cc{background:var(--sf);border:1px solid var(--bd);border-radius:11px;padding:14px 16px;display:flex;flex-direction:column;gap:9px;border-left:4px solid var(--gameColor,var(--bl));transition:transform .15s,box-shadow .15s}
+.cc:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.3)}
 .cc-game{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
 .cc-code{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;letter-spacing:2.5px;background:var(--sf2);padding:9px 13px;border-radius:7px;border:1.5px dashed var(--bd2);display:flex;align-items:center;justify-content:space-between;cursor:pointer}
 .cc-code:hover{border-color:var(--bl);color:var(--bl)}
@@ -651,6 +653,36 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/*  FAB (Floating Action Button)       */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.fab{position:fixed;right:max(20px,env(safe-area-inset-right));bottom:max(24px,calc(env(safe-area-inset-bottom) + 16px));width:58px;height:58px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--bl),var(--pu));color:#fff;font-size:26px;font-weight:900;cursor:pointer;box-shadow:0 8px 24px rgba(96,165,250,.45),0 0 0 2px rgba(255,255,255,.1) inset;z-index:100;display:none;align-items:center;justify-content:center;transition:all .2s;line-height:1}
+.fab:hover{transform:translateY(-3px) scale(1.06);box-shadow:0 12px 32px rgba(96,165,250,.6)}
+.fab:active{transform:scale(.94)}
+.fab.show{display:flex;animation:fabIn .35s cubic-bezier(.34,1.56,.64,1)}
+@keyframes fabIn{from{opacity:0;transform:translateY(20px) scale(.7)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:780px){
+  .fab{display:flex}
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/*  TODAY WIDGET (오늘의 할일)         */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.today-widget{background:linear-gradient(135deg,rgba(96,165,250,.1),rgba(167,139,250,.06));border:1px solid rgba(96,165,250,.25);border-radius:14px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .2s}
+.today-widget:hover{border-color:rgba(96,165,250,.5);transform:translateY(-1px);box-shadow:0 6px 20px rgba(96,165,250,.15)}
+.today-widget.empty{background:linear-gradient(135deg,rgba(95,217,156,.08),rgba(95,217,156,.03));border-color:rgba(95,217,156,.2)}
+.today-icon{font-size:30px;flex-shrink:0}
+.today-text{flex:1;min-width:0}
+.today-title{font-size:13px;font-weight:800;color:var(--tx);margin-bottom:2px}
+.today-sub{font-size:11px;color:var(--mu2);line-height:1.5}
+.today-num{font-family:'Orbitron',monospace;font-size:24px;font-weight:900;background:linear-gradient(135deg,var(--bl),var(--pu));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex-shrink:0;line-height:1}
+.today-widget.empty .today-num{background:linear-gradient(135deg,var(--g),#86efac);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/*  KEYBOARD SHORTCUTS HELP            */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.kbd{display:inline-block;font-family:'Orbitron',monospace;font-size:10px;font-weight:800;padding:3px 8px;border-radius:5px;background:var(--sf3);border:1px solid var(--bd2);box-shadow:0 2px 0 var(--bd2);color:var(--tx);margin:0 2px}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 /*  TASK SCHEDULER                    */
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 .task-section{margin-bottom:20px}
@@ -797,9 +829,11 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
       <button class="btn btn-ghost" onclick="requestPushPermission()" style="font-size:11px;padding:7px 12px">🔔 픽업 알림 설정</button>
+      <button class="btn btn-ghost" onclick="exportAllIcal()" style="font-size:11px;padding:7px 12px" title="즐겨찾기 픽업 일정을 한 번에 .ics로 내보내기">📅 전체 캘린더 내보내기</button>
       <button class="btn btn-primary" onclick="openEvt()">＋ 새 픽업 등록</button>
     </div>
   </div>
+  <div id="todayWidget"></div>
   <div class="search-filter-bar">
     <div class="sfb-search">
       <span class="sfb-icon">🔍</span>
@@ -953,6 +987,7 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
     </div>
     <div class="ai-row">
       <select class="ai-sel" id="aiGame"><option value="">게임 선택...</option></select>
+      <button class="btn-xs" id="aiFavToggle" onclick="toggleAiFavOnly()" title="즐겨찾기 게임만 표시" style="white-space:nowrap">⭐ 전체</button>
       <select class="ai-sel" id="aiSrv" style="max-width:120px">
         <option value="kr">한국 서버</option><option value="jp">일본 서버</option><option value="global">글로벌 서버</option>
       </select>
@@ -1131,6 +1166,26 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
   </div>
 </div></div>
 
+<button class="fab" id="fabBtn" onclick="fabAction()" title="새 픽업 등록 (단축키: N)" aria-label="새 픽업 등록">＋</button>
+
+<!-- KEYBOARD SHORTCUTS HELP MODAL -->
+<div class="overlay" id="kbdOvl"><div class="modal" style="max-width:460px">
+  <h2>⌨️ 단축키</h2>
+  <div style="font-size:12px;color:var(--mu2);line-height:2.2;margin:8px 0">
+    <div><span class="kbd">1</span> ~ <span class="kbd">8</span> &nbsp; 페이지 전환 (스케줄~AI 검색)</div>
+    <div><span class="kbd">N</span> &nbsp; 새 픽업 등록</div>
+    <div><span class="kbd">S</span> &nbsp; 검색창 포커스 (스케줄)</div>
+    <div><span class="kbd">A</span> &nbsp; AI 검색 페이지로</div>
+    <div><span class="kbd">T</span> &nbsp; 할일 페이지로</div>
+    <div><span class="kbd">Esc</span> &nbsp; 모달 닫기</div>
+    <div><span class="kbd">?</span> &nbsp; 이 도움말 열기</div>
+  </div>
+  <div style="font-size:10px;color:var(--mu);margin-top:10px;padding-top:10px;border-top:1px solid var(--bd)">💡 입력 필드에 포커스 중이면 단축키 비활성화</div>
+  <div class="mfoot">
+    <button class="btn btn-primary" onclick="closeKbdHelp()">닫기</button>
+  </div>
+</div></div>
+
 <div class="toast-wrap" id="tw"></div>
 
 <!-- GIST SYNC MODAL -->
@@ -1161,6 +1216,14 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
     <button class="btn btn-primary" id="gist-upload-btn" onclick="gistUpload()">☁️ 업로드</button>
     <button class="btn btn-ghost" id="gist-download-btn" onclick="gistDownload()" style="border-color:var(--bd2)">⬇️ 다운로드</button>
   </div>
+
+  <label style="display:flex;align-items:center;gap:8px;margin-top:14px;padding:10px;background:rgba(95,217,156,.06);border:1px solid rgba(95,217,156,.2);border-radius:8px;cursor:pointer;font-size:12px">
+    <input type="checkbox" id="gist-auto-backup" style="width:16px;height:16px;cursor:pointer;accent-color:var(--g)" onchange="toggleAutoBackup(this.checked)">
+    <span style="flex:1">
+      <span style="font-weight:700;color:var(--g)">🔁 자동 백업</span>
+      <span style="display:block;font-size:10px;color:var(--mu);margin-top:2px">데이터 변경 시 1분 후 Gist에 자동 업로드 (Token + ID 모두 저장된 경우)</span>
+    </span>
+  </label>
   
   <details style="margin-top:14px">
     <summary style="cursor:pointer;font-size:11px;color:var(--mu2)">💡 사용 방법 (처음 사용 시)</summary>
@@ -1998,6 +2061,18 @@ function toggleFav(id){
   renderAll();
 }
 
+// 게임의 모든 서버 즐겨찾기 일괄 해제 (할일 페이지에서 사용)
+function unfavGame(gameId){
+  const g=GAMES.find(x=>x.id===gameId);
+  if(!g) return;
+  if(!confirm(`'${g.name}' 즐겨찾기를 해제할까요?\n할일 목록에서도 제거됩니다.`)) return;
+  // 가능한 모든 키 형태 제거 (g.id, g.id-srv)
+  favs=favs.filter(k=>k!==gameId && !g.servers.some(s=>k===`${gameId}-${s}`));
+  localStorage.setItem('gv8-favs',JSON.stringify(favs));
+  renderAll();
+  toast('★ 즐겨찾기 해제됨');
+}
+
 // 게임-서버 조합이 즐겨찾기인지 확인 (구버전 호환)
 
 // 게임의 어떤 서버 조합이라도 즐겨찾기됐는지
@@ -2139,18 +2214,27 @@ function buildCard(e,idx){
     </div>`;
   }
   
-  const ceilHtml = (ceilRemain !== null && totalPulls > 0) ? `
+  const ceilHtml = (ceilRemain !== null && totalPulls > 0) ? (() => {
+    const ratio=Math.min(1,totalPulls/maxCeil);
+    const pct=Math.round(ratio*100);
+    let grad;
+    if(ratio>=1) grad='linear-gradient(90deg,var(--g),#a7f3d0)';
+    else if(ratio>=0.7) grad='linear-gradient(90deg,var(--gold),#fde68a)';
+    else if(ratio>=0.4) grad='linear-gradient(90deg,var(--bl),#93c5fd)';
+    else grad='linear-gradient(90deg,var(--rd),#fca5a5)';
+    return `
     <div class="ceil-bar-wrap">
       <div class="ceil-bar-inner">
         <span class="ceil-bar-label">보유 ${totalPulls}뽑</span>
         <div class="ceil-bar-track">
-          <div class="ceil-bar-fill" style="width:${Math.min(100,Math.round(totalPulls/maxCeil*100))}%;background:${totalPulls>=maxCeil?'var(--g)':g.color}88"></div>
+          <div class="ceil-bar-fill" style="width:${pct}%;background:${grad};box-shadow:0 0 8px currentColor"></div>
         </div>
         <span class="ceil-bar-remain" style="color:${ceilRemain===0?'var(--g)':ceilRemain<=10?'var(--gold)':'var(--mu2)'}">
           ${ceilRemain===0?'천장 도달':`천장 -${ceilRemain}뽑`}
         </span>
       </div>
-    </div>` : '';
+    </div>`;
+  })() : '';
   
   return `<div class="card${e.predicted?' predicted':''}" style="--gc:${g.color}">
     <div class="banner banner-clickable" data-action="edit" data-eid="${eid}" title="클릭해서 수정">
@@ -3204,7 +3288,7 @@ function renderEventList(){
   const buildEvent=(e)=>{
     const g=GAMES.find(x=>x.id===e.game)||{name:e.game,color:'#fff'};
     const ended=e.end&&e.end<now;
-    return `<div class="cc ${ended?'ccused':''}">
+    return `<div class="cc ${ended?'ccused':''}" style="--gameColor:${g.color}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <div>
           <div class="cc-game" style="color:${g.color}">${g.name}</div>
@@ -3229,7 +3313,7 @@ function renderEventList(){
   const buildCoupon=(c)=>{
     const g=GAMES.find(x=>x.id===c.game)||{name:c.game,color:'#fff',redeemUrl:''};
     const ri=coupons.indexOf(c),exp=c.exp&&c.exp<now&&!c.used?'exp':'';
-    return `<div class="cc ${c.used?'ccused':''}">
+    return `<div class="cc ${c.used?'ccused':''}" style="--gameColor:${g.color}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <div>
           <div class="cc-game" style="color:${g.color}">${g.name}</div>
@@ -3510,7 +3594,8 @@ function renderTasks(){
     html+=`<div class="game-task-block" style="margin-bottom:24px">
       <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:linear-gradient(135deg,${g.color}22,transparent);border:1px solid ${g.color}55;border-left:4px solid ${g.color};border-radius:10px;margin-bottom:10px">
         <span style="font-size:14px;font-weight:900;color:${g.color};letter-spacing:.5px">${g.short}</span>
-        <span style="font-size:11px;color:var(--mu2)">${g.name}</span>
+        <span style="font-size:11px;color:var(--mu2);flex:1">${g.name}</span>
+        <button class="btn-xs" onclick="unfavGame('${g.id}')" title="즐겨찾기 해제 (할일 목록에서 제거)" style="font-size:14px;padding:4px 10px;border-color:${g.color}55;color:${g.color}">★</button>
       </div>
       ${gameHtml}
     </div>`;
@@ -4292,6 +4377,36 @@ function exportIcal(idx){
   toast('📅 .ics 다운로드!');
 }
 
+// 즐겨찾기한 진행 중/예정 픽업 일괄 ical 내보내기
+function exportAllIcal(){
+  const now=new Date();
+  const list=events.filter(e=>!e.predicted&&isFavored(e.game,e.srv)&&matchSrv(e.srv)&&new Date(e.end)>=now&&e.start&&e.end);
+  if(!list.length){toast('⚠️ 내보낼 픽업이 없습니다');return;}
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//GachaPRO//KR','CALSCALE:GREGORIAN'];
+  const fmt=d=>d.toISOString().replace(/[-:]/g,'').slice(0,15)+'Z';
+  list.forEach((e,i)=>{
+    const g=GAMES.find(x=>x.id===e.game)||{short:e.game};
+    const s=new Date(e.start),en=new Date(e.end);
+    const summary=`🎴[${g.short}] ${e.char||'(픽업)'}${e.event?' · '+e.event:''}`;
+    const desc=`게임: ${g.name||g.short}\\n캐릭터: ${e.char||''}\\n이벤트: ${e.event||''}\\n서버: ${SRV_LBL[e.srv]||e.srv||'all'}`;
+    L.push(
+      'BEGIN:VEVENT',
+      `UID:gv8-${e.id||i}-${Date.now()}@gachatracker`,
+      `DTSTART:${fmt(s)}`,
+      `DTEND:${fmt(en)}`,
+      `SUMMARY:${summary}`,
+      `DESCRIPTION:${desc}`,
+      'END:VEVENT'
+    );
+  });
+  L.push('END:VCALENDAR');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([L.join('\r\n')],{type:'text/calendar'}));
+  a.download=`gacha-pickups-${new Date().toISOString().slice(0,10)}.ics`;
+  a.click();
+  toast(`📅 ${list.length}개 픽업 일정 다운로드 완료`);
+}
+
 // ════════════════════════════════════════════════════════════════
 //  API KEY MANAGEMENT (사용자 본인 API 키, localStorage에만 저장)
 // ════════════════════════════════════════════════════════════════
@@ -4855,15 +4970,18 @@ ${text}`;
       // 픽업 배너 (캐릭터/이벤트 기반 시각 카드)
       const bannerArt=genArt(g,p.char||p.event||'?',p.type||'limited');
       const pickupName=p.event?`${p.event}${p.char?` · ${p.char}`:''}`:(p.char||'픽업');
-      return `<div class="ai-pickup-card" data-pickup-idx="${idx}" style="padding:0;overflow:hidden">
+      const alreadyReg=isPickupAlreadyRegistered({...p,game:gid,srv});
+      const dupBadge=alreadyReg?`<span class="aip-tag" style="background:rgba(95,217,156,.85);color:#0a0d14;backdrop-filter:blur(6px);font-weight:800">✅ 등록됨</span>`:'';
+      return `<div class="ai-pickup-card" data-pickup-idx="${idx}" style="padding:0;overflow:hidden;${alreadyReg?'opacity:.55':''}">
         <label style="display:block;cursor:pointer">
           <div style="position:relative;height:120px;overflow:hidden">
             ${bannerArt}
-            <div style="position:absolute;top:8px;left:8px;display:flex;gap:4px">
+            <div style="position:absolute;top:8px;left:8px;display:flex;gap:4px;flex-wrap:wrap">
               <span class="aip-tag ${typeClass}" style="background:rgba(0,0,0,.5);backdrop-filter:blur(6px)">${typeLabel}</span>
+              ${dupBadge}
             </div>
             <div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);border-radius:6px;padding:5px 7px">
-              <input type="checkbox" class="ai-pickup-chk" data-pickup-idx="${idx}" checked style="width:16px;height:16px;cursor:pointer;accent-color:${g.color}">
+              <input type="checkbox" class="ai-pickup-chk" data-pickup-idx="${idx}" ${alreadyReg?'':'checked'} ${alreadyReg?'disabled':''} style="width:16px;height:16px;cursor:${alreadyReg?'not-allowed':'pointer'};accent-color:${g.color}">
             </div>
             <div style="position:absolute;bottom:0;left:0;right:0;padding:8px 10px;background:linear-gradient(to top,rgba(10,13,20,.95),transparent)">
               <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${g.color};margin-bottom:2px">${g.short}${srv!=='all'?` · ${SRV_LBL[srv]}`:''}</div>
@@ -4874,7 +4992,9 @@ ${text}`;
             • [${period}]
           </div>
         </label>
-        <button class="btn-xs" style="width:calc(100% - 20px);margin:0 10px 10px" onclick='aiRegPickup(${JSON.stringify({...p,game:gid,srv}).replace(/'/g,"&#39;")})'>＋ 단일 등록</button>
+        ${alreadyReg
+          ?`<button class="btn-xs" style="width:calc(100% - 20px);margin:0 10px 10px;color:var(--mu);cursor:default" disabled>이미 등록된 픽업</button>`
+          :`<button class="btn-xs" style="width:calc(100% - 20px);margin:0 10px 10px" onclick='aiRegPickup(${JSON.stringify({...p,game:gid,srv}).replace(/'/g,"&#39;")})'>＋ 단일 등록</button>`}
       </div>`;
     };
 
@@ -4934,12 +5054,13 @@ function aiRegPickupBulk(){
   const list=window._aiPickupResults||[];
   if(!list.length){toast('등록할 픽업이 없습니다');return;}
   const checked=Array.from(document.querySelectorAll('.ai-pickup-chk'))
-    .filter(c=>c.checked)
+    .filter(c=>c.checked && !c.disabled)
     .map(c=>parseInt(c.dataset.pickupIdx))
     .map(i=>list[i])
-    .filter(Boolean);
-  if(!checked.length){toast('선택된 픽업이 없습니다');return;}
-  if(!confirm(`✅ ${checked.length}건의 픽업을 스케쥴에 등록하시겠습니까?`)) return;
+    .filter(Boolean)
+    .filter(p=>!isPickupAlreadyRegistered(p));
+  if(!checked.length){toast('선택된 신규 픽업이 없습니다 (이미 등록된 항목은 제외됨)');return;}
+  if(!confirm(`✅ ${checked.length}건의 신규 픽업을 스케쥴에 등록하시겠습니까?`)) return;
 
   let added=0;
   checked.forEach(p=>{
@@ -5224,12 +5345,26 @@ function openGistSync(){
   const id=localStorage.getItem('gv8-gist-id')||'';
   document.getElementById('gist-token').value=tk;
   document.getElementById('gist-id').value=id;
+  const autoChk=document.getElementById('gist-auto-backup');
+  if(autoChk) autoChk.checked=localStorage.getItem('gv8-auto-backup')==='1';
   if(tk&&id){
     const last=localStorage.getItem('gv8-gist-last-sync');
     document.getElementById('gist-status').textContent=last?`마지막 동기화: ${new Date(last).toLocaleString('ko-KR')}`:'동기화 기록 없음';
   } else {
     document.getElementById('gist-status').textContent='Token + Gist ID 입력 후 사용';
   }
+}
+
+function toggleAutoBackup(on){
+  const tk=localStorage.getItem('gv8-gist-token');
+  const id=localStorage.getItem('gv8-gist-id');
+  if(on && (!tk || !id)){
+    toast('⚠️ Token + Gist ID 먼저 저장하세요');
+    document.getElementById('gist-auto-backup').checked=false;
+    return;
+  }
+  localStorage.setItem('gv8-auto-backup', on?'1':'0');
+  toast(on?'🔁 자동 백업 켜짐':'자동 백업 꺼짐');
 }
 function closeGistSync(){document.getElementById('gistOvl').classList.remove('open');}
 
@@ -5543,6 +5678,202 @@ function schedulePushAlarms(){
     });
   });
 }
+
+// ════════════════════════════════════════════════════════════════
+//  TODAY WIDGET (오늘의 할일 — 픽업 스케줄 상단)
+// ════════════════════════════════════════════════════════════════
+function renderTodayWidget(){
+  const wrap=document.getElementById('todayWidget');
+  if(!wrap) return;
+  initTaskResets();
+  const favGames=getFavGameList();
+  if(!favGames.length){wrap.innerHTML='';return;}
+
+  let totalDaily=0,doneDaily=0;
+  favGames.forEach(g=>{
+    const list=(GAME_TASKS[g.id]||[]).filter(t=>t.freq==='daily' && !taskHidden.includes(`${g.id}_${t.key}`));
+    list.forEach(t=>{
+      const tid=`${g.id}_${t.key}`;
+      const max=getTaskMax(g.id,t);
+      totalDaily++;
+      if((taskState[tid]||0)>=max) doneDaily++;
+    });
+    customTasks.filter(t=>t.game===g.id && t.freq==='daily').forEach(t=>{
+      totalDaily++;
+      if((taskState[t.id]||0)>=(t.max||1)) doneDaily++;
+    });
+  });
+
+  if(!totalDaily){wrap.innerHTML='';return;}
+  const remaining=totalDaily-doneDaily;
+  const allDone=remaining===0;
+  wrap.innerHTML=`<div class="today-widget ${allDone?'empty':''}" onclick="navTo('tasks')" title="할일 페이지로 이동">
+    <span class="today-icon">${allDone?'✅':'☀️'}</span>
+    <div class="today-text">
+      <div class="today-title">${allDone?'오늘 할일 모두 완료!':'오늘 남은 일일 할일'}</div>
+      <div class="today-sub">${allDone?`${doneDaily}/${totalDaily} 완료 · 즐겨찾기 ${favGames.length}개 게임 기준`:`${doneDaily}/${totalDaily} 완료 — 클릭하여 할일 페이지로 이동`}</div>
+    </div>
+    <div class="today-num">${allDone?'🎉':remaining}</div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  FAB (Floating Action Button)
+// ════════════════════════════════════════════════════════════════
+function fabAction(){
+  // 페이지별 FAB 동작
+  const actions={
+    schedule:()=>openEvt(),
+    events:()=>openEventEntry(),
+    tasks:()=>openAddTask(),
+    search:()=>document.getElementById('aiGame')?.focus()
+  };
+  (actions[page]||actions.schedule)();
+}
+function updateFab(){
+  const fab=document.getElementById('fabBtn');
+  if(!fab) return;
+  // FAB 표시 페이지: schedule, events, tasks
+  const showPages=['schedule','events','tasks'];
+  fab.classList.toggle('show', showPages.includes(page));
+  const titles={schedule:'＋ 새 픽업 등록 (N)',events:'＋ 이벤트 추가',tasks:'＋ 할일 추가'};
+  fab.title=titles[page]||'＋ 추가';
+}
+
+// ════════════════════════════════════════════════════════════════
+//  KEYBOARD SHORTCUTS
+// ════════════════════════════════════════════════════════════════
+function openKbdHelp(){document.getElementById('kbdOvl').classList.add('open');}
+function closeKbdHelp(){document.getElementById('kbdOvl').classList.remove('open');}
+
+document.addEventListener('keydown',e=>{
+  // 입력 필드에서는 비활성화
+  const tag=(e.target.tagName||'').toLowerCase();
+  if(['input','textarea','select'].includes(tag) || e.target.isContentEditable) return;
+  if(e.ctrlKey||e.metaKey||e.altKey) return;
+
+  // Esc: 열린 모달 닫기
+  if(e.key==='Escape'){
+    document.querySelectorAll('.overlay.open').forEach(ov=>ov.classList.remove('open'));
+    return;
+  }
+
+  // 단축키 매핑
+  const map={
+    '1':'schedule','2':'inventory','3':'calc','4':'stats',
+    '5':'calendar','6':'events','7':'tasks','8':'search',
+    'a':'search','A':'search','t':'tasks','T':'tasks'
+  };
+  if(map[e.key]){e.preventDefault();navTo(map[e.key]);return;}
+
+  if(e.key==='n'||e.key==='N'){
+    e.preventDefault();
+    const actions={schedule:()=>openEvt(),events:()=>openEventEntry(),tasks:()=>openAddTask()};
+    (actions[page]||actions.schedule)();
+    return;
+  }
+  if((e.key==='s'||e.key==='S') && page==='schedule'){
+    e.preventDefault();
+    document.getElementById('scheduleSearch')?.focus();
+    return;
+  }
+  if(e.key==='?'||(e.shiftKey && e.key==='/')){
+    e.preventDefault();
+    openKbdHelp();
+    return;
+  }
+});
+
+// ════════════════════════════════════════════════════════════════
+//  AI 검색 즐겨찾기 게임 필터
+// ════════════════════════════════════════════════════════════════
+function toggleAiFavOnly(){
+  const cur=localStorage.getItem('gv8-ai-fav-only')==='1';
+  localStorage.setItem('gv8-ai-fav-only', cur?'0':'1');
+  populateAiGameSelect();
+  const btn=document.getElementById('aiFavToggle');
+  if(btn){btn.classList.toggle('act',!cur);btn.textContent=!cur?'⭐ 즐겨찾기만':'⭐ 전체';}
+}
+function populateAiGameSelect(){
+  const sel=document.getElementById('aiGame');
+  if(!sel) return;
+  const favOnly=localStorage.getItem('gv8-ai-fav-only')==='1';
+  const list=favOnly?GAMES.filter(g=>gameHasAnyFav(g)):GAMES;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">게임 선택...</option>'+list.map(g=>`<option value="${g.id}">${g.name}</option>`).join('');
+  if(cur && list.some(g=>g.id===cur)) sel.value=cur;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  AI 검색 — 이미 등록된 픽업 감지
+// ════════════════════════════════════════════════════════════════
+function isPickupAlreadyRegistered(p){
+  // game + srv + char + start 일치하는 이벤트가 있으면 true
+  return events.some(e=>
+    e.game===p.game &&
+    (e.srv||'all')===(p.srv||'all') &&
+    (e.char||'').trim()===(p.char||'').trim() &&
+    e.start===p.start
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+//  자동 Gist 백업 (디바운스)
+// ════════════════════════════════════════════════════════════════
+let _autoBackupTimer=null;
+function scheduleAutoBackup(){
+  const token=localStorage.getItem('gv8-gist-token');
+  const gistId=localStorage.getItem('gv8-gist-id');
+  const enabled=localStorage.getItem('gv8-auto-backup')==='1';
+  if(!enabled || !token || !gistId) return;
+  clearTimeout(_autoBackupTimer);
+  _autoBackupTimer=setTimeout(()=>{
+    if(typeof autoGistUpload==='function'){
+      autoGistUpload().catch(e=>console.warn('자동 백업 실패:',e));
+    }
+  }, 60_000); // 1분 디바운스
+}
+
+async function autoGistUpload(){
+  const token=localStorage.getItem('gv8-gist-token');
+  const gistId=localStorage.getItem('gv8-gist-id');
+  if(!token||!gistId) return;
+  const data={version:'v20',exportedAt:new Date().toISOString(),events,coupons,gameEvents,customEvents,inventory,monthlyOn,monthlyStart,favs,alarms,hiddenAutoMira,serverFilter};
+  const body={files:{'gacha-tracker.json':{content:JSON.stringify(data,null,2)}}};
+  const res=await fetch(`https://api.github.com/gists/${gistId}`,{
+    method:'PATCH',
+    headers:{'Authorization':`token ${token}`,'Accept':'application/vnd.github+json'},
+    body:JSON.stringify(body)
+  });
+  if(res.ok){console.log('☁️ 자동 백업 완료:', new Date().toISOString());}
+}
+
+// save() 호출 시 자동 백업 트리거 (래핑)
+const _origSave=save;
+save=function(){_origSave();scheduleAutoBackup();};
+
+// ════════════════════════════════════════════════════════════════
+//  네비게이션 hook (FAB / TODAY 위젯 갱신)
+// ════════════════════════════════════════════════════════════════
+const _origShowPage=showPage;
+showPage=function(name){
+  _origShowPage(name);
+  updateFab();
+  if(name==='schedule') renderTodayWidget();
+};
+
+// 초기 호출
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    updateFab();
+    renderTodayWidget();
+    populateAiGameSelect();
+    // AI fav 토글 버튼 상태 복원
+    const favOnly=localStorage.getItem('gv8-ai-fav-only')==='1';
+    const btn=document.getElementById('aiFavToggle');
+    if(btn){btn.classList.toggle('act',favOnly);btn.textContent=favOnly?'⭐ 즐겨찾기만':'⭐ 전체';}
+  },100);
+});
 
 init();
 </script>
