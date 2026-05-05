@@ -1433,6 +1433,20 @@ body.light .btn-primary{animation:none !important}
 .sec-cnt{background:rgba(255,255,255,.15);padding:1px 7px;border-radius:99px;font-size:10px}
 .sec-urgency{font-size:10px;color:var(--rd);font-weight:700;animation:sc-pulse 1.5s ease infinite}
 @keyframes sc-pulse{0%,100%{opacity:1}50%{opacity:.45}}
+/* 뽑기 카운터 */
+.pull-ctr{margin-top:8px;padding:8px 10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:8px}
+.pc-toprow{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pcb{padding:3px 9px;border:1px solid rgba(255,255,255,.18);border-radius:6px;background:rgba(255,255,255,.07);color:var(--tx);font-size:12px;font-weight:700;cursor:pointer;transition:all .12s;line-height:1.5}
+.pcb:hover{background:rgba(255,255,255,.14);transform:scale(1.05)}
+.pcb:active{transform:scale(.94)}
+.pcb.pcb-big{padding:3px 12px;font-size:13px}
+.pc-num{font-size:15px;font-weight:800;color:var(--pk);font-family:'Orbitron',monospace;min-width:24px;text-align:center}
+.pc-unit{font-size:11px;color:var(--mu)}
+.pc-ceil{font-size:10px;color:var(--mu2);margin-left:auto;white-space:nowrap}
+.pc-saverow{gap:6px;margin-top:6px}
+.pc-s{color:var(--gold)!important;border-color:rgba(251,191,36,.4)!important;background:rgba(251,191,36,.1)!important}
+.pc-f{color:var(--rd)!important;border-color:rgba(239,68,68,.4)!important;background:rgba(239,68,68,.1)!important}
+.pc-r{color:var(--mu2)!important;font-size:11px!important}
 </style>
 </head>
 <body>
@@ -2664,6 +2678,21 @@ function setupCardClickHandler(){
     } else if(action === 'delAttempt'){
       const attemptIdx = parseInt(target.getAttribute('data-attempt-idx'));
       if(eid && !isNaN(attemptIdx)) deleteAttempt(eid, attemptIdx);
+    } else if(action === 'addPull' && eid){
+      e.preventDefault();
+      const n=parseInt(target.getAttribute('data-n'))||1;
+      addSessionPulls(eid,n);
+    } else if(action === 'savePull' && eid){
+      e.preventDefault();
+      const pullResult=target.getAttribute('data-result');
+      saveSessionResult(eid,pullResult);
+    } else if(action === 'resetPull' && eid){
+      e.preventDefault();
+      delete _pullSessions[eid];
+      const numEl2=document.getElementById('pcnum-'+eid);
+      if(numEl2) numEl2.textContent='0';
+      const saveRow2=document.getElementById('pcsave-'+eid);
+      if(saveRow2) saveRow2.style.display='none';
     } else if(action === 'quickResult' && eid){
       e.preventDefault();
       const wantedResult = target.getAttribute('data-result');
@@ -3212,6 +3241,22 @@ function buildCard(e,idx){
     </div>`;
   })() : '';
   
+  // 뽑기 세션 카운터
+  const sessCount = _pullSessions[eid]||0;
+  const remAfterSess = maxCeil>0 ? Math.max(0, maxCeil - curPity - sessCount) : null;
+  const pullCtrHtml = `<div class="pull-ctr" id="pctr-${eid}">
+    <div class="pc-toprow">
+      <button class="pcb" data-action="addPull" data-eid="${eid}" data-n="1">+1</button>
+      <button class="pcb pcb-big" data-action="addPull" data-eid="${eid}" data-n="10">+10</button>
+      <span class="pc-num" id="pcnum-${eid}">${sessCount}</span><span class="pc-unit">뽑</span>
+      ${remAfterSess!==null?`<span class="pc-ceil" id="pcceil-${eid}">천장 -${remAfterSess}뽑</span>`:''}
+    </div>
+    <div class="pc-saverow" id="pcsave-${eid}" style="display:${sessCount>0?'flex':'none'}">
+      <button class="pcb pc-s" data-action="savePull" data-eid="${eid}" data-result="success">✨ 성공</button>
+      <button class="pcb pc-f" data-action="savePull" data-eid="${eid}" data-result="fail">💔 픽뚫</button>
+      <button class="pcb pc-r" data-action="resetPull" data-eid="${eid}">↺ 초기화</button>
+    </div>
+  </div>`;
   // 빠른 결과 토글 (카드 우상단 ✨ / 💔) + 핀
   const isPinned = !!e.pinned;
   const isSel = !!_selectMode && _selectedEids.has(eid);
@@ -3250,6 +3295,7 @@ function buildCard(e,idx){
         🚛 1트럭 기준 ₩${pc.pricePerPull.toLocaleString()}/뽑
       </div>
       ${spentHtml}
+      ${pullCtrHtml}
       ${e.memo?`<div style="font-size:11px;color:var(--mu);line-height:1.6;margin-top:8px;padding:8px 10px;background:rgba(167,139,250,.04);border-left:2px solid rgba(167,139,250,.3);border-radius:4px;font-style:italic">📝 ${e.memo}</div>`:''}
       <div class="arow">
         <button class="ab" data-action="addAttempt" data-eid="${eid}" title="명함 후 돌파 시도 등록">＋ 시도</button>
@@ -7412,7 +7458,51 @@ function initVirtualScroll(){
 let _selectMode=false;
 let _selectedEids=new Set();
 
+const _pullSessions={};
+function addSessionPulls(eid,n){
+  _pullSessions[eid]=(_pullSessions[eid]||0)+n;
+  const cnt=_pullSessions[eid];
+  const numEl=document.getElementById('pcnum-'+eid);
+  if(numEl) numEl.textContent=cnt;
+  const saveRow=document.getElementById('pcsave-'+eid);
+  if(saveRow) saveRow.style.display=cnt>0?'flex':'none';
+  const e=events.find(x=>x.id===eid);
+  if(e){
+    const g=GAMES.find(x=>x.id===e.game);
+    if(g){
+      const sk=e.srv==='all'?g.servers[0]:e.srv;
+      const inv2=inventory[e.game+'-'+sk]||{};
+      const maxC=g.gacha.hardPity||0;
+      if(maxC>0){
+        const rem=Math.max(0,maxC-(inv2['_pity']||0)-cnt);
+        const ceilEl=document.getElementById('pcceil-'+eid);
+        if(ceilEl) ceilEl.textContent='천장 -'+rem+'뽑';
+      }
+    }
+  }
+}
+function saveSessionResult(eid,result){
+  const e=events.find(x=>x.id===eid);
+  if(!e){toast('⚠️ 픽업을 찾을 수 없음');return;}
+  const cnt=_pullSessions[eid]||0;
+  const g=GAMES.find(x=>x.id===e.game);
+  const currency=g&&cnt>0?cnt*g.gacha.pullCost:0;
+  const hasFirst=e.result==='success'||e.result==='fail'||e.spentPulls>0||e.spentCurrency>0;
+  if(!hasFirst){
+    e.result=result;
+    if(cnt>0){e.spentPulls=cnt;e.spentCurrency=currency;}
+    toast(result==='success'?'✨ 명함 성공 저장':'💔 명함 픽뚫 저장');
+  } else {
+    if(!e.attempts) e.attempts=[];
+    const nextN=e.attempts.length;
+    e.attempts.push({result,spentPulls:cnt,spentCurrency:currency,label:'+'+(nextN+1)+'돌',ts:Date.now()});
+    toast(result==='success'?'✨ +'+(nextN+1)+'돌 성공 저장':'💔 +'+(nextN+1)+'돌 픽뚫 저장');
+  }
+  delete _pullSessions[eid];
+  save();renderAll();
+}
 function quickToggleResult(eid, wantedResult){
+  if((_pullSessions[eid]||0)>0){saveSessionResult(eid,wantedResult);return;}
   const e=events.find(x=>x.id===eid);
   if(!e){toast('⚠️ 픽업을 찾을 수 없음');return;}
   // 같은 결과를 다시 누르면 untried로 토글
@@ -7480,7 +7570,7 @@ function updateBatchToolbar(){
 }
 function batchSelectAll(){
   // 현재 보이는 즐겨찾기·서버 일치 픽업 모두 선택
-  events.filter(e=>!e.predicted&&isFavored(e.game,e.srv)&&matchSrv(e.srv)).forEach(e=>{
+  events.filter(e=>!e.predicted&&matchSrv(e.srv)).forEach(e=>{
     if(e.id) _selectedEids.add(e.id);
   });
   renderSchedule();
@@ -7600,7 +7690,7 @@ function openAttemptModal(eid){
   const list=getAllAttempts(e);
   const listEl=document.getElementById('attemptList');
   if(list.length){
-    listEl.innerHTML=`<div style="font-size:10px;color:var(--mu);font-weight:700;margin-bottom:6px">기존 시도 ${list.length}회</div>`+
+    listEl.innerHTML=`<div style="font-size:10px;color:var(--mu);font-weight:700;margin-bottom:6px">이력 ${list.length}건 · 돌파 ${(e.attempts||[]).length}회</div>`+
       list.map((a,i)=>{
         const icon=a.result==='success'?'✨':a.result==='fail'?'💔':'⏭';
         const color=a.result==='success'?'var(--gold)':a.result==='fail'?'var(--rd)':'var(--mu)';
