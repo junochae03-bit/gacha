@@ -619,6 +619,36 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
 
 .ai-pickup-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-top:14px}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/*  GALLERY                            */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.gallery-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:18px}
+.gal-stat{background:var(--sf);border:1px solid var(--bd);border-radius:11px;padding:12px 14px;text-align:center;position:relative;overflow:hidden}
+.gal-stat::before{content:'';position:absolute;top:-30px;right:-30px;width:90px;height:90px;border-radius:50%;filter:blur(28px);opacity:.25;background:var(--gameC,var(--bl))}
+.gal-stat-label{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:6px;position:relative}
+.gal-stat-value{font-family:'Orbitron',monospace;font-size:24px;font-weight:900;color:var(--gameC,var(--bl));line-height:1;position:relative}
+.gal-stat-sub{font-size:11px;color:var(--mu2);margin-top:4px;position:relative}
+
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.gal-card{background:var(--sf);border:1px solid var(--bd);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .2s;position:relative}
+.gal-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.4);border-color:var(--gameC,var(--bd2))}
+.gal-art{height:140px;position:relative;overflow:hidden}
+.gal-art .banner-svg{position:absolute;inset:0;width:100%;height:100%}
+.gal-art .banner-gradient{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,13,20,.95) 0%,rgba(10,13,20,.4) 50%,transparent 100%)}
+.gal-copies{position:absolute;top:6px;right:6px;background:linear-gradient(135deg,var(--gold),#fde68a);color:#0a0d14;font-family:'Orbitron',monospace;font-size:10px;font-weight:900;padding:3px 8px;border-radius:99px;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.gal-game-tag{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);color:#fff;font-size:9px;font-weight:700;padding:3px 7px;border-radius:5px;letter-spacing:1px;text-transform:uppercase}
+.gal-name{position:absolute;bottom:6px;left:8px;right:8px;font-size:14px;font-weight:900;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.7);line-height:1.2}
+.gal-body{padding:10px 12px;font-size:11px;color:var(--mu2);display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap}
+.gal-body strong{color:var(--tx);font-family:'Orbitron',monospace;font-weight:700}
+
+.gallery-empty{grid-column:1/-1;text-align:center;padding:40px 24px;background:var(--sf);border:2px dashed var(--bd2);border-radius:14px}
+
+/* 상세 모달 */
+.gd-attempts{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.gd-attempt-row{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--sf2);border-radius:7px;font-size:11px;border-left:3px solid var(--bd)}
+.gd-attempt-row.success{border-left-color:var(--gold)}
+.gd-attempt-row.fail{border-left-color:var(--rd)}
 .ai-pickup-card{background:var(--sf2);border:1px solid var(--bd2);border-radius:10px;padding:12px;transition:all .15s}
 .ai-pickup-card:hover{border-color:var(--bl)}
 .aip-game{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px}
@@ -836,6 +866,12 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
       <span class="nav-label">AI 검색</span>
       <span class="nav-badge"></span>
     </button>
+    <button class="nav-item" data-page="gallery" onclick="navTo('gallery')">
+      <span class="nav-num">9</span>
+      <span class="nav-icon">🎭</span>
+      <span class="nav-label">캐릭터 갤러리</span>
+      <span class="nav-badge" id="nav-cnt-gallery"></span>
+    </button>
   </div>
 </nav>
 <div class="nav-backdrop" id="navBackdrop" onclick="closeNav()"></div>
@@ -1025,7 +1061,39 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
   </div>
 </div>
 
+<div id="page-gallery" style="display:none">
+  <div class="page-intro">
+    <div class="page-intro-text">
+      <h2>🎭 캐릭터 갤러리</h2>
+      <p>지금까지 픽업으로 획득한 캐릭터 라이브러리. 명함 + 돌파 누적 통계 표시.</p>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <select class="ai-sel" id="gal-sort" style="max-width:140px" onchange="renderGallery()">
+        <option value="recent">📅 최근 획득순</option>
+        <option value="name">🔤 가나다순</option>
+        <option value="game">🎮 게임별</option>
+        <option value="copies">⭐ 보유 돌수순</option>
+        <option value="cost">💰 누적 비용순</option>
+      </select>
+      <select class="ai-sel" id="gal-game" style="max-width:140px" onchange="renderGallery()">
+        <option value="all">🌐 전체 게임</option>
+      </select>
+    </div>
+  </div>
+  <div id="gallerySummary"></div>
+  <div id="galleryGrid" class="gallery-grid"></div>
 </div>
+
+</div>
+
+<!-- 캐릭터 상세 모달 -->
+<div class="overlay" id="galDetailOvl"><div class="modal" style="max-width:560px">
+  <h2 id="galDetailTitle">🎴 캐릭터 상세</h2>
+  <div id="galDetailBody"></div>
+  <div class="mfoot">
+    <button class="btn btn-primary" onclick="closeGalDetail()">닫기</button>
+  </div>
+</div></div>
 
 <!-- EVENT MODAL -->
 <div class="overlay" id="evtOvl"><div class="modal">
@@ -1346,11 +1414,12 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 <div class="overlay" id="kbdOvl"><div class="modal" style="max-width:460px">
   <h2>⌨️ 단축키</h2>
   <div style="font-size:12px;color:var(--mu2);line-height:2.2;margin:8px 0">
-    <div><span class="kbd">1</span> ~ <span class="kbd">8</span> &nbsp; 페이지 전환 (스케줄~AI 검색)</div>
+    <div><span class="kbd">1</span> ~ <span class="kbd">9</span> &nbsp; 페이지 전환 (스케줄~갤러리)</div>
     <div><span class="kbd">N</span> &nbsp; 새 픽업 등록</div>
     <div><span class="kbd">S</span> &nbsp; 검색창 포커스 (스케줄)</div>
     <div><span class="kbd">A</span> &nbsp; AI 검색 페이지로</div>
     <div><span class="kbd">T</span> &nbsp; 할일 페이지로</div>
+    <div><span class="kbd">G</span> &nbsp; 캐릭터 갤러리로</div>
     <div><span class="kbd">Esc</span> &nbsp; 모달 닫기</div>
     <div><span class="kbd">?</span> &nbsp; 이 도움말 열기</div>
   </div>
@@ -5436,6 +5505,7 @@ const PAGE_INFO={
   events:{icon:'📰',label:'이벤트 목록'},
   tasks:{icon:'✅',label:'할일 체크'},
   search:{icon:'🤖',label:'AI 검색'},
+  gallery:{icon:'🎭',label:'캐릭터 갤러리'},
 };
 
 function toggleNav(){
@@ -5458,7 +5528,7 @@ function navTo(name){
 
 function showPage(name){
   page=name;
-  ['schedule','inventory','calc','stats','calendar','events','tasks','search'].forEach(p=>{const el=document.getElementById(`page-${p}`);if(el)el.style.display=p===name?'block':'none';});
+  ['schedule','inventory','calc','stats','calendar','events','tasks','search','gallery'].forEach(p=>{const el=document.getElementById(`page-${p}`);if(el)el.style.display=p===name?'block':'none';});
   // Update nav-toggle display
   const info=PAGE_INFO[name]||{icon:'📅',label:'페이지'};
   document.getElementById('navCurIcon').textContent=info.icon;
@@ -5473,8 +5543,9 @@ function showPage(name){
   if(name==='tasks')renderTasks();
   if(name==='events')renderEventList();
   if(name==='search')refreshApiStatus();
+  if(name==='gallery')renderGallery();
   // Update top badge for current page
-  const badges={schedule:document.getElementById('nav-cnt-active'),stats:document.getElementById('nav-cnt-stats'),events:document.getElementById('nav-cnt-events')};
+  const badges={schedule:document.getElementById('nav-cnt-active'),stats:document.getElementById('nav-cnt-stats'),events:document.getElementById('nav-cnt-events'),gallery:document.getElementById('nav-cnt-gallery')};
   const cb=document.getElementById('navCurBadge');
   const b=badges[name];
   if(b&&b.textContent&&b.textContent!=='0'){cb.textContent=b.textContent;cb.classList.add('show');}else{cb.classList.remove('show');cb.textContent='';}
@@ -5482,7 +5553,7 @@ function showPage(name){
 }
 
 function toast(msg){const el=document.createElement('div');el.className='toast';el.innerHTML=msg.replace(/\n/g,'<br>');document.getElementById('tw').appendChild(el);setTimeout(()=>el.remove(),2500);}
-['evtOvl','cpnOvl','gevOvl','customEvtOvl','taskEditOvl','addTaskOvl','wishOvl','alarmOvl','budgetOvl','onbOvl','attemptOvl'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});
+['evtOvl','cpnOvl','gevOvl','customEvtOvl','taskEditOvl','addTaskOvl','wishOvl','alarmOvl','budgetOvl','onbOvl','attemptOvl','galDetailOvl'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});
 
 // Color picker event delegation
 document.getElementById('cevColorPicker').addEventListener('click', e => {
@@ -6016,8 +6087,8 @@ document.addEventListener('keydown',e=>{
   // 단축키 매핑
   const map={
     '1':'schedule','2':'inventory','3':'calc','4':'stats',
-    '5':'calendar','6':'events','7':'tasks','8':'search',
-    'a':'search','A':'search','t':'tasks','T':'tasks'
+    '5':'calendar','6':'events','7':'tasks','8':'search','9':'gallery',
+    'a':'search','A':'search','t':'tasks','T':'tasks','g':'gallery','G':'gallery'
   };
   if(map[e.key]){e.preventDefault();navTo(map[e.key]);return;}
 
@@ -6129,6 +6200,207 @@ window.addEventListener('load',()=>{
     if(btn){btn.classList.toggle('act',favOnly);btn.textContent=favOnly?'⭐ 즐겨찾기만':'⭐ 전체';}
   },100);
 });
+
+// ════════════════════════════════════════════════════════════════
+//  캐릭터 갤러리 (성공한 픽업 캐릭터 라이브러리)
+// ════════════════════════════════════════════════════════════════
+function aggregateCharacters(){
+  // game+char 단위로 그룹핑, 모든 시도(다중 시도 포함) 누적
+  const byKey={};
+  events.filter(e=>!e.predicted&&e.char).forEach(e=>{
+    const all=getAllAttempts(e);
+    const key=`${e.game}::${e.char.trim().toLowerCase()}`;
+    if(!byKey[key]){
+      byKey[key]={
+        game:e.game,
+        char:e.char.trim(),
+        copies:0,
+        fails:0,
+        totalPulls:0,
+        totalKrw:0,
+        firstSuccessDate:null,
+        lastSuccessDate:null,
+        events:[],
+        attempts:[]
+      };
+    }
+    const g=GAMES.find(x=>x.id===e.game);
+    const pricePer=g?g.gacha.pricePerPull:0;
+    all.forEach(a=>{
+      if(a.result==='success'){
+        byKey[key].copies++;
+        const dt=e.start||'';
+        if(!byKey[key].firstSuccessDate || dt<byKey[key].firstSuccessDate) byKey[key].firstSuccessDate=dt;
+        if(!byKey[key].lastSuccessDate || dt>byKey[key].lastSuccessDate) byKey[key].lastSuccessDate=dt;
+      } else if(a.result==='fail'){
+        byKey[key].fails++;
+      }
+      byKey[key].totalPulls += a.spentPulls||0;
+      byKey[key].totalKrw += (a.spentPulls||0)*pricePer;
+      byKey[key].attempts.push({...a, eventDate:e.start, eventId:e.id, eventType:e.type});
+    });
+    byKey[key].events.push(e);
+  });
+  // 성공 1번 이상 있는 캐릭터만 (실패만 한 캐릭터는 갤러리에서 제외)
+  return Object.values(byKey).filter(c=>c.copies>0);
+}
+
+function renderGallery(){
+  const grid=document.getElementById('galleryGrid');
+  const summary=document.getElementById('gallerySummary');
+  if(!grid) return;
+  const chars=aggregateCharacters();
+
+  // 게임 필터 옵션 채우기
+  const gameSel=document.getElementById('gal-game');
+  const presentGames=[...new Set(chars.map(c=>c.game))];
+  const curFilter=gameSel?gameSel.value:'all';
+  if(gameSel){
+    gameSel.innerHTML='<option value="all">🌐 전체 게임</option>'+
+      presentGames.map(gid=>{const g=GAMES.find(x=>x.id===gid);return `<option value="${gid}">${g?g.short:gid}</option>`;}).join('');
+    if(presentGames.includes(curFilter) || curFilter==='all') gameSel.value=curFilter;
+  }
+
+  // 배지 (네비)
+  const badge=document.getElementById('nav-cnt-gallery');
+  if(badge) badge.textContent=chars.length>0?chars.length:'';
+
+  // Empty state
+  if(!chars.length){
+    summary.innerHTML='';
+    grid.innerHTML=`<div class="gallery-empty">
+      <div style="font-size:42px;margin-bottom:12px">🎭</div>
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:6px">아직 획득한 캐릭터가 없습니다</h3>
+      <p style="font-size:12px;color:var(--mu);line-height:1.7;margin-bottom:14px">픽업 등록 시 결과를 ✨ 성공으로 기록하면<br>여기에 자동으로 갤러리가 채워집니다.</p>
+      <button class="btn btn-primary" onclick="navTo('schedule')">📅 픽업 스케줄로 가기</button>
+    </div>`;
+    return;
+  }
+
+  // 통계 요약
+  const totalChars=chars.length;
+  const totalCopies=chars.reduce((s,c)=>s+c.copies,0);
+  const totalKrw=chars.reduce((s,c)=>s+c.totalKrw,0);
+  const totalPulls=chars.reduce((s,c)=>s+c.totalPulls,0);
+  const avgPullsPerChar=totalChars?Math.round(totalPulls/totalCopies):0;
+  summary.innerHTML=`<div class="gallery-summary">
+    <div class="gal-stat" style="--gameC:var(--bl)">
+      <div class="gal-stat-label">획득 캐릭터</div>
+      <div class="gal-stat-value">${totalChars}</div>
+      <div class="gal-stat-sub">고유 캐릭터</div>
+    </div>
+    <div class="gal-stat" style="--gameC:var(--gold)">
+      <div class="gal-stat-label">총 보유</div>
+      <div class="gal-stat-value">${totalCopies}</div>
+      <div class="gal-stat-sub">명함 + 돌파 합산</div>
+    </div>
+    <div class="gal-stat" style="--gameC:var(--g)">
+      <div class="gal-stat-label">평균 뽑기</div>
+      <div class="gal-stat-value">${avgPullsPerChar}</div>
+      <div class="gal-stat-sub">캐릭터 1개당</div>
+    </div>
+    <div class="gal-stat" style="--gameC:var(--rd)">
+      <div class="gal-stat-label">총 지출</div>
+      <div class="gal-stat-value">${totalKrw>=10000?Math.round(totalKrw/10000)+'만':Math.round(totalKrw/1000)+'K'}</div>
+      <div class="gal-stat-sub">~₩${totalKrw.toLocaleString()}</div>
+    </div>
+  </div>`;
+
+  // 정렬 + 필터
+  const sortKey=document.getElementById('gal-sort')?.value||'recent';
+  const gameFilter=document.getElementById('gal-game')?.value||'all';
+  let filtered=gameFilter==='all'?chars:chars.filter(c=>c.game===gameFilter);
+  filtered.sort((a,b)=>{
+    if(sortKey==='recent') return (b.lastSuccessDate||'').localeCompare(a.lastSuccessDate||'');
+    if(sortKey==='name') return a.char.localeCompare(b.char,'ko-KR');
+    if(sortKey==='game'){const ga=GAMES.find(x=>x.id===a.game)?.name||'';const gb=GAMES.find(x=>x.id===b.game)?.name||'';return ga.localeCompare(gb,'ko-KR')||a.char.localeCompare(b.char,'ko-KR');}
+    if(sortKey==='copies') return b.copies-a.copies;
+    if(sortKey==='cost') return b.totalKrw-a.totalKrw;
+    return 0;
+  });
+
+  grid.innerHTML=filtered.map(c=>{
+    const g=GAMES.find(x=>x.id===c.game)||{name:c.game,short:c.game,color:'#888'};
+    const art=genArt(g, c.char, c.events[0]?.type||'limited');
+    const copyLabel=c.copies===1?'명함':`+${c.copies-1}돌`;
+    return `<div class="gal-card" style="--gameC:${g.color}" onclick="openGalDetail('${c.game}', ${JSON.stringify(c.char).replace(/"/g,'&quot;')})">
+      <div class="gal-art">
+        ${art}
+        <div class="gal-game-tag" style="color:${g.color}">${g.short}</div>
+        <div class="gal-copies" title="총 ${c.copies}회 획득">${copyLabel}</div>
+        <div class="gal-name">${c.char}</div>
+      </div>
+      <div class="gal-body">
+        <span>🎲 <strong>${c.totalPulls}</strong>뽑</span>
+        <span>💰 <strong>₩${c.totalKrw>=10000?Math.round(c.totalKrw/10000)+'만':Math.round(c.totalKrw/1000)+'K'}</strong></span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openGalDetail(gameId, charName){
+  const chars=aggregateCharacters();
+  const c=chars.find(x=>x.game===gameId&&x.char===charName);
+  if(!c){toast('⚠️ 캐릭터 정보를 찾을 수 없음');return;}
+  const g=GAMES.find(x=>x.id===c.game)||{name:c.game,short:c.game,color:'#888'};
+  document.getElementById('galDetailTitle').innerHTML=`🎴 <span style="color:${g.color}">${c.char}</span> <span style="font-size:11px;color:var(--mu);font-weight:400">· ${g.short}</span>`;
+
+  const successAttempts=c.attempts.filter(a=>a.result==='success');
+  const failAttempts=c.attempts.filter(a=>a.result==='fail');
+  const avgPullsPerCopy=c.copies?Math.round(c.totalPulls/c.copies):0;
+  const krwPerCopy=c.copies?Math.round(c.totalKrw/c.copies):0;
+
+  // 시도 히스토리 (이벤트 단위로 묶음)
+  const historyHtml=c.events.sort((a,b)=>(b.start||'').localeCompare(a.start||'')).map(ev=>{
+    const all=getAllAttempts(ev);
+    const period=ev.start&&ev.end?`${ev.start} ~ ${ev.end}`:'';
+    const typeLabel={limited:'⚡ 한정',rerun:'♻️ 복각',standard:'🔄 통상',fes:'🎪 페스',collab:'🤝 콜라보'}[ev.type||'limited']||'';
+    return `<div style="background:var(--sf2);border-radius:8px;padding:10px 12px;margin-bottom:6px;border-left:3px solid ${g.color}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:11px;font-weight:700">${typeLabel} ${ev.event||''}</span>
+        <span style="font-size:10px;color:var(--mu)">${period}</span>
+      </div>
+      ${all.map((a,i)=>{
+        const ic=a.result==='success'?'✨':a.result==='fail'?'💔':'⏭';
+        const cls=a.result==='success'?'success':a.result==='fail'?'fail':'';
+        return `<div class="gd-attempt-row ${cls}">
+          <span>${ic}</span>
+          <span style="min-width:50px;font-weight:700">${a.label||(i===0?'명함':`+${i}돌`)}</span>
+          <span style="flex:1;color:var(--mu2)">${a.spentPulls||0}뽑${a.spentCurrency?` · ${a.spentCurrency.toLocaleString()}`:''}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+
+  document.getElementById('galDetailBody').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin:14px 0">
+      <div style="background:var(--sf2);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:9px;color:var(--mu);font-weight:700;letter-spacing:1px;text-transform:uppercase">획득</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--gold)">${c.copies}</div>
+        <div style="font-size:9px;color:var(--mu)">${c.copies===1?'명함':`명함 +${c.copies-1}돌`}</div>
+      </div>
+      <div style="background:var(--sf2);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:9px;color:var(--mu);font-weight:700;letter-spacing:1px;text-transform:uppercase">픽뚫</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:${c.fails?'var(--rd)':'var(--mu)'}">${c.fails}</div>
+      </div>
+      <div style="background:var(--sf2);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:9px;color:var(--mu);font-weight:700;letter-spacing:1px;text-transform:uppercase">총 뽑기</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--bl)">${c.totalPulls}</div>
+        <div style="font-size:9px;color:var(--mu)">평균 ${avgPullsPerCopy}/개</div>
+      </div>
+      <div style="background:var(--sf2);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:9px;color:var(--mu);font-weight:700;letter-spacing:1px;text-transform:uppercase">총 비용</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--rd)">₩${c.totalKrw>=10000?Math.round(c.totalKrw/10000)+'만':Math.round(c.totalKrw/1000)+'K'}</div>
+        <div style="font-size:9px;color:var(--mu)">개당 ₩${krwPerCopy.toLocaleString()}</div>
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--mu);margin:14px 0 6px">📜 시도 히스토리</div>
+    ${historyHtml||'<div style="color:var(--mu);font-size:11px;padding:8px">기록 없음</div>'}
+  `;
+
+  document.getElementById('galDetailOvl').classList.add('open');
+}
+function closeGalDetail(){document.getElementById('galDetailOvl').classList.remove('open');}
 
 // ════════════════════════════════════════════════════════════════
 //  데이터 정리 (저장 공간 절약)
