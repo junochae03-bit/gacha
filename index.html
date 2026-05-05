@@ -5692,12 +5692,12 @@ async function doAi(){
   act.innerHTML='';
   pickupCards.innerHTML='';
   
-  // ── 캐시 확인 (24시간 TTL)
+  // ── 캐시 확인 (24시간 TTL) — 추출 결과까지 함께 보관해 API 호출 절약
   const cacheKey=`gv8-ai-cache-${gid}-${srv}-${type}`;
   try{
     const cached=localStorage.getItem(cacheKey);
     if(cached){
-      const {text,sources,ts}=JSON.parse(cached);
+      const {text,sources,parsedExtraction,ts}=JSON.parse(cached);
       const age=(Date.now()-ts)/1000/3600;
       if(age<24){
         el.innerHTML=renderMd(text);
@@ -5709,7 +5709,14 @@ async function doAi(){
           act.innerHTML=`<span style="font-size:10px;color:var(--g)">⚡ 캐시 (${ageStr} 전)</span> <button class="btn-xs" onclick="clearAiCache('${cacheKey}')">🔄 새로 검색</button>`;
         }
         aiLast=text;
-        if(type==='pickup'&&text) await aiExtractPickups(text,gid,srv);
+        // 추출 결과가 캐시에 있으면 API 호출 없이 즉시 카드 렌더
+        if(type==='pickup'&&text){
+          if(Array.isArray(parsedExtraction) && parsedExtraction.length){
+            renderCachedPickupCards(parsedExtraction, gid, srv);
+          } else {
+            await aiExtractPickups(text, gid, srv, cacheKey);
+          }
+        }
         return;
       }
     }
@@ -5781,9 +5788,9 @@ async function doAi(){
     aiLast=text;
     el.innerHTML=text?renderMd(text):'결과를 찾을 수 없습니다.';
     
-    // 캐시 저장
+    // 캐시 저장 (1차 — 추출 전)
     try{localStorage.setItem(cacheKey,JSON.stringify({text,sources,ts:Date.now()}));}catch(e){}
-    
+
     // 출처 표시
     if(sources.length){
       const srcHtml=sources.map(s=>
@@ -5791,10 +5798,10 @@ async function doAi(){
       ).join('');
       act.innerHTML=`<div style="width:100%;font-size:10px;color:var(--mu);margin-bottom:4px;font-weight:700">📎 검색 출처</div>${srcHtml}`;
     }
-    
-    // 픽업 타입이면 자동 카드 생성
+
+    // 픽업 타입이면 자동 카드 생성 (cacheKey 전달 → 추출 결과도 캐시)
     if(type==='pickup'&&text){
-      await aiExtractPickups(text,gid,srv);
+      await aiExtractPickups(text,gid,srv,cacheKey);
     }
     if(type==='coupon'&&text){
       const cpnBtn=document.createElement('button');
@@ -5825,7 +5832,7 @@ async function doAi(){
       const isZeroQuota=m.includes('limit: 0');
       msg=isZeroQuota
         ? '⚠️ 이 API 키는 무료 할당량이 0입니다.\n\nGoogle Cloud 프로젝트에서 발급받은 키는 무료 티어가 비활성화됩니다.\n\n✅ 해결법: aistudio.google.com/apikey 에서 새 키를 발급받아 교체하세요.'
-        : '⏳ 요청 한도 초과.\n\n✅ 해결법:\n1. 잠시 후 다시 시도하세요\n2. 내일(자정 이후) 되면 자동으로 한도 초기화됨';
+        : '⏳ 요청 한도 초과 (Gemini 무료: 분당 ~10회 / 일 ~250회)\n\n💡 이번 검색은 캐시되어 24시간 동안 같은 검색은 API 호출 없이 즉시 표시됩니다.\n\n✅ 해결법:\n1. 1분 후 다시 시도 (분당 한도면 곧 풀림)\n2. 다른 게임/유형 먼저 시도 (캐시된 것은 바로 사용 가능)\n3. 일 한도면 자정 이후 자동 초기화\n4. aistudio.google.com/apikey 에서 새 API 키 발급 → 교체';
     } else if(m.includes('403')){
       msg='🔑 권한 오류:\n1. API 키 권한 없음 → aistudio.google.com에서 재발급\n2. Generative Language API 비활성화 → Google Cloud Console에서 활성화\n3. 지역 제한 (일부 국가에서 차단)\n\n원본: '+m;
     } else if(m.includes('404')){
@@ -5841,7 +5848,8 @@ async function doAi(){
 }
 
 // 픽업 정보 구조화 추출 (Gemini, 검색 없이 JSON 파싱만)
-async function aiExtractPickups(text,gid,srv){
+// cacheKey 옵션: 추출 결과를 메인 캐시 항목에 합쳐 저장 → 다음번에 API 호출 절약
+async function aiExtractPickups(text,gid,srv,cacheKey){
   const g=GAMES.find(x=>x.id===gid);
   const pickupCards=document.getElementById('aiPickupCards');
 
@@ -5936,6 +5944,15 @@ ${text}`;
     // 이하 기존 로직 — validParsed 사용
     const parsedFinal=validParsed;
 
+    // 추출 결과를 메인 캐시에 합쳐 저장 (다음번에 API 호출 없이 카드 즉시 표시)
+    if(cacheKey){
+      try{
+        const cur=JSON.parse(localStorage.getItem(cacheKey)||'{}');
+        cur.parsedExtraction=parsedFinal;
+        localStorage.setItem(cacheKey, JSON.stringify(cur));
+      }catch(_){}
+    }
+
     const ongoing=parsedFinal.filter(p=>p.status==='ongoing');
     const upcoming=parsedFinal.filter(p=>p.status==='upcoming');
 
@@ -6027,6 +6044,86 @@ ${text}`;
 // 추출 재시도 (에러 복구 버튼용)
 function aiRetryExtract(text, gid, srv){
   aiExtractPickups(text, gid, srv);
+}
+
+// 캐시된 추출 결과로 픽업 카드 렌더 (Gemini 호출 없음)
+function renderCachedPickupCards(parsedFinal, gid, srv){
+  const g=GAMES.find(x=>x.id===gid);
+  const pickupCards=document.getElementById('aiPickupCards');
+  if(!g || !pickupCards) return;
+
+  // status 보정
+  const today=new Date();
+  parsedFinal.forEach(p=>{
+    if(p.status==='ongoing'||p.status==='upcoming'||p.status==='ended') return;
+    const s=new Date(p.start), en=new Date(p.end);
+    if(s<=today && en>=today) p.status='ongoing';
+    else if(s>today) p.status='upcoming';
+    else p.status='ended';
+  });
+
+  const ongoing=parsedFinal.filter(p=>p.status==='ongoing');
+  const upcoming=parsedFinal.filter(p=>p.status==='upcoming');
+  window._aiPickupResults=parsedFinal.map((p,i)=>({...p,_idx:i,game:gid,srv}));
+
+  const buildCard=(p,idx)=>{
+    const typeLabel={limited:'한정',rerun:'복각',standard:'통상',fes:'페스',collab:'콜라보'}[p.type||'limited']||'한정';
+    const typeClass={limited:'lim',rerun:'rerun',standard:'std',fes:'lim',collab:'rerun'}[p.type||'limited']||'lim';
+    const period=p.start&&p.end?`${p.start} ~ ${p.end}`:(p.start?`${p.start} ~`:'기간 미확인');
+    const bannerArt=genArt(g,p.char||p.event||'?',p.type||'limited');
+    const pickupName=p.event?`${p.event}${p.char?` · ${p.char}`:''}`:(p.char||'픽업');
+    const alreadyReg=isPickupAlreadyRegistered({...p,game:gid,srv});
+    const dupBadge=alreadyReg?`<span class="aip-tag" style="background:rgba(95,217,156,.85);color:#0a0d14;backdrop-filter:blur(6px);font-weight:800">✅ 등록됨</span>`:'';
+    return `<div class="ai-pickup-card" data-pickup-idx="${idx}" style="padding:0;overflow:hidden;${alreadyReg?'opacity:.55':''}">
+      <label style="display:block;cursor:pointer">
+        <div style="position:relative;height:120px;overflow:hidden">
+          ${bannerArt}
+          <div style="position:absolute;top:8px;left:8px;display:flex;gap:4px;flex-wrap:wrap">
+            <span class="aip-tag ${typeClass}" style="background:rgba(0,0,0,.5);backdrop-filter:blur(6px)">${typeLabel}</span>
+            ${dupBadge}
+          </div>
+          <div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);border-radius:6px;padding:5px 7px">
+            <input type="checkbox" class="ai-pickup-chk" data-pickup-idx="${idx}" ${alreadyReg?'':'checked'} ${alreadyReg?'disabled':''} style="width:16px;height:16px;cursor:${alreadyReg?'not-allowed':'pointer'};accent-color:${g.color}">
+          </div>
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:8px 10px;background:linear-gradient(to top,rgba(10,13,20,.95),transparent)">
+            <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${g.color};margin-bottom:2px">${g.short}${srv!=='all'?` · ${SRV_LBL[srv]}`:''}</div>
+            <div style="font-size:13px;font-weight:900;color:#fff;line-height:1.3">${pickupName}</div>
+          </div>
+        </div>
+        <div style="padding:10px 12px;font-family:'Orbitron',monospace;font-size:11px;color:var(--mu2);text-align:center">
+          • [${period}]
+        </div>
+      </label>
+      ${alreadyReg
+        ?`<button class="btn-xs" style="width:calc(100% - 20px);margin:0 10px 10px;color:var(--mu);cursor:default" disabled>이미 등록된 픽업</button>`
+        :`<button class="btn-xs" style="width:calc(100% - 20px);margin:0 10px 10px" onclick='aiRegPickup(${JSON.stringify({...p,game:gid,srv}).replace(/'/g,"&#39;")})'>＋ 단일 등록</button>`}
+    </div>`;
+  };
+
+  let html='';
+  if(ongoing.length){
+    html+=`<div style="grid-column:1/-1;margin-top:14px"><div style="font-size:13px;font-weight:800;color:var(--g);padding:8px 12px;background:rgba(95,217,156,.08);border-left:3px solid var(--g);border-radius:6px;margin-bottom:10px">🟢 현재 진행중인 픽업입니다. <span style="font-size:10px;color:var(--mu);margin-left:6px">⚡ 캐시</span></div></div>`;
+    ongoing.forEach(p=>{html+=buildCard(p,parsedFinal.indexOf(p));});
+  }
+  if(upcoming.length){
+    html+=`<div style="grid-column:1/-1;margin-top:14px"><div style="font-size:13px;font-weight:800;color:var(--gold);padding:8px 12px;background:rgba(251,191,36,.08);border-left:3px solid var(--gold);border-radius:6px;margin-bottom:10px">🟡 다음 픽업 예정입니다.</div></div>`;
+    upcoming.forEach(p=>{html+=buildCard(p,parsedFinal.indexOf(p));});
+  }
+  if(!ongoing.length && !upcoming.length){
+    pickupCards.innerHTML='<div style="font-size:11px;color:var(--mu2);padding:8px">진행중 / 예정 픽업이 없습니다.</div>';
+    return;
+  }
+  // 일괄 등록 영역
+  html+=`<div style="grid-column:1/-1;margin-top:18px;padding:14px 16px;background:linear-gradient(135deg,rgba(96,165,250,.08),rgba(167,139,250,.06));border:1px solid rgba(96,165,250,.25);border-radius:10px">
+    <div style="font-size:13px;font-weight:800;color:var(--bl);margin-bottom:10px">📌 픽업 스케쥴에 등록 하시겠습니까?</div>
+    <div style="font-size:11px;color:var(--mu2);margin-bottom:12px">체크된 픽업만 일괄 등록됩니다.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="aiRegPickupBulk()">✅ 선택 항목 일괄 등록</button>
+      <button class="btn btn-ghost" onclick="aiTogglePickupAll(true)">전체 선택</button>
+      <button class="btn btn-ghost" onclick="aiTogglePickupAll(false)">전체 해제</button>
+    </div>
+  </div>`;
+  pickupCards.innerHTML=html;
 }
 
 function aiTogglePickupAll(checked){
