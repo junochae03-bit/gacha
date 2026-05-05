@@ -3015,6 +3015,7 @@ function isFavored(gameId, srv){
   return favs.includes(`${gameId}-${srv}`) || favs.includes(gameId);
 }
 
+function isCompleted(e){return e.result==='success'||e.result==='fail';}
 function renderSchedule(){
   // 검색 쿼리 갱신
   const searchEl=document.getElementById('scheduleSearch');
@@ -3026,7 +3027,6 @@ function renderSchedule(){
   
   const now=new Date();
   // 성공/픽뚫 완료된 픽업은 스케줄에서 제외 → 픽업 기록 탭으로 자동 이동
-  const isCompleted=e=>(e.result==='success'||e.result==='fail');
   const base=events.filter(e=>!e.predicted&&matchSrv(e.srv));
   const vis=base.filter(e=>eventMatchesSearch(e)&&eventMatchesResult(e));
   const all=base;
@@ -3926,7 +3926,7 @@ function renderCalendar(){
   const rows=Math.ceil((first+days)/7);
 
   const allEvs=[];
-  events.filter(e=>!e.predicted&&isFavored(e.game,e.srv)&&matchSrv(e.srv)).forEach(e=>{
+  events.filter(e=>!e.predicted&&matchSrv(e.srv)).forEach(e=>{
     const g=GAMES.find(x=>x.id===e.game); if(!g) return;
     const sd=new Date(e.start), ed=new Date(e.end);
     const ms=new Date(y,m,1), me=new Date(y,m,days,23,59,59);
@@ -5399,7 +5399,7 @@ function exportIcal(idx){
 // 즐겨찾기한 진행 중/예정 픽업 일괄 ical 내보내기
 function exportAllIcal(){
   const now=new Date();
-  const list=events.filter(e=>!e.predicted&&isFavored(e.game,e.srv)&&matchSrv(e.srv)&&new Date(e.end)>=now&&e.start&&e.end);
+  const list=events.filter(e=>!e.predicted&&matchSrv(e.srv)&&new Date(e.end)>=now&&e.start&&e.end);
   if(!list.length){toast('⚠️ 내보낼 픽업이 없습니다');return;}
   const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//GachaPRO//KR','CALSCALE:GREGORIAN'];
   const fmt=d=>d.toISOString().replace(/[-:]/g,'').slice(0,15)+'Z';
@@ -6770,7 +6770,7 @@ function switchStatsTab(tab,btn){
 // ════════════════════════════════════════════════════════════════
 function renderStatsCharts(){
   const el=document.getElementById('statsCharts');
-  const recorded=events.filter(e=>!e.predicted&&isFavored(e.game, e.srv)&&matchSrv(e.srv)&&(e.spentPulls>0||e.spentCurrency>0||e.result==='success'||e.result==='fail'));
+  const recorded=events.filter(e=>!e.predicted&&matchSrv(e.srv)&&(e.spentPulls>0||e.spentCurrency>0||e.result==='success'||e.result==='fail'));
   if(!recorded.length){el.innerHTML=`<div class="empty-big"><div class="empty-icon-big">📈</div><h3>차트 데이터 없음</h3><p>소비량과 결과를 입력하면 차트가 그려집니다.</p></div>`;return;}
   
   // 게임별 지출 바
@@ -6886,7 +6886,7 @@ function renderStatsCharts(){
 // ════════════════════════════════════════════════════════════════
 function renderStatsInsight(){
   const el=document.getElementById('statsInsight');
-  const recorded=events.filter(e=>!e.predicted&&isFavored(e.game, e.srv)&&matchSrv(e.srv)&&(e.result==='success'||e.result==='fail'));
+  const recorded=events.filter(e=>!e.predicted&&matchSrv(e.srv)&&(e.result==='success'||e.result==='fail'));
   if(recorded.length<3){el.innerHTML=`<div class="empty-big"><div class="empty-icon-big">🔬</div><h3>분석에 필요한 데이터 부족</h3><p>성공/픽뚫 기록이 3건 이상 필요합니다.</p></div>`;return;}
   const succ=recorded.filter(e=>e.result==='success').length;
   const fail=recorded.filter(e=>e.result==='fail').length;
