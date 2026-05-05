@@ -3593,7 +3593,7 @@ function renderCalc(){
     </div>`;
   } else {
     document.getElementById('calcGrid').innerHTML=cards.join('');
-    setTimeout(()=>{
+    requestAnimationFrame(()=>{
       GAMES.filter(gameHasAnyFav).forEach(g=>{
         const srvList=g.servers.length>1?g.servers:['all'];
         srvList.forEach(srv=>{
@@ -3602,7 +3602,7 @@ function renderCalc(){
           ccCalc(`${g.id}-${srv}`,g.id,srv);
         });
       });
-    },50);
+    });
   }
 }
 // debounce 타이머
@@ -5257,7 +5257,7 @@ function setAlarms(idx){
     });
     alarms[`e-${idx}`]={char:e.char,n:cnt.length};
     localStorage.setItem('gv8-alarms',JSON.stringify(alarms));
-    renderSchedule();toast(`🔔 알람 ${cnt.length}개!`);
+    renderSchedule();toast(cnt.length?`🔔 알람 ${cnt.length}개 (브라우저 탭 열려있는 동안만 작동)`:`⚠️ 설정할 일정이 없음`);
   });
 }
 function exportIcal(idx){
@@ -6194,18 +6194,16 @@ function aiRegPickupBulk(){
 
 function aiRegPickup(data){
   openEvt();
-  setTimeout(()=>{
-    document.getElementById('em-game').value=data.game||'';
-    onGameChange();
-    document.getElementById('em-srv').value=data.srv||'kr';
-    document.getElementById('em-char').value=data.char||'';
-    document.getElementById('em-event').value=data.event||'';
-    document.getElementById('em-start').value=data.start||'';
-    document.getElementById('em-end').value=data.end||'';
-    document.getElementById('em-type').value=data.type||'limited';
-    refreshEventSuggestions();
-    toast('📝 정보 자동 입력됨. 확인 후 저장하세요.');
-  },100);
+  document.getElementById('em-game').value=data.game||'';
+  onGameChange();
+  document.getElementById('em-srv').value=data.srv||'kr';
+  document.getElementById('em-char').value=data.char||'';
+  document.getElementById('em-event').value=data.event||'';
+  document.getElementById('em-start').value=data.start||'';
+  document.getElementById('em-end').value=data.end||'';
+  document.getElementById('em-type').value=data.type||'limited';
+  refreshEventSuggestions();
+  toast('📝 정보 자동 입력됨. 확인 후 저장하세요.');
 }
 
 async function aiAutoCpn(gid,srv){
@@ -6228,7 +6226,15 @@ JSON만 응답.
     });
     save();renderEventList();updateBadges();
     toast(`🎟 ${parsed.length}개 쿠폰 추가!`);
-  }catch(e){console.error('aiAutoCpn 실패:',e);toast('⚠️ 쿠폰 추출 실패');}
+  }catch(e){
+    console.error('aiAutoCpn 실패:',e);
+    const _em=e.message||'';
+    if(_em.includes('429')){
+      const _rm=_em.match(/retry in ([\d.]+)s/i);
+      const _sec=_rm?Math.ceil(parseFloat(_rm[1])):60;
+      toast('⏳ 쿠폰 추출 한도 초과 — '+_sec+'초 후 재시도하세요');
+    }else{toast('⚠️ 쿠폰 추출 실패');}
+  }
 }
 
 // 이벤트 정보 자동 추출 → 이벤트 목록에 등록
@@ -6263,7 +6269,15 @@ async function aiAutoEvents(gid,srv){
     });
     save();renderEventList();updateBadges();
     toast(`📰 ${parsed.length}개 이벤트 추가!`);
-  }catch(e){console.error('aiAutoEvents 실패:',e);toast('⚠️ 이벤트 추출 실패');}
+  }catch(e){
+    console.error('aiAutoEvents 실패:',e);
+    const _em2=e.message||'';
+    if(_em2.includes('429')){
+      const _rm2=_em2.match(/retry in ([\d.]+)s/i);
+      const _sec2=_rm2?Math.ceil(parseFloat(_rm2[1])):60;
+      toast('⏳ 이벤트 추출 한도 초과 — '+_sec2+'초 후 재시도하세요');
+    }else{toast('⚠️ 이벤트 추출 실패');}
+  }
 }
 
 // 출처 칩 CSS
@@ -6404,7 +6418,7 @@ function checkStorageSize(){
 }
 
 function exportData(){
-  const data={version:'v21',exportedAt:new Date().toISOString(),events,coupons,gameEvents,customEvents,inventory,monthlyOn,monthlyStart,favs,alarms,hiddenAutoMira,serverFilter,wishlist,alarmConfig,monthlyBudget};
+  const data={version:'v21',exportedAt:new Date().toISOString(),events,coupons,gameEvents,customEvents,inventory,monthlyOn,monthlyStart,favs,alarms,hiddenAutoMira,serverFilter,wishlist,alarmConfig,monthlyBudget,customTasks,taskState,taskHidden,taskOverrides};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -6440,6 +6454,10 @@ function applyImportedData(d){
   if(d.wishlist) {wishlist=d.wishlist; localStorage.setItem('gv8-wishlist',JSON.stringify(wishlist));}
   if(d.alarmConfig) {alarmConfig=d.alarmConfig; localStorage.setItem('gv8-alarm-config',JSON.stringify(alarmConfig));}
   if(typeof d.monthlyBudget==='number') {monthlyBudget=d.monthlyBudget; localStorage.setItem('gv8-monthly-budget',JSON.stringify(monthlyBudget));}
+  if(d.customTasks){customTasks=d.customTasks;localStorage.setItem('gv8-custom-tasks',JSON.stringify(customTasks));}
+  if(d.taskState){taskState=d.taskState;localStorage.setItem('gv8-taskstate',JSON.stringify(taskState));}
+  if(d.taskHidden){taskHidden=d.taskHidden;localStorage.setItem('gv8-task-hidden',JSON.stringify(taskHidden));}
+  if(d.taskOverrides){taskOverrides=d.taskOverrides;localStorage.setItem('gv8-task-overrides',JSON.stringify(taskOverrides));}
 }
 
 // ── GitHub Gist 동기화 ────────────────────────────────────
@@ -6479,7 +6497,7 @@ async function gistUpload(){
   
   localStorage.setItem('gv8-gist-token',tk);
   
-  const data={version:'v21',exportedAt:new Date().toISOString(),events,coupons,gameEvents,customEvents,inventory,monthlyOn,monthlyStart,favs,alarms,hiddenAutoMira,serverFilter,wishlist,alarmConfig,monthlyBudget};
+  const data={version:'v21',exportedAt:new Date().toISOString(),events,coupons,gameEvents,customEvents,inventory,monthlyOn,monthlyStart,favs,alarms,hiddenAutoMira,serverFilter,wishlist,alarmConfig,monthlyBudget,customTasks,taskState,taskHidden,taskOverrides};
   const content=JSON.stringify(data,null,2);
   
   const btn=document.getElementById('gist-upload-btn');
@@ -6912,13 +6930,16 @@ function populateAiGameSelect(){
 //  AI 검색 — 이미 등록된 픽업 감지
 // ════════════════════════════════════════════════════════════════
 function isPickupAlreadyRegistered(p){
-  // game + srv + char + start 일치하는 이벤트가 있으면 true
-  return events.some(e=>
-    e.game===p.game &&
-    (e.srv||'all')===(p.srv||'all') &&
-    (e.char||'').trim()===(p.char||'').trim() &&
-    e.start===p.start
-  );
+  // char||event 식별자로 비교 — 이벤트형 픽업(char 없음)도 올바르게 중복 탐지
+  const pId=(p.char||p.event||'').trim();
+  if(!pId) return false;
+  return events.some(e=>{
+    const eId=(e.char||e.event||'').trim();
+    return e.game===p.game &&
+      (e.srv||'all')===(p.srv||'all') &&
+      eId===pId &&
+      e.start===p.start;
+  });
 }
 
 // ════════════════════════════════════════════════════════════════
