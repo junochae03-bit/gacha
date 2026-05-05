@@ -1156,12 +1156,207 @@ h3, .src-hd, .gf-sec-label{
   text-shadow:0 0 14px rgba(244,197,122,0.3);
 }
 
-/* 라이트 테마는 HSR 적용 안 함 (오버라이드) */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/*  LIGHT MODE — HSR 라이트 톤 (밝은 배경 + 진한 황금) */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 body.light{
-  --bg:#f5f5f5;--bg2:#ffffff;--sf:#ffffff;--sf2:#fafafa;--sf3:#f0f0f0;
-  --tx:#1a1a1a;
+  --bg:#f7f3ea;--bg2:#fdf9f0;--sf:#ffffff;--sf2:#faf6ec;--sf3:#f0e8d8;
+  --tx:#2a2418;--mu:#7a6f55;--mu2:#a89878;
+  --bd:rgba(180,140,60,0.12);--bd2:rgba(180,140,60,0.22);--bd3:rgba(180,140,60,0.35);
+  --hsr-gold:#b8860b;--hsr-gold-soft:#9c7008;--hsr-amber:#d4a04a;
+  --hsr-text:#2a2418;
+  --gold:#b8860b;
 }
-body.light::after{display:none}
+body.light::before{
+  background:
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(184,134,11,0.08), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(180,140,60,0.05), transparent 50%) !important;
+}
+body.light::after{display:none !important}
+
+body.light .card,
+body.light .cc{
+  background:linear-gradient(135deg, #ffffff, #faf6ec) !important;
+  border-color:rgba(180,140,60,0.2) !important;
+  box-shadow:0 2px 12px rgba(0,0,0,0.05);
+}
+body.light .card::before{
+  background:linear-gradient(135deg, transparent 0%, rgba(184,134,11,0.05) 50%, transparent 100%) !important;
+}
+body.light .card:hover,
+body.light .cc:hover{
+  border-color:rgba(184,134,11,0.4) !important;
+  box-shadow:0 8px 24px rgba(0,0,0,0.08), 0 0 20px rgba(184,134,11,0.06) !important;
+}
+
+body.light .modal{
+  background:linear-gradient(180deg, #ffffff, #faf6ec) !important;
+  border-color:rgba(184,134,11,0.3) !important;
+  box-shadow:0 20px 60px rgba(0,0,0,0.15), 0 0 30px rgba(184,134,11,0.06) !important;
+}
+
+body.light .nav-toggle{
+  background:linear-gradient(135deg, #ffffff, #faf6ec) !important;
+  border-color:rgba(184,134,11,0.25) !important;
+}
+body.light .nav-toggle:hover{border-color:rgba(184,134,11,0.5) !important}
+body.light .nav-toggle.open{
+  border-color:var(--hsr-gold) !important;
+  box-shadow:0 0 0 1px rgba(184,134,11,0.3), 0 8px 24px rgba(184,134,11,0.12) !important;
+}
+body.light .nav-list{background:#ffffff !important;border-color:rgba(184,134,11,0.2) !important}
+body.light .nav-item{color:#5a5040}
+body.light .nav-item:hover{background:rgba(184,134,11,0.08) !important;color:#9c7008 !important}
+body.light .nav-item.act{
+  background:linear-gradient(90deg, rgba(184,134,11,0.15), rgba(184,134,11,0.04)) !important;
+  color:#9c7008 !important;
+  border-left-color:var(--hsr-gold);
+}
+body.light .nav-item.act .nav-num,
+body.light .nav-current-badge{
+  background:linear-gradient(135deg, #b8860b, #d4a04a) !important;
+  color:#fffaf0 !important;
+}
+
+body.light .btn-primary{
+  background:linear-gradient(135deg, #d4a04a, #b8860b, #9c7008) !important;
+  color:#fffaf0 !important;
+  box-shadow:0 2px 12px rgba(184,134,11,0.3) !important;
+}
+body.light .btn-ghost{
+  background:rgba(184,134,11,0.06) !important;
+  border-color:rgba(184,134,11,0.25) !important;
+  color:#9c7008 !important;
+}
+body.light .btn-ghost:hover{
+  background:rgba(184,134,11,0.12) !important;
+  color:#7a5806 !important;
+}
+body.light .btn-xs{
+  border-color:rgba(184,134,11,0.25) !important;
+  color:#7a6f55;
+  background:#fdfaf2;
+}
+body.light .btn-xs:hover{
+  border-color:var(--hsr-gold) !important;
+  color:var(--hsr-gold) !important;
+}
+
+body.light .fi{
+  background:#ffffff !important;
+  border-color:rgba(184,134,11,0.25) !important;
+  color:#2a2418 !important;
+}
+body.light .fi:focus{
+  border-color:var(--hsr-gold) !important;
+  box-shadow:0 0 0 1px rgba(184,134,11,0.4), 0 0 12px rgba(184,134,11,0.1) !important;
+}
+
+body.light .gc{
+  background:#ffffff !important;
+  border-color:rgba(184,134,11,0.18) !important;
+  color:#5a5040;
+}
+body.light .gc:hover{border-color:rgba(184,134,11,0.5) !important}
+body.light .gc.on{
+  background:linear-gradient(135deg, rgba(184,134,11,0.18), rgba(184,134,11,0.05)) !important;
+  border-color:var(--hsr-gold) !important;
+  color:#7a5806 !important;
+  box-shadow:0 0 14px rgba(184,134,11,0.18) !important;
+}
+
+body.light .srv-toggle{background:#ffffff !important;border-color:rgba(184,134,11,0.18) !important}
+body.light .st-btn{color:#7a6f55}
+body.light .st-btn:hover{color:#2a2418}
+
+body.light .empty-big{
+  background:linear-gradient(180deg, #ffffff, #faf6ec) !important;
+  border-color:rgba(184,134,11,0.25) !important;
+}
+
+body.light .toast{
+  background:linear-gradient(135deg, #ffffff, #faf6ec) !important;
+  border-color:rgba(184,134,11,0.35) !important;
+  color:#7a5806 !important;
+  box-shadow:0 8px 24px rgba(0,0,0,0.12) !important;
+}
+
+body.light .kbd{
+  background:linear-gradient(180deg, #faf6ec, #f0e8d8) !important;
+  border-color:rgba(184,134,11,0.4) !important;
+  color:#7a5806 !important;
+  text-shadow:none !important;
+}
+
+body.light .hdr-left h1{
+  background:linear-gradient(135deg, #9c7008 0%, #b8860b 50%, #d4a04a 100%) !important;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  text-shadow:0 0 20px rgba(184,134,11,0.2) !important;
+}
+body.light .hdr-left h1::before, body.light .hdr-left h1::after{
+  -webkit-text-fill-color:#b8860b;color:#b8860b;
+  text-shadow:0 0 6px rgba(184,134,11,0.4);
+}
+body.light .hdr-left .sub{color:#9c7008 !important}
+body.light .hdr::after{
+  background:linear-gradient(90deg, transparent, #b8860b 40%, #d4a04a 50%, #b8860b 60%, transparent) !important;
+}
+
+body.light .page-intro h2{color:#9c7008 !important;text-shadow:none !important}
+body.light .page-intro h2::before{
+  background:linear-gradient(180deg, #b8860b, transparent);
+  box-shadow:0 0 6px rgba(184,134,11,0.3);
+}
+body.light .page-intro::after{color:#b8860b !important;opacity:0.5 !important}
+body.light .page-intro-text::before{border-color:#b8860b !important;opacity:0.5}
+
+body.light .modal h2{
+  color:#9c7008 !important;
+  border-bottom-color:rgba(184,134,11,0.25) !important;
+  text-shadow:none !important;
+}
+
+body.light .tot-v,
+body.light .pn,
+body.light .ic-value,
+body.light .gal-stat-value{
+  color:#9c7008 !important;
+  text-shadow:0 0 8px rgba(184,134,11,0.15) !important;
+}
+
+body.light .nav-current-label{color:#9c7008 !important}
+
+body.light .banner-game{color:#b8860b !important}
+
+body.light .gal-card{
+  background:#ffffff !important;
+  border-color:rgba(184,134,11,0.2) !important;
+}
+body.light .gal-card:hover{border-color:#b8860b !important}
+body.light .gal-copies{
+  background:linear-gradient(135deg, #b8860b, #d4a04a) !important;
+  color:#fffaf0 !important;
+}
+
+body.light .sub-tabs{border-bottom-color:rgba(184,134,11,0.2) !important}
+body.light .sub-tab{color:#7a6f55}
+body.light .sub-tab.act{color:#9c7008 !important;border-bottom-color:#b8860b !important}
+
+body.light .cal-grid{
+  background:#ffffff !important;
+  border-color:rgba(184,134,11,0.18) !important;
+}
+
+body.light .fab{
+  background:linear-gradient(135deg, #b8860b, #d4a04a) !important;
+  color:#fffaf0 !important;
+  box-shadow:0 8px 28px rgba(184,134,11,0.5), 0 0 0 2px rgba(255,250,240,0.3) inset !important;
+}
+
+body.light .gd-attempt-row{background:#faf6ec !important}
+
+/* 라이트 모드에서 펄스 애니메이션 끄기 (눈에 거슬림) */
+body.light .btn-primary{animation:none !important}
 
 /* 카드 테두리 코너 빛 효과 (subtle) */
 .card.predicted{
