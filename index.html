@@ -1383,6 +1383,36 @@ body.light .btn-primary{animation:none !important}
   border-style:dashed !important;
   border-color:rgba(167,139,250,0.4) !important;
 }
+/* ── List View ── */
+.sfb-sep{width:1px;height:20px;background:var(--bd2);align-self:center;margin:0 4px}
+.lv-table{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
+.lv-row{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:10px;padding:9px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:9px;cursor:pointer;transition:all .15s;font-size:12px}
+.lv-row:hover{background:var(--sf2);border-color:var(--bd2)}
+.lv-chip{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap;font-family:'Orbitron',monospace;letter-spacing:.5px}
+.lv-label{font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lv-date{font-size:10px;color:var(--mu2);white-space:nowrap;font-family:'Orbitron',monospace}
+.lv-dday{font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;font-family:'Orbitron',monospace;white-space:nowrap}
+.lv-dday.dd-on{background:rgba(95,217,156,.15);color:var(--g)}
+.lv-dday.dd-up{background:rgba(251,191,36,.12);color:var(--gold)}
+.lv-dday.dd-end{background:rgba(90,100,128,.15);color:var(--mu2)}
+.lv-section-hdr{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--mu2);padding:4px 2px;margin-top:12px}
+/* ── Onboarding ── */
+.ob-card{background:linear-gradient(135deg,rgba(96,165,250,.08),rgba(167,139,250,.06));border:1px solid rgba(96,165,250,.2);border-radius:14px;padding:28px 24px;max-width:520px;margin:32px auto}
+.ob-card h3{font-size:16px;font-weight:700;margin-bottom:8px;background:linear-gradient(135deg,var(--bl),var(--pu));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.ob-steps{display:flex;flex-direction:column;gap:16px;margin:20px 0}
+.ob-step{display:flex;gap:14px;align-items:flex-start}
+.ob-num{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--bl),var(--pu));color:#fff;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.ob-step-body{flex:1}
+.ob-step-body strong{font-size:13px;color:var(--tx)}
+.ob-step-body p{font-size:11px;color:var(--mu2);margin-top:3px;line-height:1.5}
+.ob-btns{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+/* ── Quick-add buttons ── */
+.inv-qb-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:1px solid var(--bd);align-items:center}
+.inv-qb{font-size:10px;padding:4px 9px;border:1px solid var(--bd2);border-radius:6px;background:var(--sf2);color:var(--mu2);cursor:pointer;transition:all .15s;font-family:'Orbitron',monospace;font-weight:700}
+.inv-qb:hover{background:var(--sf3);color:var(--tx);border-color:var(--bd3)}
+.calc-qb-row{display:flex;gap:5px;flex-wrap:wrap;margin:4px 0}
+.calc-qb{font-size:9px;padding:3px 8px;border:1px solid var(--bd2);border-radius:5px;background:var(--sf2);color:var(--mu2);cursor:pointer;transition:all .15s;font-family:'Orbitron',monospace;font-weight:700}
+.calc-qb:hover{background:var(--sf3);color:var(--tx);border-color:var(--bd3)}
 </style>
 </head>
 <body>
@@ -1503,6 +1533,8 @@ body.light .btn-primary{animation:none !important}
       <button class="sfb-btn" data-filter="untried" onclick="setResultFilter('untried',this)">⏭ 스킵</button>
       <button class="sfb-btn" data-filter="success" onclick="setResultFilter('success',this)">✨ 성공</button>
       <button class="sfb-btn" data-filter="fail" onclick="setResultFilter('fail',this)">💔 픽뚫</button>
+      <div class="sfb-sep"></div>
+      <button class="sfb-btn" id="listViewBtn" onclick="toggleListView()" title="리스트뷰 / 카드뷰 전환">☰ 리스트</button>
     </div>
   </div>
   <div class="gf" id="gfBar"></div>
@@ -2979,16 +3011,48 @@ function renderSchedule(){
   const ended=vis.filter(e=>new Date(e.end)<now).sort((a,b)=>pinFirst(a,b)||new Date(b.end)-new Date(a.end));
   
   // 검색 결과 없는 경우
+  const lvBtn=document.getElementById('listViewBtn');
+  if(lvBtn) lvBtn.classList.toggle('act',scheduleListView);
   const isFiltered=scheduleSearchQuery||scheduleResultFilter!=='all';
   let html='';
   if(!all.length){
-    html=`<div class="empty-big"><div class="empty-icon-big">📋</div><h3>등록된 픽업이 없습니다</h3><p>＋ 새 픽업 등록 버튼으로 추가하세요.</p>${completedCount?`<div style="margin-top:12px;padding:10px 16px;background:rgba(95,217,156,.08);border:1px solid rgba(95,217,156,.25);border-radius:10px;font-size:12px;color:var(--g)">✅ 성공/픽뚫 완료된 픽업 ${completedCount}건은 <strong>📊 픽업 기록</strong> 탭에서 확인하세요.</div>`:''}<button class="btn btn-primary" style="margin-top:12px" onclick="openEvt()">＋ 첫 픽업 등록</button></div>`;
+    html=`<div class="ob-card">
+      <h3>🎮 가챠 트래커 시작하기</h3>
+      <p style="font-size:12px;color:var(--mu2)">픽업 일정을 등록하고 즐겨찾기 게임의 스케줄을 한눈에 관리하세요.</p>
+      <div class="ob-steps">
+        <div class="ob-step">
+          <div class="ob-num">1</div>
+          <div class="ob-step-body">
+            <strong>게임 즐겨찾기</strong>
+            <p>아래 게임 칩 목록에서 플레이 중인 게임을 눌러 즐겨찾기에 추가하세요.</p>
+          </div>
+        </div>
+        <div class="ob-step">
+          <div class="ob-num">2</div>
+          <div class="ob-step-body">
+            <strong>픽업 등록</strong>
+            <p>버튼으로 직접 입력하거나 AI 검색으로 최신 픽업 일정을 자동으로 가져오세요.</p>
+          </div>
+        </div>
+      </div>
+      <div class="ob-btns">
+        <button class="btn btn-primary" onclick="openEvt()">＋ 첫 픽업 등록</button>
+        <button class="btn btn-ghost" onclick="navTo('search')">🤖 AI 검색</button>
+      </div>
+      ${completedCount?`<div style="margin-top:16px;padding:10px 16px;background:rgba(95,217,156,.08);border:1px solid rgba(95,217,156,.25);border-radius:10px;font-size:12px;color:var(--g)">✅ 완료된 픽업 ${completedCount}건은 <strong>📊 픽업 기록</strong> 탭에서 확인하세요.</div>`:''}
+    </div>`;
   } else if(isFiltered&&!vis.length){
     html=`<div class="empty-big"><div class="empty-icon-big">🔍</div><h3>검색 결과 없음</h3><p>"${scheduleSearchQuery||scheduleResultFilter}" 에 해당하는 픽업이 없습니다.</p><button class="btn btn-ghost" onclick="clearSearch();setResultFilter('all',document.querySelector('.sfb-btn'))">필터 초기화</button></div>`;
   } else {
-    if(ongoing.length){html+=`<h3 style="font-family:'Orbitron',monospace;font-size:11px;color:var(--g);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px">🟢 진행 중 <span style="opacity:.5">${ongoing.length}건</span></h3><div class="cards">${ongoing.map(e=>buildCard(e,events.indexOf(e))).join('')}</div>`;}
-    if(upcoming.length){html+=`<h3 style="font-family:'Orbitron',monospace;font-size:11px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;margin-top:24px">🟡 출시 예정 <span style="opacity:.5">${upcoming.length}건</span></h3><div class="cards">${upcoming.map(e=>buildCard(e,events.indexOf(e))).join('')}</div>`;}
-    if(ended.length){html+=`<h3 style="font-family:'Orbitron',monospace;font-size:11px;color:var(--mu);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;margin-top:24px">⚫ 종료 <span style="opacity:.5">${ended.length}건</span></h3><div class="cards">${ended.slice(0,6).map(e=>buildCard(e,events.indexOf(e))).join('')}</div>`;}
+    if(scheduleListView){
+      if(ongoing.length){html+=`<div class="lv-section-hdr" style="color:var(--g)">🟢 진행 중 <span style="opacity:.5">${ongoing.length}건</span></div><div class="lv-table">${ongoing.map(e=>buildListRow(e,events.indexOf(e))).join('')}</div>`;}
+      if(upcoming.length){html+=`<div class="lv-section-hdr" style="color:var(--gold);margin-top:16px">🟡 출시 예정 <span style="opacity:.5">${upcoming.length}건</span></div><div class="lv-table">${upcoming.map(e=>buildListRow(e,events.indexOf(e))).join('')}</div>`;}
+      if(ended.length){html+=`<div class="lv-section-hdr" style="margin-top:16px">⚫ 종료 <span style="opacity:.5">${ended.length}건</span></div><div class="lv-table">${ended.slice(0,6).map(e=>buildListRow(e,events.indexOf(e))).join('')}</div>`;}
+    } else {
+      if(ongoing.length){html+=`<h3 style="font-family:'Orbitron',monospace;font-size:11px;color:var(--g);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px">🟢 진행 중 <span style="opacity:.5">${ongoing.length}건</span></h3><div class="cards">${ongoing.map(e=>buildCard(e,events.indexOf(e))).join('')}</div>`;}
+      if(upcoming.length){html+=`<h3 style="font-family:'Orbitron',monospace;font-size:11px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;margin-top:24px">🟡 출시 예정 <span style="opacity:.5">${upcoming.length}건</span></h3><div class="cards">${upcoming.map(e=>buildCard(e,events.indexOf(e))).join('')}</div>`;}
+      if(ended.length){html+=`<h3 style="font-family:'Orbitron',monospace;font-size:11px;color:var(--mu);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;margin-top:24px">⚫ 종료 <span style="opacity:.5">${ended.length}건</span></h3><div class="cards">${ended.slice(0,6).map(e=>buildCard(e,events.indexOf(e))).join('')}</div>`;}
+    }
   }
   document.getElementById('schedule-content').innerHTML=html+
     (completedCount&&!scheduleSearchQuery?`<div style="margin-top:16px;padding:10px 16px;background:rgba(95,217,156,.06);border:1px solid rgba(95,217,156,.2);border-radius:10px;display:flex;align-items:center;gap:12px;font-size:12px">
@@ -3168,6 +3232,27 @@ function buildCard(e,idx){
         <button class="ab ab-del" data-action="del" data-eid="${eid}">🗑 삭제</button>
       </div>
     </div>
+  </div>`;
+}
+
+function buildListRow(e,idx){
+  const g=GAMES.find(x=>x.id===e.game);if(!g)return'';
+  const eid=e.id||('ev-legacy-'+idx);
+  const now=new Date(),s=new Date(e.start),en=new Date(e.end);
+  let dday='';
+  if(now<s){const d=Math.ceil((s-now)/86400000);dday=`<span class="lv-dday dd-up">D-${d}</span>`;}
+  else if(now>en){dday='<span class="lv-dday dd-end">종료</span>';}
+  else{const d=Math.ceil((en-now)/86400000);dday=`<span class="lv-dday dd-on">D-${d}</span>`;}
+  const wish=isWishlistMatch(e)?'⭐':'';
+  const pin=e.pinned?'📌':'';
+  const label=(e.char||e.event||'—');
+  const typeColors={limited:'var(--pk)',standard:'var(--g)',rerun:'var(--pu)',fes:'var(--gold)',collab:'var(--cy)'};
+  const tc=typeColors[e.type||'limited']||'var(--tx)';
+  return `<div class="lv-row" data-action="edit" data-eid="${eid}" title="클릭해서 수정">
+    <span class="lv-chip" style="background:${g.color}22;color:${g.color};border:1px solid ${g.color}44">${g.name}${e.srv&&e.srv!=='all'?` <small style="opacity:.7">${SRV_LBL[e.srv]||e.srv}</small>`:''}</span>
+    <span class="lv-label" style="color:${tc}">${wish}${pin}${label}</span>
+    <span class="lv-date">${e.start}~${e.end.slice(5)}</span>
+    ${dday}
   </div>`;
 }
 
@@ -3412,6 +3497,10 @@ function renderInventory(){
                   <input class="inv-input" type="number" inputmode="numeric" min="0" placeholder="0" value="${paid||''}" oninput="saveInv('${key}','${c.id}_paid',this.value)" onblur="finalizeInv()">
                 </div>
               </div>
+              <div class="inv-qb-row">
+                <span style="font-size:10px;color:var(--mu2)">빠른 추가</span>
+                ${[1,5,10].map(n=>`<button class="inv-qb" onclick="qAddInv('${key}','${c.id}',${g.gacha.pullCost*n})">+${g.gacha.pullCost*n}</button>`).join('')}
+              </div>
               ${paidSpent>0?`
                 <div class="inv-paid-spent">
                   💸 누적 유료돌 사용: <strong style="color:var(--gold)">${paidSpent.toLocaleString()} ${c.name}</strong> 
@@ -3559,6 +3648,9 @@ function renderCalc(){
         <div class="calc-input-row">
           <div class="calc-l">${primCur.icon} 💳 유료 ${primCur.name}</div>
           <input class="ci" type="number" inputmode="numeric" id="cc-${key}-paid" value="${primPaid}" min="0" oninput="ccUpd('${key}','${primCur.id}_paid',this.value)">
+        </div>
+        <div class="calc-qb-row">
+          ${[1,5,10].map(n=>`<button class="calc-qb" onclick="qAddCalc('${key}','${primCur.id}','cc-${key}-free',${pc.pullCost*n})">+${pc.pullCost*n}</button>`).join('')}
         </div>
         ${ticketCur?`<div class="calc-input-row">
           <div class="calc-l">${ticketCur.icon} 보유 ${ticketCur.name}</div>
@@ -6584,7 +6676,7 @@ async function gistDownload(){
 // ════════════════════════════════════════════════════════════════
 //  SEARCH & FILTER
 // ════════════════════════════════════════════════════════════════
-let scheduleSearchQuery='', scheduleResultFilter='all';
+let scheduleSearchQuery='', scheduleResultFilter='all', scheduleListView=localStorage.getItem('gv8-list-view')==='1';
 function clearSearch(){
   document.getElementById('scheduleSearch').value='';
   scheduleSearchQuery='';
@@ -6605,6 +6697,29 @@ function eventMatchesSearch(e){
 function eventMatchesResult(e){
   if(scheduleResultFilter==='all') return true;
   return (e.result||'untried')===scheduleResultFilter;
+}
+function toggleListView(){
+  scheduleListView=!scheduleListView;
+  localStorage.setItem('gv8-list-view',scheduleListView?'1':'0');
+  renderSchedule();
+}
+function qAddInv(key,cid,amount){
+  if(!inventory[key])inventory[key]={};
+  inventory[key][cid]=(inventory[key][cid]||0)+amount;
+  localStorage.setItem('gv8-inv',JSON.stringify(inventory));
+  renderInventory();
+  toast('+'+amount.toLocaleString()+' 추가됨');
+}
+function qAddCalc(key,cid,inputId,amount){
+  const cur=parseInt(document.getElementById(inputId)?.value||'0')||0;
+  const nv=cur+amount;
+  const el=document.getElementById(inputId);
+  if(el)el.value=nv;
+  if(!inventory[key])inventory[key]={};
+  inventory[key][cid]=nv;
+  localStorage.setItem('gv8-inv',JSON.stringify(inventory));
+  const ld=key.lastIndexOf('-');
+  ccCalcDebounced(key,key.slice(0,ld),key.slice(ld+1));
 }
 
 // ════════════════════════════════════════════════════════════════
