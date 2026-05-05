@@ -3027,9 +3027,9 @@ function renderSchedule(){
   const now=new Date();
   // 성공/픽뚫 완료된 픽업은 스케줄에서 제외 → 픽업 기록 탭으로 자동 이동
   const isCompleted=e=>(e.result==='success'||e.result==='fail');
-  const base=events.filter(e=>!e.predicted&&matchSrv(e.srv)&&!isCompleted(e));
+  const base=events.filter(e=>!e.predicted&&matchSrv(e.srv));
   const vis=base.filter(e=>eventMatchesSearch(e)&&eventMatchesResult(e));
-  const all=events.filter(e=>!e.predicted&&matchSrv(e.srv));
+  const all=base;
   const completedCount=all.filter(isCompleted).length;
   
   // 핀 고정된 항목을 먼저, 그 다음 기존 정렬 기준
@@ -3086,12 +3086,7 @@ function renderSchedule(){
       html+=`<div class="sec-hdr"><div class="sec-badge" style="background:rgba(90,100,128,.12);color:var(--mu2);border-color:rgba(90,100,128,.2)">⚫ 종료<span class="sec-cnt">${ended.length}</span></div></div><div class="cards">${ended.slice(0,6).map(e=>buildCard(e,events.indexOf(e))).join('')}</div>`;
     }
   }
-  document.getElementById('schedule-content').innerHTML=html+
-    (completedCount&&!scheduleSearchQuery?`<div style="margin-top:16px;padding:10px 16px;background:rgba(95,217,156,.06);border:1px solid rgba(95,217,156,.2);border-radius:10px;display:flex;align-items:center;gap:12px;font-size:12px">
-      <span style="font-size:18px">✅</span>
-      <div style="flex:1">성공/픽뚫 완료된 픽업 <strong style="color:var(--g)">${completedCount}건</strong>은 스케줄에서 자동 제외됩니다.</div>
-      <button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;white-space:nowrap" onclick="navTo('stats')">📊 기록 보기</button>
-    </div>`:'');
+  document.getElementById('schedule-content').innerHTML=html;
   // 가상 스크롤 초기화 (카드 많을 때 성능 최적화)
   if(typeof initVirtualScroll==='function') setTimeout(initVirtualScroll,50);
 }
