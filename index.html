@@ -2966,15 +2966,17 @@ function renderGF(){
     </div>`;
   });
 
-  const _collapsed=localStorage.getItem('gv8-gf-collapsed')==='1';
-  const _n=favs.length;
-  const _badge=_n?`<span class="gf-fav-count">${_n}개</span>`:'';
-  const _hdr=`<div class="gf-hdr-row"><span class="gf-hdr-label">🎮 게임 즐겨찾기${_badge}</span><button class="gf-toggle-btn" onclick="toggleGF()">${_collapsed?'▸ 펼치기':'▾ 접기'}</button></div>`;
-  const _gfEl=document.getElementById('gfBar');
-  if(_gfEl){
-    _gfEl.innerHTML=_collapsed?_hdr:_hdr+'<div class="gf-divider"></div>'+html;
-    _gfEl.style.marginBottom=_collapsed?'10px':'22px';
-  }
+  try{
+    const _collapsed=localStorage.getItem('gv8-gf-collapsed')==='1';
+    const _n=favs.length;
+    const _badge=_n?`<span class="gf-fav-count">${_n}개</span>`:'';
+    const _hdr=`<div class="gf-hdr-row"><span class="gf-hdr-label">🎮 게임 즐겨찾기${_badge}</span><button class="gf-toggle-btn" onclick="toggleGF()">${_collapsed?'▸ 펼치기':'▾ 접기'}</button></div>`;
+    const _gfEl=document.getElementById('gfBar');
+    if(_gfEl){
+      _gfEl.innerHTML=_collapsed?_hdr:_hdr+'<div class="gf-divider"></div>'+html;
+      _gfEl.style.marginBottom=_collapsed?'10px':'22px';
+    }
+  }catch(e){console.warn('renderGF 오류:',e);document.getElementById('gfBar').innerHTML=html;}
 }
 
 function toggleFav(id){
@@ -3070,12 +3072,8 @@ function renderSchedule(){
   } else {
     if(!isFiltered&&(ongoing.length+upcoming.length>0)){
       const nextDays=upcoming.length?Math.ceil((new Date(upcoming[0].start)-now)/86400000):0;
-      html+=`<div class="sched-summary">
-        <div class="ss-item"><span class="ss-num" style="color:var(--g)">${ongoing.length}</span><span class="ss-lbl">진행 중</span></div>
-        <div class="ss-div"></div>
-        <div class="ss-item"><span class="ss-num" style="color:var(--gold)">${upcoming.length}</span><span class="ss-lbl">출시 예정</span></div>
-        ${upcoming.length?`<div class="ss-div"></div><div class="ss-item"><span class="ss-num" style="color:var(--bl)">${nextDays}</span><span class="ss-lbl">일 후 다음 픽업</span></div>`:''}
-      </div>`;
+      const thirdCol=upcoming.length?`<div class="ss-div"></div><div class="ss-item"><span class="ss-num" style="color:var(--bl)">${nextDays}</span><span class="ss-lbl">일 후 다음 픽업</span></div>`:'';
+      html+=`<div class="sched-summary"><div class="ss-item"><span class="ss-num" style="color:var(--g)">${ongoing.length}</span><span class="ss-lbl">진행 중</span></div><div class="ss-div"></div><div class="ss-item"><span class="ss-num" style="color:var(--gold)">${upcoming.length}</span><span class="ss-lbl">출시 예정</span></div>${thirdCol}</div>`;
     }
     if(ongoing.length){
       const hasUrgent=ongoing.some(e=>Math.ceil((new Date(e.end)-now)/86400000)<=3);
