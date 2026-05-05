@@ -661,7 +661,7 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 .task-sec-count{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;color:var(--mu2);background:var(--sf3);border:1px solid var(--bd);border-radius:4px;padding:1px 7px;white-space:nowrap}
 .task-sec-count.all-done{color:var(--g);border-color:rgba(95,217,156,.3);background:rgba(95,217,156,.06)}
 .task-rows{display:flex;flex-direction:column;gap:6px}
-.task-row{display:grid;grid-template-columns:24px 1fr auto 24px 24px;align-items:center;gap:8px;padding:11px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;transition:border-color .15s;position:relative;overflow:hidden}
+.task-row{display:grid;grid-template-columns:24px 1fr auto 32px 32px;align-items:center;gap:8px;padding:11px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;transition:border-color .15s;position:relative;overflow:hidden}
 .task-row:hover{border-color:var(--bd2)}
 .task-row.done-all{opacity:.5}
 .task-row.done-all .task-name{text-decoration:line-through;color:var(--mu)}
@@ -677,12 +677,12 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 .tc-btn:active{transform:scale(.88)}
 .tc-val{font-family:'Orbitron',monospace;font-size:11px;font-weight:800;min-width:30px;text-align:center;color:var(--tx)}
 .tc-val.maxed{color:var(--g)}
-.task-edit,.task-del{width:22px;height:22px;border-radius:6px;border:1px solid transparent;background:transparent;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;transition:all .15s;opacity:0;flex-shrink:0;padding:0;line-height:1}
-.task-edit{color:var(--mu)}
-.task-del{color:var(--mu)}
-.task-row:hover .task-edit,.task-row:hover .task-del{opacity:1}
-.task-edit:hover{border-color:var(--bl);color:var(--bl);background:rgba(96,165,250,.08)}
-.task-del:hover{border-color:var(--rd);color:var(--rd);background:rgba(248,113,113,.08)}
+.task-edit,.task-del{width:30px;height:30px;border-radius:7px;border:1.5px solid var(--bd2);background:var(--sf2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;opacity:1;flex-shrink:0;padding:0;line-height:1}
+.task-edit{color:var(--bl);border-color:rgba(96,165,250,.35);background:rgba(96,165,250,.08)}
+.task-del{color:var(--rd);border-color:rgba(248,113,113,.35);background:rgba(248,113,113,.08)}
+.task-edit:hover{border-color:var(--bl);background:rgba(96,165,250,.18);transform:scale(1.05);box-shadow:0 2px 8px rgba(96,165,250,.25)}
+.task-del:hover{border-color:var(--rd);background:rgba(248,113,113,.18);transform:scale(1.05);box-shadow:0 2px 8px rgba(248,113,113,.25)}
+.task-edit:active,.task-del:active{transform:scale(.95)}
 .task-progress{position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(255,255,255,.03)}
 .task-prog-fill{height:100%;background:linear-gradient(90deg,var(--g),#a7f3d0);transition:width .3s ease}
 .task-empty{text-align:center;padding:18px;color:var(--mu);font-size:12px;background:var(--sf);border:1px dashed var(--bd2);border-radius:10px}
@@ -767,11 +767,11 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
       <span class="nav-label">캘린더</span>
       <span class="nav-badge"></span>
     </button>
-    <button class="nav-item" data-page="coupon" onclick="navTo('coupon')">
+    <button class="nav-item" data-page="events" onclick="navTo('events')">
       <span class="nav-num">6</span>
-      <span class="nav-icon">🎟</span>
-      <span class="nav-label">쿠폰</span>
-      <span class="nav-badge" id="nav-cnt-cpn"></span>
+      <span class="nav-icon">📰</span>
+      <span class="nav-label">이벤트 목록</span>
+      <span class="nav-badge" id="nav-cnt-events"></span>
     </button>
     <button class="nav-item" data-page="tasks" onclick="navTo('tasks')">
       <span class="nav-num">7</span>
@@ -874,20 +874,24 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
   <div id="statsInsight" style="display:none"></div>
 </div>
 
-<div id="page-coupon" style="display:none">
+<div id="page-events" style="display:none">
   <div class="page-intro">
     <div class="page-intro-text">
-      <h2>🎟 쿠폰 / 리딤코드</h2>
-      <p>각 게임별 유효 쿠폰을 관리.</p>
+      <h2>📰 이벤트 목록</h2>
+      <p>각 게임의 이벤트와 쿠폰/리딤코드를 한 곳에서 관리. AI 검색에서 자동 등록하거나 직접 추가/수정.</p>
     </div>
-    <button class="btn btn-primary" onclick="openCpn()">＋ 쿠폰 추가</button>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="openEventEntry()">＋ 이벤트 추가</button>
+      <button class="btn btn-ghost" onclick="openCpn()">＋ 쿠폰 추가</button>
+    </div>
   </div>
   <div class="sub-tabs">
-    <button class="sub-tab act" onclick="cpnF('all',this)">전체</button>
-    <button class="sub-tab" onclick="cpnF('active',this)">유효</button>
-    <button class="sub-tab" onclick="cpnF('used',this)">사용완료</button>
+    <button class="sub-tab act" onclick="evF('all',this)">전체</button>
+    <button class="sub-tab" onclick="evF('event',this)">📢 이벤트</button>
+    <button class="sub-tab" onclick="evF('coupon',this)">🎟 쿠폰</button>
+    <button class="sub-tab" onclick="evF('used',this)">사용/종료</button>
   </div>
-  <div class="cpn-grid" id="cpnGrid"></div>
+  <div class="cpn-grid" id="eventListGrid"></div>
 </div>
 
 <div id="page-tasks" style="display:none">
@@ -1051,7 +1055,7 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 </div></div>
 
 <div class="overlay" id="cpnOvl"><div class="modal">
-  <h2>쿠폰 추가</h2>
+  <h2 id="cpnMTitle">쿠폰 추가</h2>
   <div class="frow">
     <div class="fg"><label>게임</label><select class="fi" id="cm-game"></select></div>
     <div class="fg"><label>서버</label>
@@ -1069,6 +1073,31 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
   <div class="mfoot">
     <button class="btn btn-ghost" onclick="closeCpn()">취소</button>
     <button class="btn btn-primary" onclick="saveCpn()">저장</button>
+  </div>
+</div></div>
+
+<!-- GAME EVENT (이벤트 목록) MODAL -->
+<div class="overlay" id="gevOvl"><div class="modal">
+  <h2 id="gevMTitle">이벤트 추가</h2>
+  <div class="frow">
+    <div class="fg"><label>게임</label><select class="fi" id="gev-game"></select></div>
+    <div class="fg"><label>서버</label>
+      <select class="fi" id="gev-srv">
+        <option value="all">전체</option><option value="kr">한국</option><option value="jp">일본</option><option value="global">글로벌</option>
+      </select>
+    </div>
+  </div>
+  <div class="fg"><label>이벤트명</label><input class="fi" id="gev-title" placeholder="예: 신규 캐릭터 이벤트, 보상 이벤트..."></div>
+  <div class="frow">
+    <div class="fg"><label>시작일</label><input class="fi" type="date" id="gev-start"></div>
+    <div class="fg"><label>종료일</label><input class="fi" type="date" id="gev-end"></div>
+  </div>
+  <div class="fg"><label>보상 / 내용</label><input class="fi" id="gev-reward" placeholder="예: 원석 ×600, 한정 무기..."></div>
+  <div class="fg"><label>📝 메모 (선택)</label><textarea class="fi" id="gev-memo" rows="2" placeholder="상세 내용..."></textarea></div>
+  <div class="mfoot">
+    <button class="btn-xs del" id="gev-del-btn" style="display:none;margin-right:auto" onclick="delEventEntry()">🗑 삭제</button>
+    <button class="btn btn-ghost" onclick="closeEventEntry()">취소</button>
+    <button class="btn btn-primary" onclick="saveEventEntry()">저장</button>
   </div>
 </div></div>
 
@@ -1560,120 +1589,10 @@ const GAMES_RAW=[
 // ✨ Sort 가나다순 by Korean locale
 const GAMES = [...GAMES_RAW].sort((a,b) => a.name.localeCompare(b.name, 'ko-KR'));
 
-// 게임별 기본 할일 목록
-const GAME_TASKS = {
-  hsr:[
-    {key:'d1',name:'일일 임무 4개 완료',freq:'daily',max:4},
-    {key:'d2',name:'개척력 소비',freq:'daily'},
-    {key:'w1',name:'에코 오브 워 (주간 보스)',freq:'weekly',max:3},
-    {key:'w2',name:'시뮬레이션 우주 주간 포인트',freq:'weekly'},
-  ],
-  gi:[
-    {key:'d1',name:'일일 의뢰 4개',freq:'daily',max:4},
-    {key:'d2',name:'레진 소비',freq:'daily'},
-    {key:'w1',name:'주간 보스',freq:'weekly',max:3},
-    {key:'m1',name:'심연의 나선',freq:'monthly'},
-  ],
-  zzz:[
-    {key:'d1',name:'일일 임무 완료',freq:'daily'},
-    {key:'d2',name:'배터리 소비',freq:'daily'},
-    {key:'w1',name:'음동구역',freq:'weekly'},
-    {key:'w2',name:'데드리 커미션',freq:'weekly'},
-  ],
-  ba:[
-    {key:'d1',name:'일일 임무',freq:'daily'},
-    {key:'d2',name:'일일 작전',freq:'daily'},
-    {key:'d3',name:'아레나',freq:'daily'},
-    {key:'w1',name:'총력전',freq:'weekly'},
-    {key:'w2',name:'대결전',freq:'weekly'},
-  ],
-  nikke:[
-    {key:'d1',name:'아웃포스트 수확',freq:'daily'},
-    {key:'d2',name:'일일 미션',freq:'daily'},
-    {key:'d3',name:'시뮬레이션 룸',freq:'daily'},
-    {key:'w1',name:'특수 방어 훈련',freq:'weekly'},
-  ],
-  wuwa:[
-    {key:'d1',name:'일일 활력 4개',freq:'daily',max:4},
-    {key:'d2',name:'파동 에너지 소비',freq:'daily'},
-    {key:'w1',name:'심층 환상',freq:'weekly'},
-  ],
-  czn:[
-    {key:'d1',name:'일일 미션',freq:'daily'},
-    {key:'w1',name:'주간 도전',freq:'weekly'},
-  ],
-  fgo:[
-    {key:'d1',name:'일일 퀘스트',freq:'daily'},
-    {key:'d2',name:'AP 소비',freq:'daily'},
-  ],
-  pjsk:[
-    {key:'d1',name:'일일 미션',freq:'daily'},
-    {key:'d2',name:'라이브 도전',freq:'daily'},
-    {key:'w1',name:'이벤트 포인트 수집',freq:'weekly'},
-  ],
-  uma:[
-    {key:'d1',name:'일일 레이스',freq:'daily'},
-    {key:'d2',name:'육성 1회',freq:'daily'},
-    {key:'w1',name:'챔피언스 미팅',freq:'weekly'},
-  ],
-  trickcal:[
-    {key:'d1',name:'일일 임무',freq:'daily'},
-    {key:'w1',name:'주간 임무',freq:'weekly'},
-  ],
-  gfl2:[
-    {key:'d1',name:'일일 작전',freq:'daily'},
-    {key:'d2',name:'작전 기록 소비',freq:'daily'},
-    {key:'w1',name:'주간 작전',freq:'weekly'},
-  ],
-  arknights:[
-    {key:'d1',name:'일일 임무',freq:'daily'},
-    {key:'d2',name:'이성 소비',freq:'daily'},
-    {key:'w1',name:'주간 임무',freq:'weekly'},
-  ],
-  limbus:[
-    {key:'d1',name:'일일 모듈',freq:'daily'},
-    {key:'d2',name:'에너지 소비',freq:'daily'},
-    {key:'w1',name:'주간 임무',freq:'weekly'},
-  ],
-  e7:[
-    {key:'d1',name:'일일 임무',freq:'daily'},
-    {key:'d2',name:'에너지 소비',freq:'daily'},
-    {key:'w1',name:'천공의 탑',freq:'weekly'},
-    {key:'w2',name:'투기장',freq:'weekly'},
-  ],
-  hi3:[
-    {key:'d1',name:'일일 임무',freq:'daily'},
-    {key:'d2',name:'균열 시공 소비',freq:'daily'},
-    {key:'w1',name:'암흑 잠입',freq:'weekly'},
-    {key:'w2',name:'양자 괴멸',freq:'weekly'},
-  ],
-  pcr:[
-    {key:'d1',name:'일일 퀘스트',freq:'daily'},
-    {key:'d2',name:'스태미나 소비',freq:'daily'},
-    {key:'w1',name:'클랜 배틀',freq:'monthly'},
-  ],
-  stellasora:[
-    {key:'d1',name:'일일 임무',freq:'daily'},
-    {key:'d2',name:'활력 소비',freq:'daily'},
-    {key:'w1',name:'주간 임무',freq:'weekly'},
-  ],
-  cs:[
-    {key:'d1',name:'일일 임무',freq:'daily'},
-    {key:'d2',name:'코인 소비',freq:'daily'},
-    {key:'w1',name:'리그전',freq:'weekly'},
-  ],
-  endfield:[
-    {key:'d1',name:'일일 임무',freq:'daily'},
-    {key:'d2',name:'이성 소비',freq:'daily'},
-    {key:'w1',name:'주간 임무',freq:'weekly'},
-    {key:'w2',name:'통합 전략',freq:'weekly'},
-  ],
-  nte:[
-    {key:'d1',name:'일일 임무',freq:'daily'},
-    {key:'d2',name:'활력 소비',freq:'daily'},
-    {key:'w1',name:'주간 임무',freq:'weekly'},
-  ],
-};
+// 게임별 기본 할일 — 모든 게임에 출석체크 1개만 기본 제공 (사용자가 직접 추가)
+const GAME_TASKS = Object.fromEntries(
+  GAMES.map(g => [g.id, [{key:'attend', name:'출석체크', freq:'daily', max:1}]])
+);
 
 const CATS=['daily','weekly','event','reward','monthly','misc'];
 const CLBL={daily:'일간',weekly:'주간',event:'이벤트',reward:'보상',monthly:'월정액',misc:'기타'};
@@ -1703,6 +1622,7 @@ function safeLoad(key, fallback){
 }
 let events=safeLoad('gv8-events',[]);
 let coupons=safeLoad('gv8-coupons',[]);
+let gameEvents=safeLoad('gv8-game-events',[]);
 let customEvents=safeLoad('gv8-custom-events',[]);
 let favs=safeLoad('gv8-favs',[]);
 let alarms=safeLoad('gv8-alarms',{});
@@ -1718,7 +1638,7 @@ let customTasks=safeLoad('gv8-custom-tasks',[]);
 let taskEditTid=null, taskEditType='predefined';
 let serverFilter=localStorage.getItem('gv8-srv')||'all';
 let calDate=new Date();
-let evtIdx=-1,cpnIdx=-1,cpnFilter='all',page='schedule',aiLast='';
+let evtIdx=-1,cpnIdx=-1,cpnFilter='all',evFilter='all',gevEditId=null,page='schedule',aiLast='';
 
 function init(){
   // 즐겨찾기 마이그레이션: 다중 서버 게임의 gameId만 저장된 구버전 키 → gameId-srv 분리
@@ -1792,6 +1712,7 @@ function populateSels(){
 function save(){
   localStorage.setItem('gv8-events',JSON.stringify(events));
   localStorage.setItem('gv8-coupons',JSON.stringify(coupons));
+  localStorage.setItem('gv8-game-events',JSON.stringify(gameEvents));
   localStorage.setItem('gv8-custom-events',JSON.stringify(customEvents));
   localStorage.setItem('gv8-inv',JSON.stringify(inventory));
   localStorage.setItem('gv8-monthly',JSON.stringify(monthlyOn));
@@ -2001,23 +1922,26 @@ function calcMaxCeiling(gc, target, hasGuarantee){
 //  RENDER
 // ════════════════════════════════════════════════════════════════
 function renderAll(){
-  renderGF();renderSchedule();renderInventory();renderCalc();renderStats();renderCalendar();renderCoupons();updateBadges();
+  renderGF();renderSchedule();renderInventory();renderCalc();renderStats();renderCalendar();renderEventList();updateBadges();
 }
 function updateBadges(){
   const now=new Date();
   const active=events.filter(e=>!e.predicted&&isFavored(e.game, e.srv)&&matchSrv(e.srv)&&new Date(e.end)>=now).length;
+  const todayStr=new Date().toISOString().slice(0,10);
   const validCpn=coupons.filter(c=>!c.used&&matchSrv(c.srv||'all')).length;
-  
+  const validEvts=gameEvents.filter(e=>matchSrv(e.srv||'all')&&(!e.end||e.end>=todayStr)).length;
+  const eventsCount=validCpn+validEvts;
+
   const recordedPickups=events.filter(e=>!e.predicted&&isFavored(e.game, e.srv)&&matchSrv(e.srv)&&(e.result==='success'||e.result==='fail')).length;
-  
+
   const setB=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v?String(v):'';};
   setB('nav-cnt-active',active);
-  
+
   setB('nav-cnt-stats',recordedPickups);
-  setB('nav-cnt-cpn',validCpn);
-  
+  setB('nav-cnt-events',eventsCount);
+
   // Refresh top badge if showing current page
-  const badges={schedule:active,stats:recordedPickups,coupon:validCpn};
+  const badges={schedule:active,stats:recordedPickups,events:eventsCount};
   const cb=document.getElementById('navCurBadge');
   if(cb){
     const v=badges[page];
@@ -3244,13 +3168,66 @@ function delCustomEvt(){
 
 function editCustomEvt(id){openCustomEvt(id);}
 
-function renderCoupons(){
+function renderEventList(){
+  const grid=document.getElementById('eventListGrid');
+  if(!grid) return;
   const now=new Date().toISOString().slice(0,10);
-  let list=coupons.filter(c=>matchSrv(c.srv||'all'));
-  if(cpnFilter==='active')list=list.filter(c=>!c.used&&(!c.exp||c.exp>=now));
-  if(cpnFilter==='used')list=list.filter(c=>c.used);
-  if(!list.length){document.getElementById('cpnGrid').innerHTML=`<div class="empty-big" style="grid-column:1/-1"><div class="empty-icon-big">🎟</div><h3>등록된 쿠폰이 없습니다</h3><p>각 게임 공식 방송이나 SNS에서 발급되는 리딤코드를 등록해 관리하세요.</p><button class="btn btn-primary" onclick="openCpn()">＋ 쿠폰 추가</button></div>`;return;}
-  document.getElementById('cpnGrid').innerHTML=list.map(c=>{
+
+  // 필터 적용된 데이터 모으기
+  let cpnList=coupons.filter(c=>matchSrv(c.srv||'all'));
+  let evList=gameEvents.filter(e=>matchSrv(e.srv||'all'));
+
+  if(evFilter==='event'){ cpnList=[]; }
+  else if(evFilter==='coupon'){ evList=[]; }
+  else if(evFilter==='used'){
+    cpnList=cpnList.filter(c=>c.used||(c.exp&&c.exp<now));
+    evList=evList.filter(e=>e.end&&e.end<now);
+  } else {
+    // 'all' - 활성 항목만 (만료/사용은 used 탭에서)
+    cpnList=cpnList.filter(c=>!c.used&&(!c.exp||c.exp>=now));
+    evList=evList.filter(e=>!e.end||e.end>=now);
+  }
+
+  if(!cpnList.length && !evList.length){
+    grid.innerHTML=`<div class="empty-big" style="grid-column:1/-1">
+      <div class="empty-icon-big">📰</div>
+      <h3>등록된 이벤트가 없습니다</h3>
+      <p>＋ 이벤트 추가 / ＋ 쿠폰 추가 버튼으로 등록하거나,<br>🤖 AI 검색에서 자동 등록하세요.</p>
+      <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:8px">
+        <button class="btn btn-primary" onclick="openEventEntry()">＋ 이벤트 추가</button>
+        <button class="btn btn-ghost" onclick="openCpn()">＋ 쿠폰 추가</button>
+      </div>
+    </div>`;
+    return;
+  }
+
+  // 이벤트 카드 빌더
+  const buildEvent=(e)=>{
+    const g=GAMES.find(x=>x.id===e.game)||{name:e.game,color:'#fff'};
+    const ended=e.end&&e.end<now;
+    return `<div class="cc ${ended?'ccused':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div class="cc-game" style="color:${g.color}">${g.name}</div>
+          ${e.srv&&e.srv!=='all'?`<span style="font-size:9px;color:var(--mu)">${SRV_LBL[e.srv]}</span>`:''}
+        </div>
+        <div style="display:flex;gap:5px;align-items:center">
+          <span class="cbadge" style="background:rgba(96,165,250,.12);color:var(--bl)">📢 이벤트</span>
+          <button class="btn-xs" onclick="openEventEntry('${e.id}')" title="수정">✎</button>
+          <button class="btn-xs del" onclick="delEventEntry('${e.id}')" title="삭제">🗑</button>
+        </div>
+      </div>
+      <div style="font-size:14px;font-weight:700;color:var(--tx);line-height:1.4">${e.title||'(제목 없음)'}</div>
+      ${e.reward?`<div style="font-size:11px;color:var(--mu2)">💎 ${e.reward}</div>`:''}
+      <div style="display:flex;gap:5px;flex-wrap:wrap">
+        ${e.start||e.end?`<span class="cbadge ${ended?'exp':''}" style="font-family:'Orbitron',monospace">${ended?'⚠️ 종료':''}${e.start||''}${e.end?` ~ ${e.end}`:''}</span>`:'<span class="cbadge">기한없음</span>'}
+      </div>
+      ${e.memo?`<div style="font-size:10px;color:var(--mu);line-height:1.5;background:var(--sf2);padding:6px 8px;border-radius:6px">${e.memo}</div>`:''}
+    </div>`;
+  };
+
+  // 쿠폰 카드 빌더
+  const buildCoupon=(c)=>{
     const g=GAMES.find(x=>x.id===c.game)||{name:c.game,color:'#fff',redeemUrl:''};
     const ri=coupons.indexOf(c),exp=c.exp&&c.exp<now&&!c.used?'exp':'';
     return `<div class="cc ${c.used?'ccused':''}">
@@ -3259,9 +3236,11 @@ function renderCoupons(){
           <div class="cc-game" style="color:${g.color}">${g.name}</div>
           ${c.srv&&c.srv!=='all'?`<span style="font-size:9px;color:var(--mu)">${SRV_LBL[c.srv]}</span>`:''}
         </div>
-        <div style="display:flex;gap:5px">
-          ${!c.used?`<button class="btn-xs" onclick="useCpn(${ri})">✔</button>`:''}
-          <button class="btn-xs del" onclick="delCpn(${ri})">✕</button>
+        <div style="display:flex;gap:5px;align-items:center">
+          <span class="cbadge" style="background:rgba(251,191,36,.12);color:var(--gold)">🎟 쿠폰</span>
+          ${!c.used?`<button class="btn-xs" onclick="useCpn(${ri})" title="사용 처리">✔</button>`:''}
+          <button class="btn-xs" onclick="openCpn(${ri})" title="수정">✎</button>
+          <button class="btn-xs del" onclick="delCpn(${ri})" title="삭제">🗑</button>
         </div>
       </div>
       <div class="cc-code" onclick="copyCpn('${c.code}')">${c.code}<span style="font-size:11px;opacity:.4">📋</span></div>
@@ -3273,12 +3252,81 @@ function renderCoupons(){
       </div>
       ${g.redeemUrl?`<button class="ab" style="margin-top:3px" onclick="window.open('${g.redeemUrl}','_blank')">🌐 리딤 페이지</button>`:''}
     </div>`;
-  }).join('');
+  };
+
+  grid.innerHTML=[
+    ...evList.map(buildEvent),
+    ...cpnList.map(buildCoupon)
+  ].join('');
 }
-function cpnF(f,btn){cpnFilter=f;document.querySelectorAll('.sub-tab').forEach(b=>b.classList.remove('act'));btn.classList.add('act');renderCoupons();}
+
+// 하위 호환 (구버전 호출용)
+function renderCoupons(){renderEventList();}
+
+function evF(f,btn){evFilter=f;document.querySelectorAll('#page-events .sub-tab').forEach(b=>b.classList.remove('act'));btn.classList.add('act');renderEventList();}
+function cpnF(f,btn){evF(f,btn);}
 function copyCpn(code){navigator.clipboard.writeText(code).then(()=>toast('📋 복사: '+code));}
-function useCpn(i){coupons[i].used=true;save();renderCoupons();updateBadges();toast('✅ 사용완료');}
-function delCpn(i){if(!confirm('삭제?'))return;coupons.splice(i,1);save();renderCoupons();updateBadges();}
+function useCpn(i){coupons[i].used=true;save();renderEventList();updateBadges();toast('✅ 사용완료');}
+function delCpn(i){if(!confirm('삭제?'))return;coupons.splice(i,1);save();renderEventList();updateBadges();}
+
+// ════════════════════════════════════════════════════════════════
+//  GAME EVENT ENTRY (이벤트 목록)
+// ════════════════════════════════════════════════════════════════
+function openEventEntry(id){
+  gevEditId=id||null;
+  const opts=GAMES.map(g=>`<option value="${g.id}">${g.name}</option>`).join('');
+  document.getElementById('gev-game').innerHTML=opts;
+  ['gev-title','gev-start','gev-end','gev-reward','gev-memo'].forEach(k=>document.getElementById(k).value='');
+  document.getElementById('gev-srv').value=serverFilter==='all'?'all':serverFilter;
+  document.getElementById('gevMTitle').textContent=id?'이벤트 수정':'이벤트 추가';
+  document.getElementById('gev-del-btn').style.display=id?'':'none';
+  if(id){
+    const e=gameEvents.find(x=>x.id===id);
+    if(e){
+      document.getElementById('gev-game').value=e.game||'';
+      document.getElementById('gev-srv').value=e.srv||'all';
+      document.getElementById('gev-title').value=e.title||'';
+      document.getElementById('gev-start').value=e.start||'';
+      document.getElementById('gev-end').value=e.end||'';
+      document.getElementById('gev-reward').value=e.reward||'';
+      document.getElementById('gev-memo').value=e.memo||'';
+    }
+  }
+  document.getElementById('gevOvl').classList.add('open');
+}
+function closeEventEntry(){document.getElementById('gevOvl').classList.remove('open');gevEditId=null;}
+function saveEventEntry(){
+  const title=document.getElementById('gev-title').value.trim();
+  if(!title){toast('⚠️ 이벤트명 필요');return;}
+  const entry={
+    id: gevEditId || ('ge-'+Date.now()+'-'+Math.random().toString(36).slice(2,5)),
+    game:document.getElementById('gev-game').value,
+    srv:document.getElementById('gev-srv').value,
+    title,
+    start:document.getElementById('gev-start').value,
+    end:document.getElementById('gev-end').value,
+    reward:document.getElementById('gev-reward').value.trim(),
+    memo:document.getElementById('gev-memo').value.trim()
+  };
+  if(gevEditId){
+    const idx=gameEvents.findIndex(x=>x.id===gevEditId);
+    if(idx>=0) gameEvents[idx]=entry; else gameEvents.push(entry);
+  } else {
+    gameEvents.push(entry);
+  }
+  save();closeEventEntry();renderEventList();updateBadges();
+  toast(gevEditId?'✅ 수정됨':'📰 이벤트 등록됨');
+}
+function delEventEntry(id){
+  if(!id) id=gevEditId;
+  if(!id) return;
+  if(!confirm('이 이벤트를 삭제할까요?')) return;
+  gameEvents=gameEvents.filter(e=>e.id!==id);
+  save();
+  if(gevEditId===id) closeEventEntry();
+  renderEventList();updateBadges();
+  toast('🗑 삭제됨');
+}
 
 // ════════════════════════════════════════════════════════════════
 //  TASK SCHEDULER
@@ -3333,8 +3381,8 @@ function buildTaskRow2(gid,t){
   const name=isCustom?t.name:getTaskName(gid,t);
   const done=taskState[tid]||0;
   const isDoneAll=done>=max, pct=Math.round(done/max*100);
-  const editBtn=`<button class="task-edit" onclick="editTask2('${tid}')" title="수정">✏</button>`;
-  const delBtn=`<button class="task-del" onclick="deleteTask2('${tid}')" title="삭제">✕</button>`;
+  const editBtn=`<button class="task-edit" onclick="editTask2('${tid}')" title="수정" aria-label="수정">✎</button>`;
+  const delBtn=`<button class="task-del" onclick="deleteTask2('${tid}')" title="삭제" aria-label="삭제">🗑</button>`;
   if(max===1){
     return `<div class="task-row${isDoneAll?' done-all':''}">
       <div class="task-check${isDoneAll?' checked':''}" onclick="toggleTask2('${tid}')">${isDoneAll?'✓':''}</div>
@@ -3420,7 +3468,7 @@ function renderTasks(){
   }
 
   favGames.forEach(g=>{
-    const gameTaskList=GAME_TASKS[g.id]||[];
+    const gameTaskList=(GAME_TASKS[g.id]||[]).filter(t=>!taskHidden.includes(`${g.id}_${t.key}`));
     // 해당 게임의 커스텀 할일
     const gameCustomTasks=customTasks.filter(t=>t.game===g.id);
     // 모두 합쳐서 표시
@@ -3508,12 +3556,20 @@ function stepTask2(tid,max,delta){
 }
 
 function deleteTask2(tid){
-  // 커스텀 할일 삭제 (ct- 접두어)
-  customTasks=customTasks.filter(t=>t.id!==tid);
-  localStorage.setItem('gv8-custom-tasks',JSON.stringify(customTasks));
+  if(!confirm('이 할일을 삭제할까요?')) return;
+  if(tid.startsWith('ct-')){
+    // 커스텀 할일 삭제
+    customTasks=customTasks.filter(t=>t.id!==tid);
+    localStorage.setItem('gv8-custom-tasks',JSON.stringify(customTasks));
+  } else {
+    // 기본 할일 (출석체크 등) 숨기기
+    if(!taskHidden.includes(tid)) taskHidden.push(tid);
+    localStorage.setItem('gv8-task-hidden',JSON.stringify(taskHidden));
+  }
   delete taskState[tid];
   localStorage.setItem('gv8-taskstate',JSON.stringify(taskState));
   renderTasks();
+  toast('🗑 할일 삭제됨');
 }
 function restoreHiddenTasks(gid){
   taskHidden=taskHidden.filter(tid=>!tid.startsWith(gid+'_'));
@@ -4548,6 +4604,14 @@ async function doAi(){
       cpnBtn.onclick=()=>aiAutoCpn(gid,srv);
       act.appendChild(cpnBtn);
     }
+    if(type==='event'&&text){
+      const evBtn=document.createElement('button');
+      evBtn.className='btn btn-ai';
+      evBtn.style.cssText='font-size:11px;margin-top:6px';
+      evBtn.textContent='📰 이벤트 자동 추가';
+      evBtn.onclick=()=>aiAutoEvents(gid,srv);
+      act.appendChild(evBtn);
+    }
     
   }catch(err){
     el.classList.remove('loading');
@@ -4784,9 +4848,44 @@ JSON만 응답.
       if(!c.code) return;
       coupons.push({game:gid,srv,code:c.code,reward:c.reward||'',src:'AI 검색(Gemini)',exp:c.exp||'',used:false});
     });
-    save();renderCoupons();updateBadges();
+    save();renderEventList();updateBadges();
     toast(`🎟 ${parsed.length}개 쿠폰 추가!`);
   }catch(e){console.error('aiAutoCpn 실패:',e);toast('⚠️ 쿠폰 추출 실패');}
+}
+
+// 이벤트 정보 자동 추출 → 이벤트 목록에 등록
+async function aiAutoEvents(gid,srv){
+  if(!aiLast)return;
+  const prompt=`다음 텍스트에서 진행/예정 이벤트를 JSON 배열로 응답:
+[{"title":"이벤트명","start":"YYYY-MM-DD","end":"YYYY-MM-DD","reward":"보상 내용","memo":"비고"}]
+- 날짜는 명확한 것만 포함, 미확인이면 빈 문자열
+- JSON만 응답. 설명 없이.
+
+텍스트: ${aiLast}`;
+  try{
+    const data=await callGemini(prompt, false);
+    let raw=extractGeminiText(data).replace(/```json|```/g,'').trim();
+    const m=raw.match(/\[[\s\S]*\]/);
+    if(m) raw=m[0];
+    const parsed=JSON.parse(raw);
+    if(!Array.isArray(parsed)||!parsed.length){toast('⚠️ 추출된 이벤트 없음');return;}
+    if(!confirm(`✅ ${parsed.length}건의 이벤트를 이벤트 목록에 등록하시겠습니까?`)) return;
+    parsed.forEach(e=>{
+      if(!e.title) return;
+      gameEvents.push({
+        id:'ge-'+Date.now()+'-'+Math.random().toString(36).slice(2,5),
+        game:gid,
+        srv:srv||'all',
+        title:e.title,
+        start:e.start||'',
+        end:e.end||'',
+        reward:e.reward||'',
+        memo:e.memo||'AI 검색(Gemini) 자동 등록'
+      });
+    });
+    save();renderEventList();updateBadges();
+    toast(`📰 ${parsed.length}개 이벤트 추가!`);
+  }catch(e){console.error('aiAutoEvents 실패:',e);toast('⚠️ 이벤트 추출 실패');}
 }
 
 // 출처 칩 CSS
@@ -4803,7 +4902,7 @@ const PAGE_INFO={
   calc:{icon:'🎲',label:'뽑기 계산기'},
   stats:{icon:'📊',label:'픽업 기록'},
   calendar:{icon:'🗓',label:'캘린더'},
-  coupon:{icon:'🎟',label:'쿠폰'},
+  events:{icon:'📰',label:'이벤트 목록'},
   tasks:{icon:'✅',label:'할일 체크'},
   search:{icon:'🤖',label:'AI 검색'},
 };
@@ -4828,7 +4927,7 @@ function navTo(name){
 
 function showPage(name){
   page=name;
-  ['schedule','inventory','calc','stats','calendar','coupon','tasks','search'].forEach(p=>{document.getElementById(`page-${p}`).style.display=p===name?'block':'none';});
+  ['schedule','inventory','calc','stats','calendar','events','tasks','search'].forEach(p=>{const el=document.getElementById(`page-${p}`);if(el)el.style.display=p===name?'block':'none';});
   // Update nav-toggle display
   const info=PAGE_INFO[name]||{icon:'📅',label:'페이지'};
   document.getElementById('navCurIcon').textContent=info.icon;
@@ -4841,9 +4940,10 @@ function showPage(name){
   if(name==='inventory')renderInventory();
   if(name==='stats')renderStats();
   if(name==='tasks')renderTasks();
+  if(name==='events')renderEventList();
   if(name==='search')refreshApiStatus();
   // Update top badge for current page
-  const badges={schedule:document.getElementById('nav-cnt-active'),stats:document.getElementById('nav-cnt-stats'),coupon:document.getElementById('nav-cnt-cpn')};
+  const badges={schedule:document.getElementById('nav-cnt-active'),stats:document.getElementById('nav-cnt-stats'),events:document.getElementById('nav-cnt-events')};
   const cb=document.getElementById('navCurBadge');
   const b=badges[name];
   if(b&&b.textContent&&b.textContent!=='0'){cb.textContent=b.textContent;cb.classList.add('show');}else{cb.classList.remove('show');cb.textContent='';}
@@ -4851,7 +4951,7 @@ function showPage(name){
 }
 
 function toast(msg){const el=document.createElement('div');el.className='toast';el.innerHTML=msg.replace(/\n/g,'<br>');document.getElementById('tw').appendChild(el);setTimeout(()=>el.remove(),2500);}
-['evtOvl','cpnOvl','customEvtOvl','taskEditOvl','addTaskOvl'].forEach(id=>document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
+['evtOvl','cpnOvl','gevOvl','customEvtOvl','taskEditOvl','addTaskOvl'].forEach(id=>document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
 
 // Color picker event delegation
 document.getElementById('cevColorPicker').addEventListener('click', e => {
@@ -4924,7 +5024,7 @@ function checkStorageSize(){
 }
 
 function exportData(){
-  const data={version:'v19',exportedAt:new Date().toISOString(),events,coupons,customEvents,inventory,monthlyOn,monthlyStart,favs,alarms,hiddenAutoMira,serverFilter};
+  const data={version:'v20',exportedAt:new Date().toISOString(),events,coupons,gameEvents,customEvents,inventory,monthlyOn,monthlyStart,favs,alarms,hiddenAutoMira,serverFilter};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -4952,6 +5052,7 @@ function handleImport(input){
 // 임포트된 데이터 적용 (공통)
 function applyImportedData(d){
   if(d.events) events=d.events; if(d.coupons) coupons=d.coupons;
+  if(d.gameEvents) gameEvents=d.gameEvents;
   if(d.customEvents) customEvents=d.customEvents; if(d.inventory) inventory=d.inventory;
   if(d.monthlyOn) monthlyOn=d.monthlyOn; if(d.monthlyStart) monthlyStart=d.monthlyStart;
   if(d.favs) favs=d.favs; if(d.alarms) alarms=d.alarms;
@@ -4981,7 +5082,7 @@ async function gistUpload(){
   
   localStorage.setItem('gv8-gist-token',tk);
   
-  const data={version:'v19',exportedAt:new Date().toISOString(),events,coupons,customEvents,inventory,monthlyOn,monthlyStart,favs,alarms,hiddenAutoMira,serverFilter};
+  const data={version:'v20',exportedAt:new Date().toISOString(),events,coupons,gameEvents,customEvents,inventory,monthlyOn,monthlyStart,favs,alarms,hiddenAutoMira,serverFilter};
   const content=JSON.stringify(data,null,2);
   
   const btn=document.getElementById('gist-upload-btn');
