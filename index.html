@@ -3874,9 +3874,20 @@ function ccCalc(key,gid,srv){
     <div class="crr"><span class="crl">100% 천장 보장</span><span class="crv g">${maxCeiling.toLocaleString()} 회</span></div>
     <div class="cdiv"></div>
     <div>
-      <div class="pb-label"><span class="crl">달성 확률</span><span style="color:${pctColor}">${pct}%</span></div>
+      <div class="pb-label"><span class="crl">달성 확률 <span style="font-size:9px;color:var(--mu);font-weight:400">(시뮬레이션·천장 반영)</span></span><span style="color:${pctColor}">${pct}%</span></div>
       <div class="pb-w"><div class="pb-f" style="width:${pct}%;background:linear-gradient(90deg,${g.color},${g.color}99)"></div></div>
     </div>
+    ${(()=>{
+      // 단순 누적 이론 확률: 1 - (1 - p)^N
+      const theoryProb = calcPickupProb(g, effectivePulls);
+      const theoryPct = (theoryProb * 100);
+      const tColor = theoryPct>=90?'var(--g)':theoryPct>=60?'var(--gold)':theoryPct>=30?'var(--bl)':'var(--rd)';
+      const pAbs = (g.gacha.pickupAbsRate != null) ? g.gacha.pickupAbsRate : ((g.gacha.baseRate||0.006)*(g.gacha.pickupRate||0.5)*100);
+      return `<div style="margin-top:8px">
+        <div class="pb-label"><span class="crl">이론 확률 <span style="font-size:9px;color:var(--mu);font-weight:400">(1−(1−p)<sup>N</sup>·천장 무시·p=${pAbs.toFixed(2)}%)</span></span><span style="color:${tColor}">${theoryPct.toFixed(2)}%</span></div>
+        <div class="pb-w"><div class="pb-f" style="width:${Math.min(100,theoryPct).toFixed(1)}%;background:linear-gradient(90deg,${tColor},${tColor}99)"></div></div>
+      </div>`;
+    })()}
     <div class="cost-box ${needPullsForAvg===0?'ok':''}">
       <div class="cost-l">평균 추가 비용 <span style="color:var(--mu);font-size:9px">(${pc.truckDesc||'1트럭 기준'})</span></div>
       <div class="cost-v">${needPullsForAvg===0?'₩ 0 (충분)':'₩ '+krwForAvg.toLocaleString()}</div>
@@ -8172,7 +8183,7 @@ save=function(){_origSave2();idbBackup();};
 //  통계 페이지 강화 (월별 그래프 + 예산 + ROI)
 // ════════════════════════════════════════════════════════════════
 // ════════════════════════════════════════════════════════════════
-//  픽업 캐릭터 누적 획득 확률 (소프트/하드 천장 + pickupRate 반영)
+//  픽업 캐릭터 누적 획득 확률 (단순 누적: 1 - (1-p)^N)
 // ════════════════════════════════════════════════════════════════
 function getPullRateAt(g, pullNum){
   const baseRate=g.gacha.baseRate||0.006;
@@ -8180,65 +8191,27 @@ function getPullRateAt(g, pullNum){
   const hardPity=g.gacha.hardPity||90;
   if(pullNum>=hardPity) return 1.0;
   if(softPity===0 || pullNum<softPity) return baseRate;
-  // softPity ~ hardPity 사이 선형 증가 근사
   const t=(pullNum-softPity)/(hardPity-softPity);
   return Math.min(1, baseRate + (1-baseRate)*t);
 }
-// N뽑 안에 "픽업 캐릭터" 획득 확률 (천장 + 픽업 시스템 반영)
-// 5050 시스템은 픽뚫 시 다음 5★ 픽업 확정 → 최대 2회 천장 (2×hardPity) 안에 보장
-// 그 외(guaranteed/exchange/point_only/spark)는 hardPity 안에 보장
+
+// N뽑 안에 "픽업 캐릭터" 1번 이상 획득 확률
+// 단순 누적 공식: 1 - (1 - p)^N
+// p = 한 뽑당 픽업 캐릭터 절대 확률 (pickupAbsRate, 예: 블루아카 0.7%)
+// 천장/소프트 픽시·반천장 보장 효과는 무시 (옛 FGO처럼 무한 시도 모델)
 function calcPickupProb(g, N){
   if(!N || N<=0) return 0;
-  const sys=g.gacha.pickupSystem||'5050';
-  const pickupRate=g.gacha.pickupRate||0.5;
-  const hardPity=g.gacha.hardPity||90;
-
-  // ── 비(非) 5050 시스템: 천장에서 픽업 100% 보장 ────────
-  if(sys!=='5050'){
-    if(N>=hardPity) return 1.0;
-    let pNotYet=1;
-    for(let i=1;i<=N;i++){
-      pNotYet*=(1 - getPullRateAt(g,i)*pickupRate);
-    }
-    return 1 - pNotYet;
-  }
-
-  // ── 5050 시스템: 2×hardPity 안에 보장 ────────────────
-  if(N >= 2*hardPity) return 1.0;
-
-  // 1) 첫 5★를 정확히 k번째 뽑기에서 얻을 확률 (1≤k≤hardPity)
-  const probFirstAt=new Array(hardPity+1).fill(0);
-  let pNotYet=1;
-  for(let k=1;k<=hardPity;k++){
-    const r=getPullRateAt(g,k);
-    probFirstAt[k]=pNotYet*r;
-    pNotYet*=(1-r);
-  }
-
-  // 2) 첫 5★ at k일 때:
-  //    - 픽업 확률(pickupRate)로 즉시 성공
-  //    - (1-pickupRate)로 픽뚫 → 남은 (N-k)뽑 안에 2번째 5★ 얻으면 픽업 확정
-  let total=0;
-  const kMax=Math.min(N, hardPity);
-  for(let k=1;k<=kMax;k++){
-    const remaining=N-k;
-    let p2nd=0;
-    if(remaining>=hardPity){
-      p2nd=1.0;
-    } else if(remaining>0){
-      let p2NotYet=1;
-      for(let j=1;j<=remaining;j++){
-        p2NotYet*=(1 - getPullRateAt(g,j));
-      }
-      p2nd=1 - p2NotYet;
-    }
-    const pConditional=pickupRate + (1-pickupRate)*p2nd;
-    total += probFirstAt[k] * pConditional;
-  }
-  return total;
+  // pickupAbsRate는 % 단위 (예: 0.7) → 소수로 변환
+  const pAbs = (g.gacha.pickupAbsRate != null)
+    ? g.gacha.pickupAbsRate / 100
+    : (g.gacha.baseRate||0.006) * (g.gacha.pickupRate||0.5);
+  if(pAbs<=0) return 0;
+  if(pAbs>=1) return 1;
+  // 1 - (1 - p)^N
+  return 1 - Math.pow(1 - pAbs, N);
 }
 
-// 게임의 픽업 보장 최대 뽑기수 (안내용)
+// 게임의 픽업 보장 최대 뽑기수 (안내용 — 단순 모델에선 보장 없음)
 function getMaxGuaranteedPulls(g){
   const sys=g.gacha.pickupSystem||'5050';
   const hardPity=g.gacha.hardPity||90;
@@ -8352,7 +8325,7 @@ function buildEnhancedStats(){
   if(Object.keys(byGame).length){
     roiHtml=`<div style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-bottom:14px">
       <div style="font-size:13px;font-weight:800;margin-bottom:10px">🎯 게임별 픽업 성공률 vs 평균 이론 확률</div>
-      <div style="font-size:10px;color:var(--mu);margin-bottom:10px;line-height:1.6">💡 <strong>이론 확률</strong> = 성공한 픽업 1건당 "본인 N뽑 안에 픽업 캐릭터 획득" 확률의 평균<br>· 5050 시스템(원신/스타레일/명조 등): 픽뚫 시 다음 5★ 픽업 확정 → <strong>최대 2×천장</strong> 안에 보장<br>· 보장 시스템(블아/우마/FGO 등): <strong>천장 도달 시</strong> 100% 보장<br>· 픽뚫 기록은 평균에서 제외</div>
+      <div style="font-size:10px;color:var(--mu);margin-bottom:10px;line-height:1.6">💡 <strong>이론 확률</strong> = N뽑 안에 픽업 캐릭터를 1명 이상 얻을 누적 확률 <code style="background:var(--sf2);padding:1px 5px;border-radius:3px">1 − (1 − p)<sup>N</sup></code> (p = 한 뽑당 픽업 확률)<br>· 천장/소프트 픽시 무시한 단순 누적 모델 (옛 FGO처럼 무한 시도 가정)<br>· 픽뚫 기록은 평균에서 제외</div>
       <div style="display:flex;flex-direction:column;gap:8px">
         ${Object.values(byGame).sort((a,b)=>(b.success+b.fail)-(a.success+a.fail)).map(d=>{
           const total=d.success+d.fail;
