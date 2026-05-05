@@ -935,8 +935,8 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--bd)">
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <span style="font-size:11px;color:var(--mu2)">🤖 모델:</span>
-        <span id="curModelLabel" style="font-size:11px;color:var(--g);font-weight:700"></span>
-        <button class="btn-xs" onclick="listAvailableModels()">모델 목록</button>
+        <span id="curModelLabel" style="font-size:11px;color:var(--g);font-weight:700">gemini-2.5-flash</span>
+        <span style="font-size:10px;color:var(--mu);background:rgba(95,217,156,.1);border:1px solid rgba(95,217,156,.3);padding:2px 7px;border-radius:99px">🔒 고정</span>
       </div>
       <div id="modelListResult" style="display:none;margin-top:8px;flex-wrap:wrap;gap:6px"></div>
     </div>
@@ -1165,6 +1165,9 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 <!-- ADD CUSTOM TASK MODAL -->
 <div class="overlay" id="addTaskOvl"><div class="modal" style="max-width:380px">
   <h2>할일 추가</h2>
+  <div class="fg"><label>게임</label>
+    <select class="fi" id="at-game"></select>
+  </div>
   <div class="fg"><label>할일 이름</label><input class="fi" id="at-name" placeholder="예: 길드 기부, 챌린지 도전..."></div>
   <div class="fg"><label>주기</label>
     <select class="fi" id="at-freq">
@@ -2022,22 +2025,6 @@ function updateBadges(){
   }
 }
 function renderGF(){
-  function makeChips(games){
-    const chips=[];
-    games.forEach(g=>{
-      if(g.servers.includes('all')){
-        chips.push({g,srv:'all',favKey:g.id,isFav:favs.includes(g.id)});
-      } else {
-        g.servers.forEach(srv=>{
-          if(serverFilter==='kr'&&srv!=='kr')return;
-          if(serverFilter==='jp'&&srv!=='jp'&&srv!=='global')return;
-          const favKey=`${g.id}-${srv}`;
-          chips.push({g,srv,favKey,isFav:favs.includes(favKey)});
-        });
-      }
-    });
-    return chips;
-  }
   function chipsHtml(chips){
     return chips.map(({g,srv,favKey,isFav})=>{
       const srvTag=srv!=='all'?`<span class="srv-tag srv-tag-${srv}">${SRV_LBL[srv]||srv}</span>`:'';
@@ -2047,17 +2034,30 @@ function renderGF(){
     }).join('');
   }
 
+  // 서버별 분리 카테고리: 다중 서버 게임은 각 서버 카테고리에 별도 표시
   const categories=[
-    {label:'🌐 전서버', test:g=>g.servers.includes('all')},
-    {label:'🇰🇷 한섭', test:g=>!g.servers.includes('all')&&g.servers.includes('kr')},
-    {label:'🌏 일섭 / 글로벌', test:g=>!g.servers.includes('all')&&!g.servers.includes('kr')&&(g.servers.includes('jp')||g.servers.includes('global'))},
+    {label:'🌐 전서버', srv:'all'},
+    {label:'🇰🇷 한섭', srv:'kr'},
+    {label:'🇯🇵 일섭', srv:'jp'},
+    {label:'🌐 글로벌', srv:'global'},
   ];
 
   let html='';
   categories.forEach(cat=>{
-    const games=GAMES.filter(g=>gameMatchesSrvFilter(g)&&cat.test(g));
-    if(!games.length) return;
-    const chips=makeChips(games);
+    // 서버 필터 적용
+    if(serverFilter==='kr' && cat.srv!=='kr' && cat.srv!=='all') return;
+    if(serverFilter==='jp' && cat.srv!=='jp' && cat.srv!=='global' && cat.srv!=='all') return;
+
+    const chips=[];
+    GAMES.forEach(g=>{
+      if(!g.servers.includes(cat.srv)) return;
+      if(cat.srv==='all'){
+        chips.push({g,srv:'all',favKey:g.id,isFav:favs.includes(g.id)});
+      } else {
+        const favKey=`${g.id}-${cat.srv}`;
+        chips.push({g,srv:cat.srv,favKey,isFav:favs.includes(favKey)});
+      }
+    });
     if(!chips.length) return;
     html+=`<div class="gf-section">
       <div class="gf-sec-label">${cat.label}</div>
@@ -3361,20 +3361,18 @@ function renderTasks(){
   if(!wrap) return;
   initTaskResets();
 
-  // 커스텀 할일만 표시 (기본 제공 할일 없음 — 사용자가 직접 등록)
-  const tasks=customTasks;
+  // 즐겨찾기한 게임 목록 가져오기
+  const favGames=getFavGameList();
+  const legacyTasksExist=customTasks.some(t=>!t.game);
 
-  // 배지 갱신
-  const remaining=tasks.filter(t=>(taskState[t.id]||0)<(t.max||1)).length;
-  const badge=document.getElementById('nav-cnt-tasks');
-  if(badge) badge.textContent=remaining>0?remaining:'';
-
-  if(!tasks.length){
+  if(!favGames.length && !legacyTasksExist){
     wrap.innerHTML=`<div class="task-empty" style="padding:40px;text-align:center">
-      <div style="font-size:32px;margin-bottom:10px">📝</div>
-      <div style="font-size:14px;font-weight:700;margin-bottom:8px">할일이 없습니다</div>
-      <div style="font-size:12px;color:var(--mu);line-height:1.8">위 <strong style="color:var(--bl)">＋ 할일 추가</strong> 버튼으로<br>일일 · 주간 · 월간 할일을 직접 등록하세요.</div>
+      <div style="font-size:32px;margin-bottom:10px">⭐</div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:8px">즐겨찾기한 게임이 없습니다</div>
+      <div style="font-size:12px;color:var(--mu);line-height:1.8">📅 픽업 스케줄 페이지에서<br>게임 칩을 클릭해 즐겨찾기에 추가하세요.</div>
     </div>`;
+    const badge=document.getElementById('nav-cnt-tasks');
+    if(badge) badge.textContent='';
     return;
   }
 
@@ -3383,22 +3381,106 @@ function renderTasks(){
     {key:'weekly',label:'주간',icon:'📅',reset:'매주 월요일'},
     {key:'monthly',label:'월간',icon:'🗓',reset:'매월 1일'},
   ];
+
   let html='';
-  sections.forEach(sec=>{
-    const items=tasks.filter(t=>t.freq===sec.key);
-    if(!items.length) return;
-    const doneCount=items.filter(t=>(taskState[t.id]||0)>=(t.max||1)).length;
-    const allDone=doneCount===items.length;
-    html+=`<div class="task-section">
-      <div class="task-sec-hd">
-        <span class="task-sec-icon">${sec.icon}</span>
-        <span class="task-sec-label">${sec.label}</span>
-        <span class="task-sec-reset">${sec.reset}</span>
-        <span class="task-sec-count${allDone?' all-done':''}">${doneCount}/${items.length}</span>
+  let totalRemain=0;
+
+  // 게임 미지정 (레거시) 커스텀 할일 처리 — 별도 섹션으로 표시
+  const legacyTasks=customTasks.filter(t=>!t.game);
+  if(legacyTasks.length){
+    let legacyHtml='';
+    sections.forEach(sec=>{
+      const items=legacyTasks.filter(t=>t.freq===sec.key);
+      if(!items.length) return;
+      const doneCount=items.filter(t=>(taskState[t.id]||0)>=(t.max||1)).length;
+      const allDone=doneCount===items.length;
+      items.forEach(t=>{
+        const max=t.max||1;
+        if((taskState[t.id]||0)<max) totalRemain++;
+      });
+      legacyHtml+=`<div class="task-section">
+        <div class="task-sec-hd">
+          <span class="task-sec-icon">${sec.icon}</span>
+          <span class="task-sec-label">${sec.label}</span>
+          <span class="task-sec-reset">${sec.reset}</span>
+          <span class="task-sec-count${allDone?' all-done':''}">${doneCount}/${items.length}</span>
+        </div>
+        <div class="task-rows">${items.map(t=>buildTaskRow2(null,t)).join('')}</div>
+      </div>`;
+    });
+    if(legacyHtml){
+      html+=`<div class="game-task-block" style="margin-bottom:24px">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:linear-gradient(135deg,#88888822,transparent);border:1px solid #88888855;border-left:4px solid #888;border-radius:10px;margin-bottom:10px">
+          <span style="font-size:14px;font-weight:900;color:#aaa;letter-spacing:.5px">📌 기타</span>
+          <span style="font-size:11px;color:var(--mu2)">게임 미지정 할일</span>
+        </div>
+        ${legacyHtml}
+      </div>`;
+    }
+  }
+
+  favGames.forEach(g=>{
+    const gameTaskList=GAME_TASKS[g.id]||[];
+    // 해당 게임의 커스텀 할일
+    const gameCustomTasks=customTasks.filter(t=>t.game===g.id);
+    // 모두 합쳐서 표시
+    const allItems=[
+      ...gameTaskList.map(t=>({type:'predef',gid:g.id,t})),
+      ...gameCustomTasks.map(t=>({type:'custom',gid:g.id,t}))
+    ];
+
+    if(!allItems.length) return;
+
+    let gameHtml='';
+    sections.forEach(sec=>{
+      const items=allItems.filter(it=>it.t.freq===sec.key);
+      if(!items.length) return;
+      const doneCount=items.filter(it=>{
+        const tid=it.type==='custom'?it.t.id:`${it.gid}_${it.t.key}`;
+        const max=it.type==='custom'?(it.t.max||1):getTaskMax(it.gid,it.t);
+        return (taskState[tid]||0)>=max;
+      }).length;
+      const allDone=doneCount===items.length;
+
+      // 미완료 카운트 누적
+      items.forEach(it=>{
+        const tid=it.type==='custom'?it.t.id:`${it.gid}_${it.t.key}`;
+        const max=it.type==='custom'?(it.t.max||1):getTaskMax(it.gid,it.t);
+        if((taskState[tid]||0)<max) totalRemain++;
+      });
+
+      gameHtml+=`<div class="task-section">
+        <div class="task-sec-hd">
+          <span class="task-sec-icon">${sec.icon}</span>
+          <span class="task-sec-label">${sec.label}</span>
+          <span class="task-sec-reset">${sec.reset}</span>
+          <span class="task-sec-count${allDone?' all-done':''}">${doneCount}/${items.length}</span>
+        </div>
+        <div class="task-rows">${items.map(it=>it.type==='custom'?buildTaskRow2(null,it.t):buildTaskRow2(it.gid,it.t)).join('')}</div>
+      </div>`;
+    });
+
+    html+=`<div class="game-task-block" style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:linear-gradient(135deg,${g.color}22,transparent);border:1px solid ${g.color}55;border-left:4px solid ${g.color};border-radius:10px;margin-bottom:10px">
+        <span style="font-size:14px;font-weight:900;color:${g.color};letter-spacing:.5px">${g.short}</span>
+        <span style="font-size:11px;color:var(--mu2)">${g.name}</span>
       </div>
-      <div class="task-rows">${items.map(t=>buildTaskRow2(null,t)).join('')}</div>
+      ${gameHtml}
     </div>`;
   });
+
+  // 배지 갱신
+  const badge=document.getElementById('nav-cnt-tasks');
+  if(badge) badge.textContent=totalRemain>0?totalRemain:'';
+
+  if(!html){
+    wrap.innerHTML=`<div class="task-empty" style="padding:40px;text-align:center">
+      <div style="font-size:32px;margin-bottom:10px">📝</div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:8px">할일이 없습니다</div>
+      <div style="font-size:12px;color:var(--mu);line-height:1.8">위 <strong style="color:var(--bl)">＋ 할일 추가</strong> 버튼으로<br>게임별 할일을 직접 등록하세요.</div>
+    </div>`;
+    return;
+  }
   wrap.innerHTML=html;
 }
 
@@ -3439,6 +3521,14 @@ function restoreHiddenTasks(gid){
   renderTasks();
 }
 function openAddTask(){
+  // 즐겨찾기 게임 옵션 채우기
+  const sel=document.getElementById('at-game');
+  const favGames=getFavGameList();
+  if(!favGames.length){
+    toast('⚠️ 즐겨찾기한 게임이 없습니다');
+    return;
+  }
+  sel.innerHTML=favGames.map(g=>`<option value="${g.id}">${g.short} (${g.name})</option>`).join('');
   document.getElementById('at-name').value='';
   document.getElementById('at-freq').value='daily';
   document.getElementById('at-max').value='1';
@@ -3448,9 +3538,11 @@ function closeAddTask(){document.getElementById('addTaskOvl').classList.remove('
 function saveAddTask(){
   const name=document.getElementById('at-name').value.trim();
   if(!name){toast('이름을 입력하세요');return;}
+  const game=document.getElementById('at-game').value;
+  if(!game){toast('게임을 선택하세요');return;}
   const freq=document.getElementById('at-freq').value;
   const max=Math.max(1,parseInt(document.getElementById('at-max').value)||1);
-  customTasks.push({id:'ct-'+Date.now()+'-'+Math.random().toString(36).slice(2,5),name,freq,max});
+  customTasks.push({id:'ct-'+Date.now()+'-'+Math.random().toString(36).slice(2,5),game,name,freq,max});
   localStorage.setItem('gv8-custom-tasks',JSON.stringify(customTasks));
   closeAddTask();
   renderTasks();
@@ -4186,42 +4278,19 @@ function refreshApiStatus(){
   if(ml) ml.textContent=getAiModel();
 }
 function getAiModel(){
-  return localStorage.getItem('gv8-ai-model')||'gemini-1.5-flash';
+  // 모델은 gemini-2.5-flash로 고정
+  return 'gemini-2.5-flash';
 }
 function applyAiModel(name){
-  localStorage.setItem('gv8-ai-model',name);
-  refreshApiStatus();
-  const el=document.getElementById('modelListResult');
-  if(el) el.style.display='none';
-  toast(`✅ 모델 변경: ${name}`);
+  // 모델 변경 비활성화 (gemini-2.5-flash 고정)
+  toast('🔒 모델은 gemini-2.5-flash로 고정되어 있습니다');
 }
 async function listAvailableModels(){
-  const apiKey=getApiKey();
-  if(!apiKey){toast('⚠️ API 키를 먼저 저장하세요');return;}
+  // 모델 목록 표시 비활성화 (gemini-2.5-flash 고정)
   const el=document.getElementById('modelListResult');
-  if(el){el.innerHTML='<span style="color:var(--mu)">불러오는 중...</span>';el.style.display='block';}
-  try{
-    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data=await res.json();
-    // 텍스트 생성 지원 + flash/pro 계열만 표시
-    const ALLOW=/^gemini-(2\.5|2\.0|1\.5)-(flash|pro)/;
-    const models=(data.models||[])
-      .filter(m=>m.supportedGenerationMethods?.includes('generateContent'))
-      .map(m=>m.name.replace('models/',''))
-      .filter(m=>ALLOW.test(m))
-      .sort();
-    if(!models.length){el.innerHTML='<span style="color:var(--mu)">모델 없음</span>';return;}
-    const cur=getAiModel();
+  if(el){
     el.style.display='block';
-    el.style.flexDirection='column';
-    el.innerHTML=models.map(m=>`
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:6px;background:${m===cur?'rgba(95,217,156,.08)':'transparent'}">
-        <span style="font-size:12px;color:${m===cur?'var(--g)':'var(--tx)'};font-weight:${m===cur?'700':'400'}">${m===cur?'✓ ':''}${m}</span>
-        <button class="btn-xs" style="${m===cur?'color:var(--g);border-color:var(--g)':''}" onclick="applyAiModel('${m}')">${m===cur?'사용 중':'선택'}</button>
-      </div>`).join('');
-  }catch(e){
-    if(el) el.innerHTML=`<span style="color:var(--rd)">오류: ${e.message}</span>`;
+    el.innerHTML='<div style="font-size:11px;color:var(--g);padding:6px 8px">🔒 gemini-2.5-flash 고정 사용</div>';
   }
 }
 
@@ -4385,12 +4454,14 @@ async function doAi(){
     pickup:
 `${g.name} ${srvLabel}의 픽업 배너 정보를 아래 양식에 맞게 답변해줘.
 
-## 진행 중
-**캐릭터명** · 기간: MM-DD ~ MM-DD · 유형(한정/통상/복각/페스/콜라보)
+현재 진행중인 픽업입니다.
+
+**픽업명** • [YYYY-MM-DD ~ YYYY-MM-DD]
 (없으면 "없음")
 
-## 예정
-**캐릭터명** · 기간: MM-DD ~ · 유형
+다음 픽업 예정입니다.
+
+**픽업명** • [YYYY-MM-DD ~ YYYY-MM-DD]
 (없으면 "없음")
 
 ---
@@ -4490,7 +4561,7 @@ async function doAi(){
       const isZeroQuota=m.includes('limit: 0');
       msg=isZeroQuota
         ? '⚠️ 이 API 키는 무료 할당량이 0입니다.\n\nGoogle Cloud 프로젝트에서 발급받은 키는 무료 티어가 비활성화됩니다.\n\n✅ 해결법: aistudio.google.com/apikey 에서 새 키를 발급받아 교체하세요.'
-        : '⏳ 요청 한도 초과.\n\n✅ 해결법:\n1. AI 설정에서 모델을 gemini-1.5-flash로 변경하세요 (일 1,500회 무료)\n2. gemini-2.5-flash는 미리보기 버전이라 무료 한도가 매우 낮음\n3. 내일(자정 이후) 되면 자동으로 한도 초기화됨';
+        : '⏳ 요청 한도 초과.\n\n✅ 해결법:\n1. 잠시 후 다시 시도하세요\n2. 내일(자정 이후) 되면 자동으로 한도 초기화됨';
     } else if(m.includes('403')){
       msg='🔑 권한 오류:\n1. API 키 권한 없음 → aistudio.google.com에서 재발급\n2. Generative Language API 비활성화 → Google Cloud Console에서 활성화\n3. 지역 제한 (일부 국가에서 차단)\n\n원본: '+m;
     } else if(m.includes('404')){
@@ -4509,20 +4580,21 @@ async function doAi(){
 async function aiExtractPickups(text,gid,srv){
   const g=GAMES.find(x=>x.id===gid);
   const pickupCards=document.getElementById('aiPickupCards');
-  
+
   const prompt=`다음 텍스트에서 ${g.name} 픽업 배너 정보를 JSON 배열로만 응답해:
 
 [
-  {"char":"캐릭터명","event":"이벤트/배너명","start":"YYYY-MM-DD","end":"YYYY-MM-DD","type":"limited"}
+  {"char":"캐릭터명","event":"이벤트/배너명","start":"YYYY-MM-DD","end":"YYYY-MM-DD","type":"limited","status":"ongoing"}
 ]
 
 type: limited(한정) / standard(통상) / rerun(복각) / fes(페스) / collab(콜라보)
+status: ongoing(현재 진행중) / upcoming(다음 예정)
 - 날짜가 명확한 것만 포함. 미확인 날짜는 제외.
 - JSON 배열만 응답. 설명 없이.
 
 텍스트:
 ${text}`;
-  
+
   try{
     const data=await callGemini(prompt, false); // 추출은 검색 없이
     let raw=extractGeminiText(data);
@@ -4530,32 +4602,152 @@ ${text}`;
     const arrMatch=raw.match(/\[[\s\S]*\]/);
     if(arrMatch) raw=arrMatch[0];
     const parsed=JSON.parse(raw);
-    
+
     if(!Array.isArray(parsed)||!parsed.length){
       pickupCards.innerHTML='';
       return;
     }
-    
-    pickupCards.innerHTML=
-      `<div style="grid-column:1/-1;font-size:11px;color:var(--mu2);margin:12px 0 6px;font-weight:700">
-        📋 검색된 픽업 ${parsed.length}건 — 버튼 클릭 시 등록 모달에 자동 입력
-      </div>`+
-      parsed.map(p=>{
-        const typeLabel={limited:'한정',rerun:'복각',standard:'통상',fes:'페스',collab:'콜라보'}[p.type||'limited']||'한정';
-        const typeClass={limited:'lim',rerun:'rerun',standard:'std',fes:'lim',collab:'rerun'}[p.type||'limited']||'lim';
-        return `<div class="ai-pickup-card">
-          <div class="aip-game" style="color:${g.color}">${g.short}${srv!=='all'?` · ${SRV_LBL[srv]}`:''}</div>
-          <div class="aip-char">${p.char||''}</div>
-          ${p.event?`<div class="aip-event">${p.event}</div>`:''}
-          ${p.start&&p.end?`<div class="aip-period">${p.start} ~ ${p.end}</div>`:''}
-          <div class="aip-tags"><span class="aip-tag ${typeClass}">${typeLabel}</span></div>
-          <button class="btn btn-ai" style="font-size:11px;padding:6px 10px;width:100%" onclick='aiRegPickup(${JSON.stringify({...p,game:gid,srv}).replace(/'/g,"&#39;")})'>＋ 픽업 등록</button>
-        </div>`;
-      }).join('');
+
+    // status 자동 보정 (날짜 기준)
+    const today=new Date();
+    parsed.forEach(p=>{
+      if(p.status) return;
+      if(p.start && p.end){
+        const s=new Date(p.start), en=new Date(p.end);
+        if(s<=today && en>=today) p.status='ongoing';
+        else if(s>today) p.status='upcoming';
+        else p.status='ended';
+      }
+    });
+
+    const ongoing=parsed.filter(p=>p.status==='ongoing');
+    const upcoming=parsed.filter(p=>p.status==='upcoming');
+
+    // 전역에 임시 저장 (등록 시 사용)
+    window._aiPickupResults=parsed.map((p,i)=>({...p,_idx:i,game:gid,srv}));
+
+    const buildCard=(p,idx)=>{
+      const typeLabel={limited:'한정',rerun:'복각',standard:'통상',fes:'페스',collab:'콜라보'}[p.type||'limited']||'한정';
+      const typeClass={limited:'lim',rerun:'rerun',standard:'std',fes:'lim',collab:'rerun'}[p.type||'limited']||'lim';
+      const period=p.start&&p.end?`${p.start} ~ ${p.end}`:(p.start?`${p.start} ~`:'기간 미확인');
+      // 픽업 배너 (캐릭터/이벤트 기반 시각 카드)
+      const bannerArt=genArt(g,p.char||p.event||'?',p.type||'limited');
+      const pickupName=p.event?`${p.event}${p.char?` · ${p.char}`:''}`:(p.char||'픽업');
+      return `<div class="ai-pickup-card" data-pickup-idx="${idx}" style="padding:0;overflow:hidden">
+        <label style="display:block;cursor:pointer">
+          <div style="position:relative;height:120px;overflow:hidden">
+            ${bannerArt}
+            <div style="position:absolute;top:8px;left:8px;display:flex;gap:4px">
+              <span class="aip-tag ${typeClass}" style="background:rgba(0,0,0,.5);backdrop-filter:blur(6px)">${typeLabel}</span>
+            </div>
+            <div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);border-radius:6px;padding:5px 7px">
+              <input type="checkbox" class="ai-pickup-chk" data-pickup-idx="${idx}" checked style="width:16px;height:16px;cursor:pointer;accent-color:${g.color}">
+            </div>
+            <div style="position:absolute;bottom:0;left:0;right:0;padding:8px 10px;background:linear-gradient(to top,rgba(10,13,20,.95),transparent)">
+              <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${g.color};margin-bottom:2px">${g.short}${srv!=='all'?` · ${SRV_LBL[srv]}`:''}</div>
+              <div style="font-size:13px;font-weight:900;color:#fff;line-height:1.3">${pickupName}</div>
+            </div>
+          </div>
+          <div style="padding:10px 12px;font-family:'Orbitron',monospace;font-size:11px;color:var(--mu2);text-align:center">
+            • [${period}]
+          </div>
+        </label>
+        <button class="btn-xs" style="width:calc(100% - 20px);margin:0 10px 10px" onclick='aiRegPickup(${JSON.stringify({...p,game:gid,srv}).replace(/'/g,"&#39;")})'>＋ 단일 등록</button>
+      </div>`;
+    };
+
+    let html='';
+    if(ongoing.length){
+      html+=`<div style="grid-column:1/-1;margin-top:14px">
+        <div style="font-size:13px;font-weight:800;color:var(--g);padding:8px 12px;background:rgba(95,217,156,.08);border-left:3px solid var(--g);border-radius:6px;margin-bottom:10px">
+          🟢 현재 진행중인 픽업입니다.
+        </div>
+      </div>`;
+      ongoing.forEach((p,i)=>{
+        const idx=parsed.indexOf(p);
+        html+=buildCard(p,idx);
+      });
+    }
+    if(upcoming.length){
+      html+=`<div style="grid-column:1/-1;margin-top:14px">
+        <div style="font-size:13px;font-weight:800;color:var(--gold);padding:8px 12px;background:rgba(251,191,36,.08);border-left:3px solid var(--gold);border-radius:6px;margin-bottom:10px">
+          🟡 다음 픽업 예정입니다.
+        </div>
+      </div>`;
+      upcoming.forEach((p,i)=>{
+        const idx=parsed.indexOf(p);
+        html+=buildCard(p,idx);
+      });
+    }
+    if(!ongoing.length && !upcoming.length){
+      pickupCards.innerHTML='<div style="font-size:11px;color:var(--mu2);padding:8px">진행중 / 예정 픽업이 없습니다.</div>';
+      return;
+    }
+
+    // 일괄 등록 confirm 영역
+    html+=`<div style="grid-column:1/-1;margin-top:18px;padding:14px 16px;background:linear-gradient(135deg,rgba(96,165,250,.08),rgba(167,139,250,.06));border:1px solid rgba(96,165,250,.25);border-radius:10px">
+      <div style="font-size:13px;font-weight:800;color:var(--bl);margin-bottom:10px">📌 픽업 스케쥴에 등록 하시겠습니까?</div>
+      <div style="font-size:11px;color:var(--mu2);margin-bottom:12px">체크된 픽업만 일괄 등록됩니다. 단일 등록은 카드의 <strong>＋ 단일 등록</strong> 버튼을 사용하세요.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="aiRegPickupBulk()">✅ 선택 항목 일괄 등록</button>
+        <button class="btn btn-ghost" onclick="aiTogglePickupAll(true)">전체 선택</button>
+        <button class="btn btn-ghost" onclick="aiTogglePickupAll(false)">전체 해제</button>
+      </div>
+    </div>`;
+
+    pickupCards.innerHTML=html;
   }catch(err){
     console.error('aiExtractPickups 실패:', err);
     pickupCards.innerHTML='<div style="font-size:11px;color:var(--mu2);padding:8px">픽업 카드 자동 생성 실패 — 위 결과를 보고 직접 등록하세요.</div>';
   }
+}
+
+// 픽업 카드 체크박스 일괄 토글
+function aiTogglePickupAll(checked){
+  document.querySelectorAll('.ai-pickup-chk').forEach(c=>{c.checked=checked;});
+}
+
+// AI 검색 결과 일괄 등록
+function aiRegPickupBulk(){
+  const list=window._aiPickupResults||[];
+  if(!list.length){toast('등록할 픽업이 없습니다');return;}
+  const checked=Array.from(document.querySelectorAll('.ai-pickup-chk'))
+    .filter(c=>c.checked)
+    .map(c=>parseInt(c.dataset.pickupIdx))
+    .map(i=>list[i])
+    .filter(Boolean);
+  if(!checked.length){toast('선택된 픽업이 없습니다');return;}
+  if(!confirm(`✅ ${checked.length}건의 픽업을 스케쥴에 등록하시겠습니까?`)) return;
+
+  let added=0;
+  checked.forEach(p=>{
+    if(!p.start||!p.end) return;
+    const evt={
+      id:'ev-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),
+      game:p.game,
+      srv:p.srv||'kr',
+      char:p.char||'',
+      event:p.event||'',
+      type:p.type||'limited',
+      start:p.start,
+      end:p.end,
+      result:'untried',
+      predicted:false,
+      memo:'AI 검색에서 자동 등록'
+    };
+    events.push(evt);
+    added++;
+    // 즐겨찾기 자동 추가
+    const g=GAMES.find(x=>x.id===p.game);
+    if(g){
+      const favKey=g.servers.length>1?`${p.game}-${p.srv}`:p.game;
+      if(!favs.includes(favKey)){favs.push(favKey);}
+    }
+  });
+  localStorage.setItem('gv8-events',JSON.stringify(events));
+  localStorage.setItem('gv8-favs',JSON.stringify(favs));
+  renderAll();
+  toast(`✅ ${added}건 등록 완료`);
 }
 
 function aiRegPickup(data){
