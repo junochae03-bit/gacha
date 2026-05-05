@@ -6326,20 +6326,64 @@ function getPullRateAt(g, pullNum){
   return Math.min(1, baseRate + (1-baseRate)*t);
 }
 // N뽑 안에 "픽업 캐릭터" 획득 확률 (천장 + 픽업 시스템 반영)
+// 5050 시스템은 픽뚫 시 다음 5★ 픽업 확정 → 최대 2회 천장 (2×hardPity) 안에 보장
+// 그 외(guaranteed/exchange/point_only/spark)는 hardPity 안에 보장
 function calcPickupProb(g, N){
   if(!N || N<=0) return 0;
   const sys=g.gacha.pickupSystem||'5050';
   const pickupRate=g.gacha.pickupRate||0.5;
   const hardPity=g.gacha.hardPity||90;
-  // 천장 도달 시 픽업 보장 시스템 (guaranteed/exchange/point_only/spark)
-  if(N>=hardPity && sys!=='5050') return 1.0;
-  // 매 뽑기마다 (최고 레어도 확률) × (픽업 확률) 누적
+
+  // ── 비(非) 5050 시스템: 천장에서 픽업 100% 보장 ────────
+  if(sys!=='5050'){
+    if(N>=hardPity) return 1.0;
+    let pNotYet=1;
+    for(let i=1;i<=N;i++){
+      pNotYet*=(1 - getPullRateAt(g,i)*pickupRate);
+    }
+    return 1 - pNotYet;
+  }
+
+  // ── 5050 시스템: 2×hardPity 안에 보장 ────────────────
+  if(N >= 2*hardPity) return 1.0;
+
+  // 1) 첫 5★를 정확히 k번째 뽑기에서 얻을 확률 (1≤k≤hardPity)
+  const probFirstAt=new Array(hardPity+1).fill(0);
   let pNotYet=1;
-  for(let i=1;i<=N;i++){
-    const r=getPullRateAt(g,i)*pickupRate;
+  for(let k=1;k<=hardPity;k++){
+    const r=getPullRateAt(g,k);
+    probFirstAt[k]=pNotYet*r;
     pNotYet*=(1-r);
   }
-  return 1 - pNotYet;
+
+  // 2) 첫 5★ at k일 때:
+  //    - 픽업 확률(pickupRate)로 즉시 성공
+  //    - (1-pickupRate)로 픽뚫 → 남은 (N-k)뽑 안에 2번째 5★ 얻으면 픽업 확정
+  let total=0;
+  const kMax=Math.min(N, hardPity);
+  for(let k=1;k<=kMax;k++){
+    const remaining=N-k;
+    let p2nd=0;
+    if(remaining>=hardPity){
+      p2nd=1.0;
+    } else if(remaining>0){
+      let p2NotYet=1;
+      for(let j=1;j<=remaining;j++){
+        p2NotYet*=(1 - getPullRateAt(g,j));
+      }
+      p2nd=1 - p2NotYet;
+    }
+    const pConditional=pickupRate + (1-pickupRate)*p2nd;
+    total += probFirstAt[k] * pConditional;
+  }
+  return total;
+}
+
+// 게임의 픽업 보장 최대 뽑기수 (안내용)
+function getMaxGuaranteedPulls(g){
+  const sys=g.gacha.pickupSystem||'5050';
+  const hardPity=g.gacha.hardPity||90;
+  return sys==='5050' ? hardPity*2 : hardPity;
 }
 
 function buildEnhancedStats(){
@@ -6444,7 +6488,7 @@ function buildEnhancedStats(){
   if(Object.keys(byGame).length){
     roiHtml=`<div style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-bottom:14px">
       <div style="font-size:13px;font-weight:800;margin-bottom:10px">🎯 게임별 픽업 성공률 vs 평균 이론 확률</div>
-      <div style="font-size:10px;color:var(--mu);margin-bottom:10px;line-height:1.6">💡 <strong>이론 확률</strong> = 성공한 픽업의 N뽑 안에 픽업 캐릭터 획득 확률의 평균 (천장·픽업 시스템 반영, 픽뚫은 제외)</div>
+      <div style="font-size:10px;color:var(--mu);margin-bottom:10px;line-height:1.6">💡 <strong>이론 확률</strong> = 성공한 픽업 1건당 "본인 N뽑 안에 픽업 캐릭터 획득" 확률의 평균<br>· 5050 시스템(원신/스타레일/명조 등): 픽뚫 시 다음 5★ 픽업 확정 → <strong>최대 2×천장</strong> 안에 보장<br>· 보장 시스템(블아/우마/FGO 등): <strong>천장 도달 시</strong> 100% 보장<br>· 픽뚫 기록은 평균에서 제외</div>
       <div style="display:flex;flex-direction:column;gap:8px">
         ${Object.values(byGame).sort((a,b)=>(b.success+b.fail)-(a.success+a.fail)).map(d=>{
           const total=d.success+d.fail;
@@ -6456,11 +6500,14 @@ function buildEnhancedStats(){
           const krwPerPickup=d.success?Math.round(d.krw/d.success):0;
           const luckLabel=avgTheory===null?null:(avgTheory<25?'🍀 매우 운 좋음':avgTheory<50?'😊 운 좋음':avgTheory<75?'😐 평균':'😢 운 나쁨');
           const luckColor=avgTheory===null?'var(--mu)':(avgTheory<25?'var(--g)':avgTheory<50?'var(--bl)':avgTheory<75?'var(--gold)':'var(--rd)');
+          const maxPulls=getMaxGuaranteedPulls(d.g);
+          const sysLabel=(d.g.gacha.pickupSystem||'5050')==='5050'?'반천장':'천장 보장';
           return `<div style="background:var(--sf2);border-radius:8px;padding:10px 12px;border-left:3px solid ${d.g.color}">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
               <span style="font-size:12px;font-weight:800;color:${d.g.color}">${d.g.short}</span>
               <span style="font-size:10px;color:var(--mu)">총 ${total}회 (성공 ${d.success} · 픽뚫 ${d.fail})</span>
             </div>
+            <div style="font-size:9px;color:var(--mu);margin-bottom:6px">📐 ${sysLabel}: 최대 <strong style="color:var(--cy);font-family:'Orbitron',monospace">${maxPulls}뽑</strong> 안에 픽업 보장</div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:10px">
               <div><span style="color:var(--mu)">내 성공률</span><br><strong style="font-family:'Orbitron',monospace;font-size:14px;color:var(--bl)">${myRate}%</strong></div>
               <div><span style="color:var(--mu)">이론 확률 (평균)</span><br><strong style="font-family:'Orbitron',monospace;font-size:14px;color:${luckColor}">${avgTheory!==null?avgTheory.toFixed(1)+'%':'—'}</strong></div>
