@@ -6312,6 +6312,36 @@ save=function(){_origSave2();idbBackup();};
 // ════════════════════════════════════════════════════════════════
 //  통계 페이지 강화 (월별 그래프 + 예산 + ROI)
 // ════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════
+//  픽업 캐릭터 누적 획득 확률 (소프트/하드 천장 + pickupRate 반영)
+// ════════════════════════════════════════════════════════════════
+function getPullRateAt(g, pullNum){
+  const baseRate=g.gacha.baseRate||0.006;
+  const softPity=g.gacha.softPity||0;
+  const hardPity=g.gacha.hardPity||90;
+  if(pullNum>=hardPity) return 1.0;
+  if(softPity===0 || pullNum<softPity) return baseRate;
+  // softPity ~ hardPity 사이 선형 증가 근사
+  const t=(pullNum-softPity)/(hardPity-softPity);
+  return Math.min(1, baseRate + (1-baseRate)*t);
+}
+// N뽑 안에 "픽업 캐릭터" 획득 확률 (천장 + 픽업 시스템 반영)
+function calcPickupProb(g, N){
+  if(!N || N<=0) return 0;
+  const sys=g.gacha.pickupSystem||'5050';
+  const pickupRate=g.gacha.pickupRate||0.5;
+  const hardPity=g.gacha.hardPity||90;
+  // 천장 도달 시 픽업 보장 시스템 (guaranteed/exchange/point_only/spark)
+  if(N>=hardPity && sys!=='5050') return 1.0;
+  // 매 뽑기마다 (최고 레어도 확률) × (픽업 확률) 누적
+  let pNotYet=1;
+  for(let i=1;i<=N;i++){
+    const r=getPullRateAt(g,i)*pickupRate;
+    pNotYet*=(1-r);
+  }
+  return 1 - pNotYet;
+}
+
 function buildEnhancedStats(){
   // 진행중인 달의 지출 + 예산 카드
   const monthSpent=getCurrentMonthSpending();
@@ -6391,14 +6421,21 @@ function buildEnhancedStats(){
     </div>`;
   }
 
-  // 게임별 ROI / 성공률 vs 이론 확률
+  // 게임별 픽업 성공 평균 운빨 (이론 확률 = 본인 N뽑 안에 픽업 획득 확률, 픽뚫 제외)
   const recorded=events.filter(e=>!e.predicted&&(e.result==='success'||e.result==='fail'));
   const byGame={};
   recorded.forEach(e=>{
     const g=GAMES.find(x=>x.id===e.game);
     if(!g) return;
-    if(!byGame[g.id]) byGame[g.id]={g,success:0,fail:0,pulls:0,krw:0};
-    if(e.result==='success') byGame[g.id].success++;
+    if(!byGame[g.id]) byGame[g.id]={g,success:0,fail:0,pulls:0,krw:0,successProbs:[],successPulls:[]};
+    if(e.result==='success'){
+      byGame[g.id].success++;
+      // 성공한 픽업의 N뽑에서의 이론 확률 누적 (뽑기 횟수가 있는 경우만)
+      if(e.spentPulls>0){
+        byGame[g.id].successProbs.push(calcPickupProb(g, e.spentPulls));
+        byGame[g.id].successPulls.push(e.spentPulls);
+      }
+    }
     if(e.result==='fail') byGame[g.id].fail++;
     byGame[g.id].pulls += e.spentPulls||0;
     byGame[g.id].krw += (e.spentPulls||0) * g.gacha.pricePerPull;
@@ -6406,16 +6443,19 @@ function buildEnhancedStats(){
   let roiHtml='';
   if(Object.keys(byGame).length){
     roiHtml=`<div style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-bottom:14px">
-      <div style="font-size:13px;font-weight:800;margin-bottom:10px">🎯 게임별 픽업 성공률 vs 이론 확률</div>
+      <div style="font-size:13px;font-weight:800;margin-bottom:10px">🎯 게임별 픽업 성공률 vs 평균 이론 확률</div>
+      <div style="font-size:10px;color:var(--mu);margin-bottom:10px;line-height:1.6">💡 <strong>이론 확률</strong> = 성공한 픽업의 N뽑 안에 픽업 캐릭터 획득 확률의 평균 (천장·픽업 시스템 반영, 픽뚫은 제외)</div>
       <div style="display:flex;flex-direction:column;gap:8px">
         ${Object.values(byGame).sort((a,b)=>(b.success+b.fail)-(a.success+a.fail)).map(d=>{
           const total=d.success+d.fail;
           const myRate=total?Math.round(d.success/total*100):0;
-          const theoryRate=Math.round((d.g.gacha.pickupRate||0.5)*100);
-          const diff=myRate-theoryRate;
-          const diffColor=diff>=0?'var(--g)':'var(--rd)';
-          const diffSign=diff>=0?'+':'';
+          // 성공 픽업들의 N뽑 평균 이론 확률
+          const hasProbs=d.successProbs.length>0;
+          const avgTheory=hasProbs?(d.successProbs.reduce((a,b)=>a+b,0)/d.successProbs.length*100):null;
+          const avgPulls=hasProbs?Math.round(d.successPulls.reduce((a,b)=>a+b,0)/d.successPulls.length):null;
           const krwPerPickup=d.success?Math.round(d.krw/d.success):0;
+          const luckLabel=avgTheory===null?null:(avgTheory<25?'🍀 매우 운 좋음':avgTheory<50?'😊 운 좋음':avgTheory<75?'😐 평균':'😢 운 나쁨');
+          const luckColor=avgTheory===null?'var(--mu)':(avgTheory<25?'var(--g)':avgTheory<50?'var(--bl)':avgTheory<75?'var(--gold)':'var(--rd)');
           return `<div style="background:var(--sf2);border-radius:8px;padding:10px 12px;border-left:3px solid ${d.g.color}">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
               <span style="font-size:12px;font-weight:800;color:${d.g.color}">${d.g.short}</span>
@@ -6423,9 +6463,10 @@ function buildEnhancedStats(){
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:10px">
               <div><span style="color:var(--mu)">내 성공률</span><br><strong style="font-family:'Orbitron',monospace;font-size:14px;color:var(--bl)">${myRate}%</strong></div>
-              <div><span style="color:var(--mu)">이론</span><br><strong style="font-family:'Orbitron',monospace;font-size:14px;color:var(--mu2)">${theoryRate}%</strong></div>
-              <div><span style="color:var(--mu)">차이</span><br><strong style="font-family:'Orbitron',monospace;font-size:14px;color:${diffColor}">${diffSign}${diff}%p</strong></div>
+              <div><span style="color:var(--mu)">이론 확률 (평균)</span><br><strong style="font-family:'Orbitron',monospace;font-size:14px;color:${luckColor}">${avgTheory!==null?avgTheory.toFixed(1)+'%':'—'}</strong></div>
+              <div><span style="color:var(--mu)">평균 뽑기</span><br><strong style="font-family:'Orbitron',monospace;font-size:14px;color:var(--mu2)">${avgPulls!==null?avgPulls+'뽑':'—'}</strong></div>
             </div>
+            ${luckLabel?`<div style="margin-top:6px;font-size:11px;color:${luckColor};font-weight:700">${luckLabel}</div>`:''}
             ${d.success>0?`<div style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--bd);font-size:10px;color:var(--mu2)">픽업 1개당 평균 <strong style="color:var(--gold);font-family:'Orbitron',monospace">₩${krwPerPickup.toLocaleString()}</strong> · 누적 <strong style="color:var(--tx)">${d.pulls}뽑</strong> / <strong>₩${d.krw.toLocaleString()}</strong></div>`:''}
           </div>`;
         }).join('')}
