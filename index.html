@@ -1753,11 +1753,19 @@ body.light .btn-primary{animation:none !important}
 <!-- 캐릭터 상세 모달 -->
 <div class="overlay" id="galDetailOvl"><div class="modal" style="max-width:560px">
   <h2 id="galDetailTitle">🎴 캐릭터 상세</h2>
+  <div id="galDetailArtWrap" style="position:relative;height:180px;overflow:hidden;border-radius:10px;margin-bottom:12px;background:var(--sf2)">
+    <div id="galDetailArtSvg" style="position:absolute;inset:0;width:100%;height:100%"></div>
+    <img id="galDetailArtImg" src="" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;display:none">
+    <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(10,13,20,.85) 0%,transparent 60%)"></div>
+    <button class="btn btn-ghost" id="galArtUploadBtn" onclick="openCharArtUpload()" style="position:absolute;bottom:8px;right:8px;font-size:11px;padding:5px 10px;background:rgba(0,0,0,.6);backdrop-filter:blur(6px)">📷 이미지 변경</button>
+    <button class="btn btn-ghost" id="galArtClearBtn" onclick="clearCharArt()" style="position:absolute;bottom:8px;left:8px;font-size:11px;padding:5px 10px;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);display:none">🗑 초기화</button>
+  </div>
   <div id="galDetailBody"></div>
   <div class="mfoot">
     <button class="btn btn-primary" onclick="closeGalDetail()">닫기</button>
   </div>
 </div></div>
+<input type="file" id="charArtInput" accept="image/*" style="display:none">
 
 <!-- EVENT MODAL -->
 <div class="overlay" id="evtOvl"><div class="modal">
@@ -2607,6 +2615,7 @@ let tasks=safeLoad('gv8-tasks',[]);
 let taskState=safeLoad('gv8-taskstate',{});
 let taskHidden=safeLoad('gv8-task-hidden',[]);
 let taskOverrides=safeLoad('gv8-task-overrides',{});
+let charArtCache=safeLoad('gv8-char-art',{});
 let customTasks=safeLoad('gv8-custom-tasks',[]);
 let wishlist=safeLoad('gv8-wishlist',[]);
 let alarmConfig=safeLoad('gv8-alarm-config',{daysBeforeStart:[3,1],daysBeforeEnd:[1],onStart:true});
@@ -2724,6 +2733,7 @@ function save(){
   localStorage.setItem('gv8-monthly',JSON.stringify(monthlyOn));
   localStorage.setItem('gv8-monthly-start',JSON.stringify(monthlyStart));
   localStorage.setItem('gv8-hidden-mira',JSON.stringify(hiddenAutoMira));
+  localStorage.setItem('gv8-char-art',JSON.stringify(charArtCache));
 }
 
 function setSrv(s,silent){
@@ -7311,7 +7321,11 @@ function renderGallery(){
 
   grid.innerHTML=filtered.map(c=>{
     const g=GAMES.find(x=>x.id===c.game)||{name:c.game,short:c.game,color:'#888'};
-    const art=genArt(g, c.char, c.events[0]?.type||'limited');
+    const charKey=`${c.game}::${c.char}`;
+    const customArt=charArtCache[charKey];
+    const art=customArt
+      ?`<img src="${customArt}" style="width:100%;height:100%;object-fit:cover;object-position:top" alt="${c.char}"><div class="banner-gradient"></div>`
+      :genArt(g, c.char, c.events[0]?.type||'limited');
     const copyLabel=c.copies===1?'명함':`+${c.copies-1}돌`;
     return `<div class="gal-card" style="--gameC:${g.color}" onclick="openGalDetail('${c.game}', ${JSON.stringify(c.char).replace(/"/g,'&quot;')})">
       <div class="gal-art">
@@ -7328,11 +7342,22 @@ function renderGallery(){
   }).join('');
 }
 
+let _galCurGame='',_galCurChar='';
 function openGalDetail(gameId, charName){
   const chars=aggregateCharacters();
   const c=chars.find(x=>x.game===gameId&&x.char===charName);
   if(!c){toast('⚠️ 캐릭터 정보를 찾을 수 없음');return;}
+  _galCurGame=gameId; _galCurChar=charName;
   const g=GAMES.find(x=>x.id===c.game)||{name:c.game,short:c.game,color:'#888'};
+  // 아트 섹션 채우기
+  const ck=`${gameId}::${charName}`;
+  const ci=charArtCache[ck];
+  const svgEl=document.getElementById('galDetailArtSvg');
+  const imgEl=document.getElementById('galDetailArtImg');
+  const clearBtn=document.getElementById('galArtClearBtn');
+  if(ci){imgEl.src=ci;imgEl.style.display='';svgEl.innerHTML='';}
+  else{imgEl.style.display='none';svgEl.innerHTML=genArt(g,charName,'limited');}
+  if(clearBtn) clearBtn.style.display=ci?'':'none';
   document.getElementById('galDetailTitle').innerHTML=`🎴 <span style="color:${g.color}">${c.char}</span> <span style="font-size:11px;color:var(--mu);font-weight:400">· ${g.short}</span>`;
 
   const successAttempts=c.attempts.filter(a=>a.result==='success');
@@ -7391,6 +7416,55 @@ function openGalDetail(gameId, charName){
   document.getElementById('galDetailOvl').classList.add('open');
 }
 function closeGalDetail(){document.getElementById('galDetailOvl').classList.remove('open');}
+function openCharArtUpload(){
+  const inp=document.getElementById('charArtInput');
+  if(inp){inp.value='';inp.click();}
+}
+function clearCharArt(){
+  const ck=`${_galCurGame}::${_galCurChar}`;
+  delete charArtCache[ck];
+  localStorage.setItem('gv8-char-art',JSON.stringify(charArtCache));
+  const imgEl=document.getElementById('galDetailArtImg');
+  const svgEl=document.getElementById('galDetailArtSvg');
+  const clearBtn=document.getElementById('galArtClearBtn');
+  if(imgEl) imgEl.style.display='none';
+  if(svgEl&&_galCurGame){
+    const g2=GAMES.find(x=>x.id===_galCurGame)||{name:_galCurGame,short:_galCurGame,color:'#888'};
+    svgEl.innerHTML=genArt(g2,_galCurChar,'limited');
+  }
+  if(clearBtn) clearBtn.style.display='none';
+  renderGallery();
+  toast('🗑 이미지 초기화됨');
+}
+document.getElementById('charArtInput').addEventListener('change',function(){
+  const file=this.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const img=new Image();
+    img.onload=function(){
+      const MAX=600;
+      let w=img.width,h=img.height;
+      if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+      const canvas=document.createElement('canvas');
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const dataUrl=canvas.toDataURL('image/jpeg',0.82);
+      const ck=`${_galCurGame}::${_galCurChar}`;
+      charArtCache[ck]=dataUrl;
+      localStorage.setItem('gv8-char-art',JSON.stringify(charArtCache));
+      const imgEl=document.getElementById('galDetailArtImg');
+      const svgEl=document.getElementById('galDetailArtSvg');
+      const clearBtn=document.getElementById('galArtClearBtn');
+      if(imgEl){imgEl.src=dataUrl;imgEl.style.display='';}
+      if(svgEl) svgEl.innerHTML='';
+      if(clearBtn) clearBtn.style.display='';
+      renderGallery();
+      toast('🖼 이미지 등록됨');
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
 
 // ════════════════════════════════════════════════════════════════
 //  데이터 정리 (저장 공간 절약)
@@ -7563,8 +7637,8 @@ function updateBatchToolbar(){
     `;
     document.body.appendChild(bar);
   }
-  if(_selectMode && _selectedEids.size>0){
-    document.getElementById('batchCount').textContent=`${_selectedEids.size}개 선택됨`;
+  if(_selectMode){
+    document.getElementById('batchCount').textContent=_selectedEids.size>0?`${_selectedEids.size}개 선택됨`:'선택 모드';
     bar.classList.add('show');
   } else {
     bar.classList.remove('show');
