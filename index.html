@@ -1413,6 +1413,26 @@ body.light .btn-primary{animation:none !important}
 .calc-qb-row{display:flex;gap:5px;flex-wrap:wrap;margin:4px 0}
 .calc-qb{font-size:9px;padding:3px 8px;border:1px solid var(--bd2);border-radius:5px;background:var(--sf2);color:var(--mu2);cursor:pointer;transition:all .15s;font-family:'Orbitron',monospace;font-weight:700}
 .calc-qb:hover{background:var(--sf3);color:var(--tx);border-color:var(--bd3)}
+/* ── gfBar collapsible ── */
+.gf-hdr-row{display:flex;align-items:center;justify-content:space-between}
+.gf-divider{height:1px;background:var(--bd);margin:8px 0 10px}
+.gf-hdr-label{font-size:11px;font-weight:700;color:var(--mu2);letter-spacing:.5px}
+.gf-fav-count{display:inline-block;background:rgba(96,165,250,.85);color:#fff;padding:1px 7px;border-radius:99px;font-size:9px;font-weight:900;margin-left:6px;font-family:'Orbitron',monospace}
+.gf-toggle-btn{font-size:10px;padding:4px 12px;border:1px solid var(--bd2);border-radius:6px;background:var(--sf2);color:var(--mu2);cursor:pointer;transition:all .15s;font-family:'Noto Sans KR',sans-serif;white-space:nowrap}
+.gf-toggle-btn:hover{background:var(--sf3);color:var(--tx);border-color:var(--bd3)}
+/* ── Schedule summary strip ── */
+.sched-summary{display:flex;align-items:center;background:linear-gradient(90deg,rgba(96,165,250,.07),rgba(167,139,250,.04));border:1px solid var(--bd);border-radius:12px;padding:12px 0;margin-bottom:20px}
+.ss-item{display:flex;flex-direction:column;align-items:center;flex:1;gap:3px}
+.ss-num{font-family:'Orbitron',monospace;font-size:24px;font-weight:900;line-height:1}
+.ss-lbl{font-size:10px;color:var(--mu2);white-space:nowrap}
+.ss-div{width:1px;height:36px;background:var(--bd2)}
+/* ── Section headers ── */
+.sec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px;margin-top:4px}
+.cards+.sec-hdr{margin-top:30px}
+.sec-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border:1px solid;border-radius:99px;font-size:11px;font-weight:800;font-family:'Orbitron',monospace;letter-spacing:.5px}
+.sec-cnt{background:rgba(255,255,255,.15);padding:1px 7px;border-radius:99px;font-size:10px}
+.sec-urgency{font-size:10px;color:var(--rd);font-weight:700;animation:sc-pulse 1.5s ease infinite}
+@keyframes sc-pulse{0%,100%{opacity:1}50%{opacity:.45}}
 </style>
 </head>
 <body>
@@ -1533,8 +1553,6 @@ body.light .btn-primary{animation:none !important}
       <button class="sfb-btn" data-filter="untried" onclick="setResultFilter('untried',this)">⏭ 스킵</button>
       <button class="sfb-btn" data-filter="success" onclick="setResultFilter('success',this)">✨ 성공</button>
       <button class="sfb-btn" data-filter="fail" onclick="setResultFilter('fail',this)">💔 픽뚫</button>
-      <div class="sfb-sep"></div>
-      <button class="sfb-btn" id="listViewBtn" onclick="toggleListView()" title="리스트뷰 / 카드뷰 전환">☰ 리스트</button>
     </div>
   </div>
   <div class="gf" id="gfBar"></div>
@@ -2948,7 +2966,15 @@ function renderGF(){
     </div>`;
   });
 
-  document.getElementById('gfBar').innerHTML=html;
+  const _collapsed=localStorage.getItem('gv8-gf-collapsed')==='1';
+  const _n=favs.length;
+  const _badge=_n?`<span class="gf-fav-count">${_n}개</span>`:'';
+  const _hdr=`<div class="gf-hdr-row"><span class="gf-hdr-label">🎮 게임 즐겨찾기${_badge}</span><button class="gf-toggle-btn" onclick="toggleGF()">${_collapsed?'▸ 펼치기':'▾ 접기'}</button></div>`;
+  const _gfEl=document.getElementById('gfBar');
+  if(_gfEl){
+    _gfEl.innerHTML=_collapsed?_hdr:_hdr+'<div class="gf-divider"></div>'+html;
+    _gfEl.style.marginBottom=_collapsed?'10px':'22px';
+  }
 }
 
 function toggleFav(id){
@@ -3011,8 +3037,6 @@ function renderSchedule(){
   const ended=vis.filter(e=>new Date(e.end)<now).sort((a,b)=>pinFirst(a,b)||new Date(b.end)-new Date(a.end));
   
   // 검색 결과 없는 경우
-  const lvBtn=document.getElementById('listViewBtn');
-  if(lvBtn) lvBtn.classList.toggle('act',scheduleListView);
   const isFiltered=scheduleSearchQuery||scheduleResultFilter!=='all';
   let html='';
   if(!all.length){
@@ -3044,14 +3068,24 @@ function renderSchedule(){
   } else if(isFiltered&&!vis.length){
     html=`<div class="empty-big"><div class="empty-icon-big">🔍</div><h3>검색 결과 없음</h3><p>"${scheduleSearchQuery||scheduleResultFilter}" 에 해당하는 픽업이 없습니다.</p><button class="btn btn-ghost" onclick="clearSearch();setResultFilter('all',document.querySelector('.sfb-btn'))">필터 초기화</button></div>`;
   } else {
-    if(scheduleListView){
-      if(ongoing.length){html+=`<div class="lv-section-hdr" style="color:var(--g)">🟢 진행 중 <span style="opacity:.5">${ongoing.length}건</span></div><div class="lv-table">${ongoing.map(e=>buildListRow(e,events.indexOf(e))).join('')}</div>`;}
-      if(upcoming.length){html+=`<div class="lv-section-hdr" style="color:var(--gold);margin-top:16px">🟡 출시 예정 <span style="opacity:.5">${upcoming.length}건</span></div><div class="lv-table">${upcoming.map(e=>buildListRow(e,events.indexOf(e))).join('')}</div>`;}
-      if(ended.length){html+=`<div class="lv-section-hdr" style="margin-top:16px">⚫ 종료 <span style="opacity:.5">${ended.length}건</span></div><div class="lv-table">${ended.slice(0,6).map(e=>buildListRow(e,events.indexOf(e))).join('')}</div>`;}
-    } else {
-      if(ongoing.length){html+=`<h3 style="font-family:'Orbitron',monospace;font-size:11px;color:var(--g);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px">🟢 진행 중 <span style="opacity:.5">${ongoing.length}건</span></h3><div class="cards">${ongoing.map(e=>buildCard(e,events.indexOf(e))).join('')}</div>`;}
-      if(upcoming.length){html+=`<h3 style="font-family:'Orbitron',monospace;font-size:11px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;margin-top:24px">🟡 출시 예정 <span style="opacity:.5">${upcoming.length}건</span></h3><div class="cards">${upcoming.map(e=>buildCard(e,events.indexOf(e))).join('')}</div>`;}
-      if(ended.length){html+=`<h3 style="font-family:'Orbitron',monospace;font-size:11px;color:var(--mu);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;margin-top:24px">⚫ 종료 <span style="opacity:.5">${ended.length}건</span></h3><div class="cards">${ended.slice(0,6).map(e=>buildCard(e,events.indexOf(e))).join('')}</div>`;}
+    if(!isFiltered&&(ongoing.length+upcoming.length>0)){
+      const nextDays=upcoming.length?Math.ceil((new Date(upcoming[0].start)-now)/86400000):0;
+      html+=`<div class="sched-summary">
+        <div class="ss-item"><span class="ss-num" style="color:var(--g)">${ongoing.length}</span><span class="ss-lbl">진행 중</span></div>
+        <div class="ss-div"></div>
+        <div class="ss-item"><span class="ss-num" style="color:var(--gold)">${upcoming.length}</span><span class="ss-lbl">출시 예정</span></div>
+        ${upcoming.length?`<div class="ss-div"></div><div class="ss-item"><span class="ss-num" style="color:var(--bl)">${nextDays}</span><span class="ss-lbl">일 후 다음 픽업</span></div>`:''}
+      </div>`;
+    }
+    if(ongoing.length){
+      const hasUrgent=ongoing.some(e=>Math.ceil((new Date(e.end)-now)/86400000)<=3);
+      html+=`<div class="sec-hdr"><div class="sec-badge" style="background:rgba(95,217,156,.15);color:var(--g);border-color:rgba(95,217,156,.35)">🟢 진행 중<span class="sec-cnt">${ongoing.length}</span></div>${hasUrgent?'<span class="sec-urgency">⚡ 마감임박</span>':''}</div><div class="cards">${ongoing.map(e=>buildCard(e,events.indexOf(e))).join('')}</div>`;
+    }
+    if(upcoming.length){
+      html+=`<div class="sec-hdr"><div class="sec-badge" style="background:rgba(251,191,36,.1);color:var(--gold);border-color:rgba(251,191,36,.3)">🟡 출시 예정<span class="sec-cnt">${upcoming.length}</span></div></div><div class="cards">${upcoming.map(e=>buildCard(e,events.indexOf(e))).join('')}</div>`;
+    }
+    if(ended.length){
+      html+=`<div class="sec-hdr"><div class="sec-badge" style="background:rgba(90,100,128,.12);color:var(--mu2);border-color:rgba(90,100,128,.2)">⚫ 종료<span class="sec-cnt">${ended.length}</span></div></div><div class="cards">${ended.slice(0,6).map(e=>buildCard(e,events.indexOf(e))).join('')}</div>`;
     }
   }
   document.getElementById('schedule-content').innerHTML=html+
@@ -6676,7 +6710,7 @@ async function gistDownload(){
 // ════════════════════════════════════════════════════════════════
 //  SEARCH & FILTER
 // ════════════════════════════════════════════════════════════════
-let scheduleSearchQuery='', scheduleResultFilter='all', scheduleListView=localStorage.getItem('gv8-list-view')==='1';
+let scheduleSearchQuery='', scheduleResultFilter='all';
 function clearSearch(){
   document.getElementById('scheduleSearch').value='';
   scheduleSearchQuery='';
@@ -6698,10 +6732,11 @@ function eventMatchesResult(e){
   if(scheduleResultFilter==='all') return true;
   return (e.result||'untried')===scheduleResultFilter;
 }
-function toggleListView(){
-  scheduleListView=!scheduleListView;
-  localStorage.setItem('gv8-list-view',scheduleListView?'1':'0');
-  renderSchedule();
+function toggleListView(){} // deprecated
+function toggleGF(){
+  const cur=localStorage.getItem('gv8-gf-collapsed')==='1';
+  localStorage.setItem('gv8-gf-collapsed',cur?'0':'1');
+  renderGF();
 }
 function qAddInv(key,cid,amount){
   if(!inventory[key])inventory[key]={};
