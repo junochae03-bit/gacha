@@ -5379,14 +5379,18 @@ async function listAvailableModels(){
 // ════════════════════════════════════════════════════════════════
 //  GEMINI API 호출 헬퍼
 // ════════════════════════════════════════════════════════════════
+let _lastApiCallTs=0;
 async function callGemini(prompt, useSearch=true, showRetryUi=true){
+  const _now=Date.now(),_gap=_now-_lastApiCallTs;
+  if(_gap<1500 && _lastApiCallTs>0) await new Promise(r=>setTimeout(r,1500-_gap));
+  _lastApiCallTs=Date.now();
   const apiKey=getApiKey();
   if(!apiKey) throw new Error('API_KEY_MISSING');
 
   const makeBody=(withSearch)=>{
     const b={
       contents:[{parts:[{text:prompt}]}],
-      generationConfig:{temperature:0.1, maxOutputTokens:2000}
+      generationConfig:{temperature:0, maxOutputTokens:2000}
     };
     if(withSearch) b.tools=[{google_search:{}}];
     return b;
@@ -5409,7 +5413,7 @@ async function callGemini(prompt, useSearch=true, showRetryUi=true){
     return res.json();
   };
 
-  // 503/500 자동 재시도 (지수 backoff: 2s → 4s → 8s, 최대 3회)
+  // 503/500 자동 재시도 (지수 backoff: 2s → 4s → 8s, 최대 3회) + 429 retry-after 준수 (1회)
   const fetchWithRetry=async(withSearch)=>{
     const delays=[2000,4000,8000];
     for(let attempt=0;attempt<=delays.length;attempt++){
@@ -5418,15 +5422,22 @@ async function callGemini(prompt, useSearch=true, showRetryUi=true){
       }catch(err){
         const m=err.message||'';
         const isOverload=m.includes('503')||m.includes('500');
-        if(isOverload && attempt<delays.length){
-          const wait=delays[attempt];
-          // 메인 검색일 때만 사용자에게 재시도 메시지 표시
-          // (백그라운드 추출 호출은 조용히 재시도해서 메인 결과를 덮지 않게 함)
+        const is429=m.includes('429');
+        // 429: retry-after 파싱 후 1회만 재시도 / 503·500: 최대 3회 지수 backoff
+        const shouldRetry=(isOverload && attempt<delays.length)||(is429 && attempt===0);
+        if(shouldRetry){
+          let wait=delays[Math.min(attempt,delays.length-1)];
+          if(is429){
+            const rm=m.match(/retry in ([\d.]+)s/i);
+            wait=rm ? Math.ceil(parseFloat(rm[1])*1000)+2000 : 62000;
+          }
           if(showRetryUi){
             const el=document.getElementById('aiRes');
-            if(el) el.textContent=`⏳ Gemini 서버 혼잡 — ${wait/1000}초 후 자동 재시도 (${attempt+1}/${delays.length})...`;
+            if(el) el.textContent=is429
+              ? `⏳ 요청 한도 초과 — ${Math.round(wait/1000)}초 후 자동 재시도...`
+              : `⏳ Gemini 서버 혼잡 — ${Math.round(wait/1000)}초 후 자동 재시도 (${attempt+1}/${delays.length})...`;
           } else {
-            console.info(`[callGemini 백그라운드] 503 재시도 ${attempt+1}/${delays.length} (${wait/1000}s 대기)`);
+            console.info(`[callGemini 백그라운드] ${is429?'429':'503'} 재시도 ${attempt+1} (${Math.round(wait/1000)}s 대기)`);
           }
           await new Promise(r=>setTimeout(r,wait));
           continue;
@@ -6036,7 +6047,14 @@ ${text}`;
     pickupCards.innerHTML=html;
   }catch(err){
     console.error('aiExtractPickups 실패:', err);
-    pickupCards.innerHTML='<div style="font-size:11px;color:var(--mu2);padding:8px">픽업 카드 자동 생성 실패 — 위 결과를 보고 직접 등록하세요.</div>';
+    const _em=err.message||'';
+    if(_em.includes('429')){
+      const _rm=_em.match(/retry in ([\d.]+)s/i);
+      const _sec=_rm?Math.ceil(parseFloat(_rm[1])):60;
+      pickupCards.innerHTML=`<div style="font-size:11px;color:var(--gold);padding:10px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.3);border-radius:6px;line-height:1.7">⏳ 검색 성공 — 픽업 카드 생성만 한도 초과 (약 ${_sec}초 후 재시도 가능)<br><span style="font-size:10px;color:var(--mu2)">검색 결과는 캐시됩니다. 아래 버튼으로 재시도하세요.</span><br><button class="btn-xs" style="margin-top:8px" onclick='aiRetryExtract(${JSON.stringify(text).replace(/'/g,"&#39;")},${JSON.stringify(gid).replace(/'/g,"&#39;")},${JSON.stringify(srv).replace(/'/g,"&#39;")})'>🔄 픽업 카드 재생성</button></div>`;
+    } else {
+      pickupCards.innerHTML='<div style="font-size:11px;color:var(--mu2);padding:8px">픽업 카드 자동 생성 실패 — 위 결과를 보고 직접 등록하세요.</div>';
+    }
   }
 }
 
