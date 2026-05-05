@@ -20,7 +20,7 @@
 <!-- Android PWA -->
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="application-name" content="가챠 트래커">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Noto+Sans+KR:wght@300;400;500;700;900&family=Black+Han+Sans&family=Do+Hyeon&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0a0d14;--bg2:#0f1320;--sf:#141928;--sf2:#1a2033;--sf3:#222942;
@@ -41,7 +41,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
 .hdr{padding:28px 0 12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;border-bottom:1px solid var(--bd);position:relative}
 .hdr::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--bl) 30%,var(--pu) 50%,var(--pk) 70%,transparent);opacity:.5}
-.hdr-left h1{font-family:'Orbitron',monospace;font-size:30px;font-weight:900;letter-spacing:3px;background:linear-gradient(135deg,var(--bl),var(--pu) 50%,var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;text-shadow:0 0 30px rgba(167,139,250,.3)}
+.hdr-left h1{font-family:'Black Han Sans','Noto Sans KR',sans-serif;font-size:30px;font-weight:400;letter-spacing:2px;background:linear-gradient(135deg,var(--bl),var(--pu) 50%,var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;text-shadow:0 0 30px rgba(167,139,250,.3)}
 .hdr-left .sub{font-size:11px;color:var(--mu2);letter-spacing:2px;text-transform:uppercase;margin-top:6px}
 
 .srv-toggle{display:flex;background:var(--sf);border:1px solid var(--bd2);border-radius:11px;padding:4px;gap:2px;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}
@@ -836,17 +836,26 @@ body::after{
   opacity:0.7 !important;
 }
 .hdr-left h1{
-  background:linear-gradient(135deg, #fff8e0 0%, var(--hsr-gold) 50%, var(--hsr-amber) 100%) !important;
+  font-family:'Black Han Sans','Noto Sans KR',sans-serif !important;
+  font-weight:400 !important;
+  letter-spacing:2px !important;
+  font-size:34px !important;
+  background:linear-gradient(180deg, #fff5d4 0%, var(--hsr-gold) 60%, #b8860b 100%) !important;
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-  text-shadow:0 0 30px rgba(244,197,122,0.4) !important;
+  text-shadow:none !important;
+  filter:drop-shadow(0 2px 6px rgba(0,0,0,0.6)) drop-shadow(0 0 14px rgba(244,197,122,0.35));
   position:relative;
+  display:inline-flex;
+  align-items:center;
 }
 .hdr-left h1::before, .hdr-left h1::after{
-  content:'◆';font-size:14px;color:var(--hsr-gold);opacity:0.6;margin:0 12px;-webkit-text-fill-color:var(--hsr-gold);text-shadow:0 0 8px rgba(244,197,122,0.6);
+  content:'◆';font-size:13px;color:var(--hsr-gold);opacity:0.85;margin:0 14px;-webkit-text-fill-color:var(--hsr-gold);
+  filter:drop-shadow(0 0 6px rgba(244,197,122,0.7));
+  background:none;
 }
 .hdr-left h1::before{margin-right:14px;margin-left:0}
 .hdr-left h1::after{margin-left:14px;margin-right:0}
-.hdr-left .sub{color:var(--hsr-gold);opacity:0.7;font-family:'Orbitron',monospace}
+.hdr-left .sub{color:var(--hsr-gold);opacity:0.65;font-family:'Orbitron',monospace}
 
 /* HSR 카드 스타일 — 잘린 모서리 + 코너 브래킷 */
 .card{
@@ -1156,12 +1165,208 @@ h3, .src-hd, .gf-sec-label{
   text-shadow:0 0 14px rgba(244,197,122,0.3);
 }
 
-/* 라이트 테마는 HSR 적용 안 함 (오버라이드) */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/*  LIGHT MODE — HSR 라이트 톤 (밝은 배경 + 진한 황금) */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 body.light{
-  --bg:#f5f5f5;--bg2:#ffffff;--sf:#ffffff;--sf2:#fafafa;--sf3:#f0f0f0;
-  --tx:#1a1a1a;
+  --bg:#f7f3ea;--bg2:#fdf9f0;--sf:#ffffff;--sf2:#faf6ec;--sf3:#f0e8d8;
+  --tx:#2a2418;--mu:#7a6f55;--mu2:#a89878;
+  --bd:rgba(180,140,60,0.12);--bd2:rgba(180,140,60,0.22);--bd3:rgba(180,140,60,0.35);
+  --hsr-gold:#b8860b;--hsr-gold-soft:#9c7008;--hsr-amber:#d4a04a;
+  --hsr-text:#2a2418;
+  --gold:#b8860b;
 }
-body.light::after{display:none}
+body.light::before{
+  background:
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(184,134,11,0.08), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(180,140,60,0.05), transparent 50%) !important;
+}
+body.light::after{display:none !important}
+
+body.light .card,
+body.light .cc{
+  background:linear-gradient(135deg, #ffffff, #faf6ec) !important;
+  border-color:rgba(180,140,60,0.2) !important;
+  box-shadow:0 2px 12px rgba(0,0,0,0.05);
+}
+body.light .card::before{
+  background:linear-gradient(135deg, transparent 0%, rgba(184,134,11,0.05) 50%, transparent 100%) !important;
+}
+body.light .card:hover,
+body.light .cc:hover{
+  border-color:rgba(184,134,11,0.4) !important;
+  box-shadow:0 8px 24px rgba(0,0,0,0.08), 0 0 20px rgba(184,134,11,0.06) !important;
+}
+
+body.light .modal{
+  background:linear-gradient(180deg, #ffffff, #faf6ec) !important;
+  border-color:rgba(184,134,11,0.3) !important;
+  box-shadow:0 20px 60px rgba(0,0,0,0.15), 0 0 30px rgba(184,134,11,0.06) !important;
+}
+
+body.light .nav-toggle{
+  background:linear-gradient(135deg, #ffffff, #faf6ec) !important;
+  border-color:rgba(184,134,11,0.25) !important;
+}
+body.light .nav-toggle:hover{border-color:rgba(184,134,11,0.5) !important}
+body.light .nav-toggle.open{
+  border-color:var(--hsr-gold) !important;
+  box-shadow:0 0 0 1px rgba(184,134,11,0.3), 0 8px 24px rgba(184,134,11,0.12) !important;
+}
+body.light .nav-list{background:#ffffff !important;border-color:rgba(184,134,11,0.2) !important}
+body.light .nav-item{color:#5a5040}
+body.light .nav-item:hover{background:rgba(184,134,11,0.08) !important;color:#9c7008 !important}
+body.light .nav-item.act{
+  background:linear-gradient(90deg, rgba(184,134,11,0.15), rgba(184,134,11,0.04)) !important;
+  color:#9c7008 !important;
+  border-left-color:var(--hsr-gold);
+}
+body.light .nav-item.act .nav-num,
+body.light .nav-current-badge{
+  background:linear-gradient(135deg, #b8860b, #d4a04a) !important;
+  color:#fffaf0 !important;
+}
+
+body.light .btn-primary{
+  background:linear-gradient(135deg, #d4a04a, #b8860b, #9c7008) !important;
+  color:#fffaf0 !important;
+  box-shadow:0 2px 12px rgba(184,134,11,0.3) !important;
+}
+body.light .btn-ghost{
+  background:rgba(184,134,11,0.06) !important;
+  border-color:rgba(184,134,11,0.25) !important;
+  color:#9c7008 !important;
+}
+body.light .btn-ghost:hover{
+  background:rgba(184,134,11,0.12) !important;
+  color:#7a5806 !important;
+}
+body.light .btn-xs{
+  border-color:rgba(184,134,11,0.25) !important;
+  color:#7a6f55;
+  background:#fdfaf2;
+}
+body.light .btn-xs:hover{
+  border-color:var(--hsr-gold) !important;
+  color:var(--hsr-gold) !important;
+}
+
+body.light .fi{
+  background:#ffffff !important;
+  border-color:rgba(184,134,11,0.25) !important;
+  color:#2a2418 !important;
+}
+body.light .fi:focus{
+  border-color:var(--hsr-gold) !important;
+  box-shadow:0 0 0 1px rgba(184,134,11,0.4), 0 0 12px rgba(184,134,11,0.1) !important;
+}
+
+body.light .gc{
+  background:#ffffff !important;
+  border-color:rgba(184,134,11,0.18) !important;
+  color:#5a5040;
+}
+body.light .gc:hover{border-color:rgba(184,134,11,0.5) !important}
+body.light .gc.on{
+  background:linear-gradient(135deg, rgba(184,134,11,0.18), rgba(184,134,11,0.05)) !important;
+  border-color:var(--hsr-gold) !important;
+  color:#7a5806 !important;
+  box-shadow:0 0 14px rgba(184,134,11,0.18) !important;
+}
+
+body.light .srv-toggle{background:#ffffff !important;border-color:rgba(184,134,11,0.18) !important}
+body.light .st-btn{color:#7a6f55}
+body.light .st-btn:hover{color:#2a2418}
+
+body.light .empty-big{
+  background:linear-gradient(180deg, #ffffff, #faf6ec) !important;
+  border-color:rgba(184,134,11,0.25) !important;
+}
+
+body.light .toast{
+  background:linear-gradient(135deg, #ffffff, #faf6ec) !important;
+  border-color:rgba(184,134,11,0.35) !important;
+  color:#7a5806 !important;
+  box-shadow:0 8px 24px rgba(0,0,0,0.12) !important;
+}
+
+body.light .kbd{
+  background:linear-gradient(180deg, #faf6ec, #f0e8d8) !important;
+  border-color:rgba(184,134,11,0.4) !important;
+  color:#7a5806 !important;
+  text-shadow:none !important;
+}
+
+body.light .hdr-left h1{
+  background:linear-gradient(180deg, #b8860b 0%, #9c7008 60%, #6b4e08 100%) !important;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,0.15)) !important;
+  text-shadow:none !important;
+}
+body.light .hdr-left h1::before, body.light .hdr-left h1::after{
+  -webkit-text-fill-color:#b8860b;color:#b8860b;
+  filter:drop-shadow(0 0 4px rgba(184,134,11,0.4));
+}
+body.light .hdr-left .sub{color:#9c7008 !important}
+body.light .hdr::after{
+  background:linear-gradient(90deg, transparent, #b8860b 40%, #d4a04a 50%, #b8860b 60%, transparent) !important;
+}
+
+body.light .page-intro h2{color:#9c7008 !important;text-shadow:none !important}
+body.light .page-intro h2::before{
+  background:linear-gradient(180deg, #b8860b, transparent);
+  box-shadow:0 0 6px rgba(184,134,11,0.3);
+}
+body.light .page-intro::after{color:#b8860b !important;opacity:0.5 !important}
+body.light .page-intro-text::before{border-color:#b8860b !important;opacity:0.5}
+
+body.light .modal h2{
+  color:#9c7008 !important;
+  border-bottom-color:rgba(184,134,11,0.25) !important;
+  text-shadow:none !important;
+}
+
+body.light .tot-v,
+body.light .pn,
+body.light .ic-value,
+body.light .gal-stat-value{
+  color:#9c7008 !important;
+  text-shadow:0 0 8px rgba(184,134,11,0.15) !important;
+}
+
+body.light .nav-current-label{color:#9c7008 !important}
+
+body.light .banner-game{color:#b8860b !important}
+
+body.light .gal-card{
+  background:#ffffff !important;
+  border-color:rgba(184,134,11,0.2) !important;
+}
+body.light .gal-card:hover{border-color:#b8860b !important}
+body.light .gal-copies{
+  background:linear-gradient(135deg, #b8860b, #d4a04a) !important;
+  color:#fffaf0 !important;
+}
+
+body.light .sub-tabs{border-bottom-color:rgba(184,134,11,0.2) !important}
+body.light .sub-tab{color:#7a6f55}
+body.light .sub-tab.act{color:#9c7008 !important;border-bottom-color:#b8860b !important}
+
+body.light .cal-grid{
+  background:#ffffff !important;
+  border-color:rgba(184,134,11,0.18) !important;
+}
+
+body.light .fab{
+  background:linear-gradient(135deg, #b8860b, #d4a04a) !important;
+  color:#fffaf0 !important;
+  box-shadow:0 8px 28px rgba(184,134,11,0.5), 0 0 0 2px rgba(255,250,240,0.3) inset !important;
+}
+
+body.light .gd-attempt-row{background:#faf6ec !important}
+
+/* 라이트 모드에서 펄스 애니메이션 끄기 (눈에 거슬림) */
+body.light .btn-primary{animation:none !important}
 
 /* 카드 테두리 코너 빛 효과 (subtle) */
 .card.predicted{
@@ -5164,7 +5369,7 @@ async function listAvailableModels(){
 // ════════════════════════════════════════════════════════════════
 //  GEMINI API 호출 헬퍼
 // ════════════════════════════════════════════════════════════════
-async function callGemini(prompt, useSearch=true){
+async function callGemini(prompt, useSearch=true, showRetryUi=true){
   const apiKey=getApiKey();
   if(!apiKey) throw new Error('API_KEY_MISSING');
 
@@ -5205,8 +5410,14 @@ async function callGemini(prompt, useSearch=true){
         const isOverload=m.includes('503')||m.includes('500');
         if(isOverload && attempt<delays.length){
           const wait=delays[attempt];
-          const el=document.getElementById('aiRes');
-          if(el) el.textContent=`⏳ Gemini 서버 혼잡 — ${wait/1000}초 후 자동 재시도 (${attempt+1}/${delays.length})...`;
+          // 메인 검색일 때만 사용자에게 재시도 메시지 표시
+          // (백그라운드 추출 호출은 조용히 재시도해서 메인 결과를 덮지 않게 함)
+          if(showRetryUi){
+            const el=document.getElementById('aiRes');
+            if(el) el.textContent=`⏳ Gemini 서버 혼잡 — ${wait/1000}초 후 자동 재시도 (${attempt+1}/${delays.length})...`;
+          } else {
+            console.info(`[callGemini 백그라운드] 503 재시도 ${attempt+1}/${delays.length} (${wait/1000}s 대기)`);
+          }
           await new Promise(r=>setTimeout(r,wait));
           continue;
         }
@@ -5639,7 +5850,7 @@ status: ongoing(현재 진행중) / upcoming(다음 예정)
 ${text}`;
 
   try{
-    const data=await callGemini(prompt, false); // 추출은 검색 없이
+    const data=await callGemini(prompt, false, false); // 추출은 검색 없이, 백그라운드 (재시도 UI 숨김)
     let raw=extractGeminiText(data);
     raw=raw.replace(/```json|```/g,'').trim();
     const arrMatch=raw.match(/\[[\s\S]*\]/);
@@ -5823,7 +6034,7 @@ JSON만 응답.
 
 텍스트: ${aiLast}`;
   try{
-    const data=await callGemini(prompt, false);
+    const data=await callGemini(prompt, false, false); // 백그라운드 (재시도 UI 숨김)
     let raw=extractGeminiText(data).replace(/```json|```/g,'').trim();
     const m=raw.match(/\[[\s\S]*\]/);
     if(m) raw=m[0];
@@ -5848,7 +6059,7 @@ async function aiAutoEvents(gid,srv){
 
 텍스트: ${aiLast}`;
   try{
-    const data=await callGemini(prompt, false);
+    const data=await callGemini(prompt, false, false); // 백그라운드 (재시도 UI 숨김)
     let raw=extractGeminiText(data).replace(/```json|```/g,'').trim();
     const m=raw.match(/\[[\s\S]*\]/);
     if(m) raw=m[0];
