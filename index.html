@@ -783,6 +783,391 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 .tgn-dot-item{width:6px;height:6px;border-radius:50%;background:var(--sf3);border:1px solid var(--bd2);cursor:pointer;transition:all .15s}
 .tgn-dot-item.act{background:var(--bl);border-color:var(--bl);transform:scale(1.3)}
 .tgn-dot-item.has-remain{background:var(--gold);border-color:var(--gold)}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/*  HONKAI: STAR RAIL UI THEME OVERRIDE            */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+:root{
+  /* HSR 시그니처 컬러 */
+  --hsr-gold:#f4c57a;
+  --hsr-gold-soft:#d4a04a;
+  --hsr-amber:#e8b864;
+  --hsr-cyan:#a3c8d8;
+  --hsr-deep:#0a1020;
+  --hsr-frame:#3a4358;
+  --hsr-text:#f5ebd6;
+
+  /* 기존 변수 일부를 HSR 톤으로 재정의 */
+  --bg:#080d18;
+  --bg2:#0c1422;
+  --sf:#121a2c;
+  --sf2:#1a2238;
+  --sf3:#243049;
+  --tx:#f0e8d6;
+  --bd:rgba(244,197,122,0.07);
+  --bd2:rgba(244,197,122,0.14);
+  --bd3:rgba(244,197,122,0.25);
+  --gold:#f4c57a;
+}
+
+/* 별빛 배경 (HSR 우주 느낌) */
+body::before{
+  background:
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(244,197,122,0.06), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(163,200,216,0.04), transparent 50%),
+    radial-gradient(ellipse 40% 30% at 0% 50%, rgba(244,197,122,0.03), transparent 60%) !important;
+}
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    radial-gradient(1px 1px at 20% 20%, rgba(244,197,122,0.4) 50%, transparent 100%),
+    radial-gradient(1px 1px at 60% 70%, rgba(255,255,255,0.3) 50%, transparent 100%),
+    radial-gradient(1px 1px at 85% 35%, rgba(163,200,216,0.4) 50%, transparent 100%),
+    radial-gradient(1px 1px at 15% 80%, rgba(244,197,122,0.3) 50%, transparent 100%),
+    radial-gradient(2px 2px at 75% 15%, rgba(255,255,255,0.5) 50%, transparent 100%),
+    radial-gradient(1px 1px at 40% 50%, rgba(244,197,122,0.2) 50%, transparent 100%);
+  background-size:800px 800px;
+  opacity:0.6;
+}
+
+/* 헤더 — 황금 그라데이션 */
+.hdr::after{
+  background:linear-gradient(90deg, transparent, var(--hsr-gold) 40%, var(--hsr-amber) 50%, var(--hsr-gold) 60%, transparent) !important;
+  opacity:0.7 !important;
+}
+.hdr-left h1{
+  background:linear-gradient(135deg, #fff8e0 0%, var(--hsr-gold) 50%, var(--hsr-amber) 100%) !important;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  text-shadow:0 0 30px rgba(244,197,122,0.4) !important;
+  position:relative;
+}
+.hdr-left h1::before, .hdr-left h1::after{
+  content:'◆';font-size:14px;color:var(--hsr-gold);opacity:0.6;margin:0 12px;-webkit-text-fill-color:var(--hsr-gold);text-shadow:0 0 8px rgba(244,197,122,0.6);
+}
+.hdr-left h1::before{margin-right:14px;margin-left:0}
+.hdr-left h1::after{margin-left:14px;margin-right:0}
+.hdr-left .sub{color:var(--hsr-gold);opacity:0.7;font-family:'Orbitron',monospace}
+
+/* HSR 카드 스타일 — 잘린 모서리 + 코너 브래킷 */
+.card{
+  position:relative;
+  background:linear-gradient(135deg, rgba(18,26,44,0.95), rgba(12,20,34,0.95)) !important;
+  border:1px solid rgba(244,197,122,0.15) !important;
+  border-radius:0 !important;
+  clip-path:polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+  transition:all .3s cubic-bezier(.4,0,.2,1) !important;
+}
+.card::after{display:none !important}
+.card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg, transparent 0%, rgba(244,197,122,0.04) 50%, transparent 100%);
+  pointer-events:none;opacity:0;transition:opacity .3s;
+}
+.card:hover{
+  border-color:rgba(244,197,122,0.35) !important;
+  transform:translateY(-3px) !important;
+  box-shadow:0 14px 40px rgba(0,0,0,.5), 0 0 30px rgba(244,197,122,0.08) !important;
+}
+.card:hover::before{opacity:1}
+
+/* 카드 좌상단 / 우하단 황금 코너 마커 */
+.card{box-shadow:inset 0 0 0 0 transparent}
+
+/* 페이지 인트로 헤더 — 브래킷 스타일 */
+.page-intro h2{
+  position:relative;display:inline-flex;align-items:center;gap:10px;
+  font-size:18px !important;font-weight:800;letter-spacing:1px;
+  color:var(--hsr-gold) !important;
+  text-shadow:0 0 20px rgba(244,197,122,0.3);
+  padding:6px 0;
+}
+.page-intro h2::before{
+  content:'';width:3px;height:22px;
+  background:linear-gradient(180deg, var(--hsr-gold), transparent);
+  box-shadow:0 0 8px var(--hsr-gold);
+}
+
+/* 페이지 인트로 헤더 좌우 brackets */
+.page-intro-text{position:relative}
+.page-intro-text::before{
+  content:'';position:absolute;left:-2px;top:0;width:14px;height:14px;
+  border-top:2px solid var(--hsr-gold);border-left:2px solid var(--hsr-gold);
+  opacity:0.6;
+}
+
+/* 모달 — HSR 프레임 */
+.modal{
+  background:linear-gradient(180deg, #15203a, #0e1828) !important;
+  border:1px solid rgba(244,197,122,0.25) !important;
+  border-radius:0 !important;
+  clip-path:polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+  position:relative;
+  box-shadow:0 20px 80px rgba(0,0,0,.7), 0 0 40px rgba(244,197,122,0.1) !important;
+}
+.modal h2{
+  color:var(--hsr-gold) !important;
+  font-weight:800;
+  letter-spacing:1px;
+  border-bottom:1px solid rgba(244,197,122,0.2);
+  padding-bottom:12px;
+  margin-bottom:14px;
+  text-shadow:0 0 12px rgba(244,197,122,0.3);
+}
+.modal h2::before{content:'◇ ';color:var(--hsr-gold);opacity:0.7;font-size:0.8em}
+
+/* 버튼 — HSR 황금 계열 */
+.btn{
+  border-radius:0 !important;
+  clip-path:polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  font-weight:600;letter-spacing:0.5px;
+  transition:all .25s !important;
+  position:relative;
+}
+.btn-primary{
+  background:linear-gradient(135deg, var(--hsr-gold-soft), var(--hsr-gold), var(--hsr-amber)) !important;
+  color:#1a1408 !important;
+  font-weight:800 !important;
+  box-shadow:0 2px 12px rgba(244,197,122,0.3), inset 0 1px 0 rgba(255,255,255,0.3) !important;
+}
+.btn-primary:hover{
+  filter:brightness(1.15);
+  box-shadow:0 4px 18px rgba(244,197,122,0.5), inset 0 1px 0 rgba(255,255,255,0.4) !important;
+  transform:translateY(-1px);
+}
+.btn-ghost{
+  background:rgba(244,197,122,0.06) !important;
+  border:1px solid rgba(244,197,122,0.2) !important;
+  color:var(--hsr-gold) !important;
+}
+.btn-ghost:hover{
+  background:rgba(244,197,122,0.12) !important;
+  border-color:rgba(244,197,122,0.4) !important;
+  color:#fff8e0 !important;
+}
+.btn-xs{
+  border-radius:0 !important;
+  clip-path:polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+  border-color:rgba(244,197,122,0.2) !important;
+}
+.btn-xs:hover{border-color:var(--hsr-gold) !important;color:var(--hsr-gold) !important}
+
+/* 네비게이션 토글 — HSR HUD */
+.nav-toggle{
+  border-radius:0 !important;
+  clip-path:polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  background:linear-gradient(135deg, var(--sf), var(--sf2)) !important;
+  border:1px solid rgba(244,197,122,0.2) !important;
+}
+.nav-toggle:hover{border-color:rgba(244,197,122,0.4) !important}
+.nav-toggle.open{
+  border-color:var(--hsr-gold) !important;
+  box-shadow:0 0 0 1px rgba(244,197,122,0.3), 0 8px 30px rgba(244,197,122,0.15) !important;
+}
+.nav-current-label{color:var(--hsr-gold) !important}
+.nav-current-badge{
+  background:linear-gradient(135deg, var(--hsr-gold), var(--hsr-amber)) !important;
+  color:#1a1408 !important;
+}
+.nav-list{
+  border-radius:0 !important;
+  border:1px solid rgba(244,197,122,0.2) !important;
+}
+.nav-item{border-radius:0 !important}
+.nav-item:hover{background:rgba(244,197,122,0.06) !important;color:var(--hsr-gold) !important}
+.nav-item.act{
+  background:linear-gradient(90deg, rgba(244,197,122,0.15), rgba(244,197,122,0.05)) !important;
+  color:var(--hsr-gold) !important;
+  border-left:3px solid var(--hsr-gold);
+}
+.nav-item.act .nav-num{
+  background:linear-gradient(135deg, var(--hsr-gold), var(--hsr-amber)) !important;
+  color:#1a1408 !important;
+  box-shadow:0 0 12px rgba(244,197,122,0.4) !important;
+}
+
+/* 서버 토글 — HSR 라인 */
+.srv-toggle{
+  border-radius:0 !important;
+  clip-path:polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  border:1px solid rgba(244,197,122,0.15) !important;
+}
+.st-btn{border-radius:0 !important}
+
+/* 인풋 — HSR 프레임 */
+.fi{
+  border-radius:0 !important;
+  clip-path:polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  background:rgba(8,13,24,0.6) !important;
+  border:1px solid rgba(244,197,122,0.2) !important;
+  color:var(--tx) !important;
+  font-family:'Noto Sans KR',sans-serif !important;
+}
+.fi:focus{
+  border-color:var(--hsr-gold) !important;
+  outline:none;
+  box-shadow:0 0 0 1px rgba(244,197,122,0.4), 0 0 20px rgba(244,197,122,0.15) !important;
+}
+
+/* 게임 칩 (즐겨찾기) — HSR 스타일 */
+.gc{
+  border-radius:0 !important;
+  clip-path:polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  background:rgba(18,26,44,0.7) !important;
+  border:1px solid rgba(244,197,122,0.12) !important;
+}
+.gc:hover{border-color:rgba(244,197,122,0.4) !important}
+.gc.on{
+  background:linear-gradient(135deg, rgba(244,197,122,0.18), rgba(244,197,122,0.05)) !important;
+  border-color:var(--hsr-gold) !important;
+  color:var(--hsr-gold) !important;
+  box-shadow:0 0 16px rgba(244,197,122,0.2) !important;
+}
+
+/* 칩 (이벤트 카드 등 .cc) */
+.cc{
+  border-radius:0 !important;
+  clip-path:polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  background:linear-gradient(135deg, rgba(18,26,44,0.95), rgba(12,20,34,0.95)) !important;
+  border:1px solid rgba(244,197,122,0.12) !important;
+  border-left:3px solid var(--gameColor, var(--hsr-gold)) !important;
+}
+.cc:hover{
+  border-color:rgba(244,197,122,0.3) !important;
+  border-left-color:var(--gameColor, var(--hsr-gold)) !important;
+}
+
+/* 페이지 섹션 헤더 (h3) */
+h3, .src-hd, .gf-sec-label{
+  letter-spacing:1.5px !important;
+}
+
+/* 통계 카드/요약 — HSR 프레임 */
+.gal-stat, .insight-card, .stats-sum-card, .total-box, .month-box{
+  border-radius:0 !important;
+  clip-path:polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+
+/* FAB — 황금 원형 */
+.fab{
+  background:linear-gradient(135deg, var(--hsr-gold), var(--hsr-amber)) !important;
+  color:#1a1408 !important;
+  box-shadow:0 8px 28px rgba(244,197,122,0.5), 0 0 0 2px rgba(255,248,224,0.2) inset !important;
+}
+
+/* 토스트 / 작은 배지 */
+.toast{
+  background:linear-gradient(135deg, var(--sf2), var(--sf3)) !important;
+  border:1px solid rgba(244,197,122,0.3) !important;
+  border-radius:0 !important;
+  clip-path:polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  color:var(--hsr-gold) !important;
+}
+
+/* tag 들 — 더 sharp */
+.tag{border-radius:0 !important;clip-path:polygon(3px 0,100% 0,100% calc(100% - 3px),calc(100% - 3px) 100%,0 100%,0 3px)}
+
+/* 진행률바 — 황금 */
+.prog-fill{box-shadow:0 0 14px currentColor}
+
+/* 배너 정보 */
+.banner-game{color:var(--hsr-gold) !important;letter-spacing:2px !important}
+
+/* dday 스타일 */
+.dday{border-radius:0 !important;clip-path:polygon(4px 0,100% 0,100% calc(100% - 4px),calc(100% - 4px) 100%,0 100%,0 4px)}
+
+/* 결과 라디오 (rr-opt) */
+.rr-opt{
+  border-radius:0 !important;
+  clip-path:polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+}
+
+/* 키보드 단축키 (.kbd) — HSR 광택 */
+.kbd{
+  background:linear-gradient(180deg, var(--sf3), var(--sf2)) !important;
+  border:1px solid rgba(244,197,122,0.3) !important;
+  border-radius:0 !important;
+  color:var(--hsr-gold) !important;
+  text-shadow:0 0 6px rgba(244,197,122,0.5);
+}
+
+/* sub-tabs 컨테이너 */
+.sub-tabs{border-bottom:1px solid rgba(244,197,122,0.15) !important}
+.sub-tab{
+  font-weight:700 !important;
+  letter-spacing:0.5px;
+}
+.sub-tab.act{color:var(--hsr-gold) !important;border-bottom-color:var(--hsr-gold) !important}
+
+/* 캘린더 */
+.cal-grid{
+  border-radius:0 !important;
+  clip-path:polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  border-color:rgba(244,197,122,0.15) !important;
+}
+
+/* 빈 상태 */
+.empty-big{
+  border-radius:0 !important;
+  clip-path:polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+  border-color:rgba(244,197,122,0.2) !important;
+  background:linear-gradient(180deg, var(--sf), rgba(18,26,44,0.5)) !important;
+}
+
+/* 갤러리 카드 — HSR 강조 */
+.gal-card{
+  border-radius:0 !important;
+  clip-path:polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  border:1px solid rgba(244,197,122,0.15) !important;
+}
+.gal-card:hover{
+  border-color:var(--gameC, var(--hsr-gold)) !important;
+  box-shadow:0 14px 40px rgba(0,0,0,0.5), 0 0 30px rgba(244,197,122,0.15) !important;
+}
+.gal-copies{
+  background:linear-gradient(135deg, var(--hsr-gold), var(--hsr-amber)) !important;
+  border-radius:0 !important;
+  clip-path:polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
+}
+
+/* 미세한 글로우 애니메이션 */
+@keyframes hsr-pulse {
+  0%, 100% {box-shadow:0 0 12px rgba(244,197,122,0.3)}
+  50% {box-shadow:0 0 20px rgba(244,197,122,0.5)}
+}
+.btn-primary{animation:hsr-pulse 3s ease-in-out infinite}
+
+/* HSR 코너 브래킷 데코레이션 (page-intro 우측 배치) */
+.page-intro{position:relative}
+.page-intro::after{
+  content:'◆ ◆ ◆';
+  position:absolute;
+  top:6px;right:0;
+  font-size:8px;
+  color:var(--hsr-gold);
+  opacity:0.4;
+  letter-spacing:6px;
+  pointer-events:none;
+}
+@media(max-width:780px){.page-intro::after{display:none}}
+
+/* 주요 통계값 — Orbitron 강조 */
+.tot-v, .pn, .ic-value, .gal-stat-value{
+  color:var(--hsr-gold) !important;
+  text-shadow:0 0 14px rgba(244,197,122,0.3);
+}
+
+/* 라이트 테마는 HSR 적용 안 함 (오버라이드) */
+body.light{
+  --bg:#f5f5f5;--bg2:#ffffff;--sf:#ffffff;--sf2:#fafafa;--sf3:#f0f0f0;
+  --tx:#1a1a1a;
+}
+body.light::after{display:none}
+
+/* 카드 테두리 코너 빛 효과 (subtle) */
+.card.predicted{
+  border-style:dashed !important;
+  border-color:rgba(167,139,250,0.4) !important;
+}
 </style>
 </head>
 <body>
