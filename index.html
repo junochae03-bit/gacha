@@ -1170,6 +1170,51 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 
 <button class="fab" id="fabBtn" onclick="fabAction()" title="새 픽업 등록 (단축키: N)" aria-label="새 픽업 등록">＋</button>
 
+<!-- 추가 시도 등록 모달 (돌파/명함 누적) -->
+<div class="overlay" id="attemptOvl"><div class="modal" style="max-width:480px">
+  <h2 id="attemptTitle">＋ 추가 시도 등록</h2>
+  <div style="font-size:11px;color:var(--mu2);margin-bottom:14px;line-height:1.6" id="attemptHint">
+    같은 픽업에서 돌파(돌/체인 등) 추가 뽑기 결과를 등록합니다. 누적 뽑기수와 ₩이 자동 계산됩니다.
+  </div>
+
+  <div id="attemptList" style="margin-bottom:14px"></div>
+
+  <div class="fg">
+    <label>이번 시도 결과</label>
+    <div class="result-radio">
+      <label class="rr-opt rr-success">
+        <input type="radio" name="at-result" value="success" checked>
+        <span class="rr-icon">✨</span><span class="rr-label">획득</span>
+      </label>
+      <label class="rr-opt rr-fail">
+        <input type="radio" name="at-result" value="fail">
+        <span class="rr-icon">💔</span><span class="rr-label">픽뚫</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="frow">
+    <div class="fg">
+      <label>🎲 소비 뽑기 횟수</label>
+      <input class="fi" type="number" inputmode="numeric" id="at-pulls" placeholder="0" min="0" oninput="autoCalcAttemptCurrency()">
+    </div>
+    <div class="fg">
+      <label>💎 소비 재화 (자동)</label>
+      <input class="fi" type="number" inputmode="numeric" id="at-currency" placeholder="0" min="0">
+    </div>
+  </div>
+
+  <div class="fg">
+    <label>📝 라벨 (예: 1돌, 2돌, 명함 픽뚫)</label>
+    <input class="fi" id="at-label" placeholder="자동: 다음 돌파 회차">
+  </div>
+
+  <div class="mfoot">
+    <button class="btn btn-ghost" onclick="closeAttemptModal()">취소</button>
+    <button class="btn btn-primary" onclick="saveAttempt()">＋ 시도 추가</button>
+  </div>
+</div></div>
+
 <!-- WISHLIST MODAL -->
 <div class="overlay" id="wishOvl"><div class="modal" style="max-width:520px">
   <h2>⭐ 위시리스트</h2>
@@ -1872,6 +1917,11 @@ function setupCardClickHandler(){
     } else if(action === 'redeem'){
       const url = target.getAttribute('data-url');
       if(url) window.open(url, '_blank');
+    } else if(action === 'addAttempt' && eid){
+      openAttemptModal(eid);
+    } else if(action === 'delAttempt'){
+      const attemptIdx = parseInt(target.getAttribute('data-attempt-idx'));
+      if(eid && !isNaN(attemptIdx)) deleteAttempt(eid, attemptIdx);
     }
   }, true); // capture phase로 등록 - 다른 핸들러보다 먼저 실행
 }
@@ -2288,14 +2338,30 @@ function buildCard(e,idx){
     ? `<div class="result-badge ${resultLabel[e.result].cls}">${resultLabel[e.result].txt}</div>` 
     : '';
   
-  // Spent info
-  const hasSpent = (e.spentCurrency || e.spentPulls);
-  const krwEstimate = e.spentPulls ? e.spentPulls * pc.pricePerPull : 0;
+  // ── 다중 시도 누적 (명함 + 돌파) ───────────────────────
+  const totals = getEventTotals(e);
+  const attemptsCount = totals.totalAttempts; // 첫 시도 + 추가 시도 수
+  const copiesCount = totals.successCount;
+  const failCount = totals.failCount;
+
+  // Spent info (누적)
+  const hasSpent = (totals.totalCurrency || totals.totalPulls);
+  const krwEstimate = totals.totalPulls ? totals.totalPulls * pc.pricePerPull : 0;
+  // 시도별 결과 점 표시 (✨ 성공 / 💔 픽뚫)
+  const allAttempts = getAllAttempts(e);
+  const attemptDots = allAttempts.length>1 ? `<div style="display:flex;gap:3px;align-items:center;margin-top:4px;flex-wrap:wrap">
+    ${allAttempts.map((a,i)=>{
+      const icon = a.result==='success'?'✨':a.result==='fail'?'💔':'⏭';
+      const label = a.label||(i===0?'명함':`+${i}돌`);
+      const color = a.result==='success'?'var(--gold)':a.result==='fail'?'var(--rd)':'var(--mu)';
+      return `<span title="${label}: ${a.result==='success'?'성공':a.result==='fail'?'픽뚫':'미정'} (${a.spentPulls||0}뽑)" style="font-size:11px;padding:2px 5px;background:rgba(255,255,255,.05);border-radius:4px;color:${color};font-weight:700">${icon} ${label}</span>`;
+    }).join('')}
+  </div>`:'';
   const spentHtml = hasSpent ? `
     <div class="spent-box">
-      <div class="spent-l">💸 ${e.spentPulls?`${e.spentPulls}뽑`:''}${e.spentCurrency?` · ${(e.spentCurrency).toLocaleString()} ${pc.unit}`:''}</div>
+      <div class="spent-l">💸 ${totals.totalPulls?`${totals.totalPulls}뽑`:''}${totals.totalCurrency?` · ${(totals.totalCurrency).toLocaleString()} ${pc.unit}`:''}${attemptsCount>1?` <span style="opacity:.7;font-size:10px">(${attemptsCount}회 시도)</span>`:''}</div>
       ${krwEstimate?`<div class="spent-r">~₩${krwEstimate>=10000?Math.round(krwEstimate/1000).toLocaleString()+'K':krwEstimate.toLocaleString()}<small>1트럭 기준</small></div>`:''}
-    </div>` : '';
+    </div>${attemptDots}` : '';
   
   // 천장까지 남은 뽑기 계산
   const srvKey = e.srv==='all' ? g.servers[0] : e.srv;
@@ -2375,6 +2441,7 @@ function buildCard(e,idx){
       ${spentHtml}
       ${e.memo?`<div style="font-size:11px;color:var(--mu);line-height:1.6;margin-top:8px;padding:8px 10px;background:rgba(167,139,250,.04);border-left:2px solid rgba(167,139,250,.3);border-radius:4px;font-style:italic">📝 ${e.memo}</div>`:''}
       <div class="arow">
+        <button class="ab" data-action="addAttempt" data-eid="${eid}" title="명함 후 돌파 시도 등록">＋ 시도</button>
         <button class="ab ${alarms[alarmKey]?'set':''}" data-action="alarm" data-eid="${eid}">🔔 ${alarms[alarmKey]?'설정됨':'알람'}</button>
         <button class="ab" data-action="ical" data-eid="${eid}">📅 캘린더</button>
         ${g.redeemUrl?`<button class="ab" data-action="redeem" data-url="${g.redeemUrl}">🎁 리딤</button>`:''}
@@ -5364,7 +5431,7 @@ function showPage(name){
 }
 
 function toast(msg){const el=document.createElement('div');el.className='toast';el.innerHTML=msg.replace(/\n/g,'<br>');document.getElementById('tw').appendChild(el);setTimeout(()=>el.remove(),2500);}
-['evtOvl','cpnOvl','gevOvl','customEvtOvl','taskEditOvl','addTaskOvl','wishOvl','alarmOvl','budgetOvl','onbOvl'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});
+['evtOvl','cpnOvl','gevOvl','customEvtOvl','taskEditOvl','addTaskOvl','wishOvl','alarmOvl','budgetOvl','onbOvl','attemptOvl'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});
 
 // Color picker event delegation
 document.getElementById('cevColorPicker').addEventListener('click', e => {
@@ -6013,6 +6080,167 @@ window.addEventListener('load',()=>{
 });
 
 // ════════════════════════════════════════════════════════════════
+//  다중 시도 (명함 + 돌파) 누적 헬퍼
+// ════════════════════════════════════════════════════════════════
+// 첫 시도(레거시 필드) + 추가 시도(attempts[]) 통합
+function getAllAttempts(e){
+  if(!e) return [];
+  const list=[];
+  // 첫 시도: 기존 필드 사용 (result/spentPulls/spentCurrency)
+  if(e.result==='success'||e.result==='fail'||e.spentPulls>0||e.spentCurrency>0){
+    list.push({
+      result:e.result||'untried',
+      spentPulls:e.spentPulls||0,
+      spentCurrency:e.spentCurrency||0,
+      label:'명함',
+      isFirst:true
+    });
+  }
+  // 추가 시도들
+  (e.attempts||[]).forEach((a,i)=>{
+    list.push({
+      result:a.result||'untried',
+      spentPulls:a.spentPulls||0,
+      spentCurrency:a.spentCurrency||0,
+      label:a.label||`+${i+1}돌`,
+      ts:a.ts,
+      idx:i
+    });
+  });
+  return list;
+}
+
+function getEventTotals(e){
+  const all=getAllAttempts(e);
+  return {
+    totalAttempts:all.length,
+    successCount:all.filter(a=>a.result==='success').length,
+    failCount:all.filter(a=>a.result==='fail').length,
+    totalPulls:all.reduce((s,a)=>s+(a.spentPulls||0),0),
+    totalCurrency:all.reduce((s,a)=>s+(a.spentCurrency||0),0)
+  };
+}
+
+// 추가 시도 모달 — 열기/저장/삭제
+let _curAttemptEid=null;
+function openAttemptModal(eid){
+  const e=events.find(x=>x.id===eid);
+  if(!e){toast('⚠️ 픽업을 찾을 수 없음');return;}
+  _curAttemptEid=eid;
+  const g=GAMES.find(x=>x.id===e.game);
+  document.getElementById('attemptTitle').textContent=`＋ ${e.char||'픽업'} 추가 시도`;
+  document.getElementById('attemptHint').innerHTML=`같은 픽업에서 돌파(돌/체인 등) 추가 뽑기 결과를 등록합니다.<br>${g?`현재 게임: <strong style="color:${g.color}">${g.short}</strong> · 1뽑 = ${g.gacha.pullCost} ${g.gacha.unit}`:''}`;
+
+  // 이미 등록된 시도들 표시
+  const list=getAllAttempts(e);
+  const listEl=document.getElementById('attemptList');
+  if(list.length){
+    listEl.innerHTML=`<div style="font-size:10px;color:var(--mu);font-weight:700;margin-bottom:6px">기존 시도 ${list.length}회</div>`+
+      list.map((a,i)=>{
+        const icon=a.result==='success'?'✨':a.result==='fail'?'💔':'⏭';
+        const color=a.result==='success'?'var(--gold)':a.result==='fail'?'var(--rd)':'var(--mu)';
+        const delBtn=a.isFirst?'':`<button class="btn-xs del" data-action="delAttempt" data-eid="${eid}" data-attempt-idx="${a.idx}" title="이 시도 삭제">🗑</button>`;
+        return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--sf2);border-radius:7px;margin-bottom:4px;border-left:3px solid ${color}">
+          <span style="font-size:14px">${icon}</span>
+          <span style="font-size:12px;font-weight:700;color:${color};min-width:50px">${a.label}</span>
+          <span style="font-size:11px;color:var(--mu2);flex:1">${a.spentPulls?a.spentPulls+'뽑':''}${a.spentCurrency?` · ${a.spentCurrency.toLocaleString()}`:''}</span>
+          ${delBtn}
+        </div>`;
+      }).join('');
+  } else {
+    listEl.innerHTML='<div style="font-size:11px;color:var(--mu);padding:8px">아직 등록된 시도가 없습니다.</div>';
+  }
+
+  // 자동 라벨 (다음 회차) 제안
+  const nextN=list.length; // 첫 시도는 명함, 다음은 +1돌, +2돌...
+  const autoLabel = nextN===0 ? '명함' : `+${nextN}돌`;
+  document.getElementById('at-label').placeholder=`자동: ${autoLabel}`;
+  document.getElementById('at-label').value='';
+  document.getElementById('at-pulls').value='';
+  document.getElementById('at-currency').value='';
+  document.querySelector('input[name="at-result"][value="success"]').checked=true;
+
+  document.getElementById('attemptOvl').classList.add('open');
+}
+function closeAttemptModal(){
+  document.getElementById('attemptOvl').classList.remove('open');
+  _curAttemptEid=null;
+}
+function autoCalcAttemptCurrency(){
+  if(!_curAttemptEid) return;
+  const e=events.find(x=>x.id===_curAttemptEid);
+  const g=e?GAMES.find(x=>x.id===e.game):null;
+  if(!g) return;
+  const pulls=parseInt(document.getElementById('at-pulls').value)||0;
+  document.getElementById('at-currency').value=pulls*g.gacha.pullCost;
+}
+function saveAttempt(){
+  if(!_curAttemptEid){closeAttemptModal();return;}
+  const e=events.find(x=>x.id===_curAttemptEid);
+  if(!e){closeAttemptModal();return;}
+  const result=(document.querySelector('input[name="at-result"]:checked')||{}).value||'success';
+  const pulls=parseInt(document.getElementById('at-pulls').value)||0;
+  const currency=parseInt(document.getElementById('at-currency').value)||0;
+  let label=document.getElementById('at-label').value.trim();
+  if(!label){
+    const list=getAllAttempts(e);
+    label = list.length===0?'명함':`+${list.length}돌`;
+  }
+  if(pulls<=0 && currency<=0){
+    toast('⚠️ 뽑기수 또는 재화량 입력 필요');return;
+  }
+  if(!Array.isArray(e.attempts)) e.attempts=[];
+  // 첫 시도 데이터가 비어있으면 첫 시도로 채움
+  if(!e.result || e.result==='untried') {
+    if(!e.spentPulls && !e.spentCurrency) {
+      e.result=result;
+      e.spentPulls=pulls;
+      e.spentCurrency=currency;
+    } else {
+      e.attempts.push({result,spentPulls:pulls,spentCurrency:currency,label,ts:Date.now()});
+    }
+  } else {
+    e.attempts.push({result,spentPulls:pulls,spentCurrency:currency,label,ts:Date.now()});
+  }
+  // 인벤토리에서 차감 (있는 경우)
+  const g=GAMES.find(x=>x.id===e.game);
+  if(g && currency>0){
+    const srvKey=e.srv==='all'?g.servers[0]:e.srv;
+    const invKey=`${e.game}-${srvKey}`;
+    if(!inventory[invKey]) inventory[invKey]={};
+    const primCurId=g.currencies[0]?.id;
+    if(primCurId){
+      inventory[invKey][primCurId]=Math.max(0,(inventory[invKey][primCurId]||0)-currency);
+    }
+  }
+  save();renderAll();
+  toast(`✅ ${label} 시도 등록 (${result==='success'?'획득':'픽뚫'})`);
+  // 모달 닫지 않고 다시 열어서 추가 등록 가능
+  openAttemptModal(_curAttemptEid);
+}
+function deleteAttempt(eid, attemptIdx){
+  const e=events.find(x=>x.id===eid);
+  if(!e || !Array.isArray(e.attempts) || !e.attempts[attemptIdx]) return;
+  if(!confirm('이 시도 기록을 삭제할까요?')) return;
+  // 인벤토리 복구
+  const a=e.attempts[attemptIdx];
+  const g=GAMES.find(x=>x.id===e.game);
+  if(g && a.spentCurrency>0){
+    const srvKey=e.srv==='all'?g.servers[0]:e.srv;
+    const invKey=`${e.game}-${srvKey}`;
+    if(inventory[invKey]){
+      const primCurId=g.currencies[0]?.id;
+      if(primCurId) inventory[invKey][primCurId]=(inventory[invKey][primCurId]||0)+a.spentCurrency;
+    }
+  }
+  e.attempts.splice(attemptIdx,1);
+  save();renderAll();
+  // 다시 모달 갱신
+  if(_curAttemptEid===eid) openAttemptModal(eid);
+  toast('🗑 시도 삭제됨');
+}
+
+// ════════════════════════════════════════════════════════════════
 //  WISHLIST (위시리스트)
 // ════════════════════════════════════════════════════════════════
 function openWishlist(){
@@ -6466,23 +6694,28 @@ function buildEnhancedStats(){
   }
 
   // 게임별 픽업 성공 평균 운빨 (이론 확률 = 본인 N뽑 안에 픽업 획득 확률, 픽뚫 제외)
-  const recorded=events.filter(e=>!e.predicted&&(e.result==='success'||e.result==='fail'));
+  // 다중 시도(돌파) 포함: 각 시도를 독립적으로 집계
+  const recorded=events.filter(e=>!e.predicted);
   const byGame={};
   recorded.forEach(e=>{
     const g=GAMES.find(x=>x.id===e.game);
     if(!g) return;
+    const all=getAllAttempts(e);
+    if(!all.length) return; // 결과 없는 픽업은 스킵
     if(!byGame[g.id]) byGame[g.id]={g,success:0,fail:0,pulls:0,krw:0,successProbs:[],successPulls:[]};
-    if(e.result==='success'){
-      byGame[g.id].success++;
-      // 성공한 픽업의 N뽑에서의 이론 확률 누적 (뽑기 횟수가 있는 경우만)
-      if(e.spentPulls>0){
-        byGame[g.id].successProbs.push(calcPickupProb(g, e.spentPulls));
-        byGame[g.id].successPulls.push(e.spentPulls);
+    all.forEach(a=>{
+      if(a.result==='success'){
+        byGame[g.id].success++;
+        if(a.spentPulls>0){
+          byGame[g.id].successProbs.push(calcPickupProb(g, a.spentPulls));
+          byGame[g.id].successPulls.push(a.spentPulls);
+        }
+      } else if(a.result==='fail'){
+        byGame[g.id].fail++;
       }
-    }
-    if(e.result==='fail') byGame[g.id].fail++;
-    byGame[g.id].pulls += e.spentPulls||0;
-    byGame[g.id].krw += (e.spentPulls||0) * g.gacha.pricePerPull;
+      byGame[g.id].pulls += a.spentPulls||0;
+      byGame[g.id].krw += (a.spentPulls||0) * g.gacha.pricePerPull;
+    });
   });
   let roiHtml='';
   if(Object.keys(byGame).length){
