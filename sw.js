@@ -1,4 +1,4 @@
-const CACHE = 'gacha-v25';
+const CACHE = 'gacha-v26';
 const SHELL = ['./'];
 
 self.addEventListener('install', e => {
