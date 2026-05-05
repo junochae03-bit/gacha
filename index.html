@@ -3169,6 +3169,8 @@ function buildCard(e,idx){
   const attemptsCount = totals.totalAttempts; // 첫 시도 + 추가 시도 수
   const copiesCount = totals.successCount;
   const failCount = totals.failCount;
+  const breakSucc = (e.attempts||[]).filter(a=>a.result==='success').length;
+  const breakFail = (e.attempts||[]).filter(a=>a.result==='fail').length;
 
   // Spent info (누적)
   const hasSpent = (totals.totalCurrency || totals.totalPulls);
@@ -3185,7 +3187,7 @@ function buildCard(e,idx){
   </div>`:'';
   const spentHtml = hasSpent ? `
     <div class="spent-box">
-      <div class="spent-l">💸 ${totals.totalPulls?`${totals.totalPulls}뽑`:''}${totals.totalCurrency?` · ${(totals.totalCurrency).toLocaleString()} ${pc.unit}`:''}${attemptsCount>1?` <span style="opacity:.7;font-size:10px">(${attemptsCount}회 시도)</span>`:''}</div>
+      <div class="spent-l">💸 ${totals.totalPulls?`${totals.totalPulls}뽑`:''}${totals.totalCurrency?` · ${(totals.totalCurrency).toLocaleString()} ${pc.unit}`:''}${attemptsCount>1?` <span style="opacity:.7;font-size:10px">(${breakSucc>0?`✨${breakSucc}돌`:''}${breakSucc>0&&breakFail>0?' · ':''}${breakFail>0?`💔픽뚫${breakFail}`:''})</span>`:''}</div>
       ${krwEstimate?`<div class="spent-r">~₩${krwEstimate>=10000?Math.round(krwEstimate/1000).toLocaleString()+'K':krwEstimate.toLocaleString()}<small>1트럭 기준</small></div>`:''}
     </div>${attemptDots}` : '';
   
@@ -7690,7 +7692,7 @@ function openAttemptModal(eid){
   const list=getAllAttempts(e);
   const listEl=document.getElementById('attemptList');
   if(list.length){
-    listEl.innerHTML=`<div style="font-size:10px;color:var(--mu);font-weight:700;margin-bottom:6px">이력 ${list.length}건 · 돌파 ${(e.attempts||[]).length}회</div>`+
+    listEl.innerHTML=`<div style="font-size:10px;color:var(--mu);font-weight:700;margin-bottom:6px">이력 ${list.length}건 · ✨${(e.attempts||[]).filter(a=>a.result==='success').length}돌 · 💔픽뚫${(e.attempts||[]).filter(a=>a.result==='fail').length}회</div>`+
       list.map((a,i)=>{
         const icon=a.result==='success'?'✨':a.result==='fail'?'💔':'⏭';
         const color=a.result==='success'?'var(--gold)':a.result==='fail'?'var(--rd)':'var(--mu)';
