@@ -2568,6 +2568,32 @@ const GAMES_RAW=[
           guarantee:'90연 픽업 확정 (이월, 50/50 없음)',type:'softpity'},
    monthly:{name:'정예 헌터 보급',cost:12000,monthlyAmt:680,daily:0,desc:'이상 수정 680 즉시 지급'},
    redeemUrl:''},
+
+  {id:'bd2',name:'브라운더스트2',short:'브더2',color:'#d4a04a',rgb:'212,160,74',
+   launchDates:{kr:'2023-06-13',global:'2023-06-13'},hasHalfAnniversary:true,delayMonths:0,
+   officialDomains:['browndust2.com','neowiz.com'],
+   servers:['kr','global'],
+   currencies:[
+     {id:'dia',icon:'💎',name:'다이아',desc:'한국 공식',pullCost:250},
+     {id:'ticket',icon:'🎫',name:'영혼석',pullCost:1},
+   ],
+   gacha:{topRarity:'5★',offRate:1.0,pickupAbsRate:0.5,pullCost:250,softPity:0,hardPity:100,baseRate:0.015,pickupRate:0.3333,pickupSystem:'guaranteed',pickupSysDesc:'100뽑 천장 시 픽업 5★ 확정 (이월 X)',pickupSysProb:100,pityType:'hard',pityNote:'100뽑 도달 시 픽업 5★ 확정 (이월 없음)',pricePerPull:1980,truckPackKRW:99000,truckPackCurrency:12500,truckPackPulls:50,truckDesc:'₩99,000 팩 → 다이아 12,500개 (50뽑)',unit:'다이아',
+          guarantee:'100연 픽업 확정 (이월 X)',type:'flat'},
+   monthly:{name:'프리미엄 패스',cost:9900,monthlyAmt:3000,daily:100,desc:'30일간 매일 다이아 100'},
+   redeemUrl:'https://event.browndust2.com/coupon'},
+
+  {id:'svwb',name:'섀도우버스',short:'섀버',color:'#7c3aed',rgb:'124,58,237',
+   launchDates:{all:'2025-06-17'},hasHalfAnniversary:true,delayMonths:0,
+   officialDomains:['shadowverse-wb.com','cygames.co.jp'],
+   servers:['all'],
+   currencies:[
+     {id:'crystal',icon:'💎',name:'크리스탈',desc:'팩 구매',pullCost:100},
+     {id:'ticket',icon:'🎫',name:'팩 티켓',pullCost:1},
+   ],
+   gacha:{topRarity:'레전드',offRate:1.5,pickupAbsRate:1.5,pullCost:100,softPity:0,hardPity:0,baseRate:0.015,pickupRate:1.0,pickupSystem:'no_pity',pickupSysDesc:'팩당 레전드 등장 확률 약 1.5% (천장 없음, 카드별 4장 한도)',pickupSysProb:100,pityType:'noceiling',pityNote:'천장 없음 — 운에 의존 (잔여 카드는 vial로 분해해 다른 카드 생성 가능)',pricePerPull:1280,truckPackKRW:34900,truckPackCurrency:2700,truckPackPulls:27,truckDesc:'₩34,900 팩 → 크리스탈 2,700개 (27팩)',unit:'크리스탈',
+          guarantee:'천장 없음 (vial 분해 시스템)',type:'noceiling'},
+   monthly:null,
+   redeemUrl:''},
 ];
 
 // ✨ Sort 가나다순 by Korean locale
