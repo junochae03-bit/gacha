@@ -264,46 +264,34 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .calc-carousel .calc-pb-val{font-size:22px}
 .calc-carousel .calc-pb-track{height:14px}
 .calc-carousel .calc-pb-foot{font-size:11px;margin-top:8px}
-/* ── 넓은 화면(>=900px): 2-열 레이아웃 — 좌측 입력, 우측 결과 ── */
-@media(min-width:900px){
-  .calc-carousel .widget-track > .calc-card{
-    display:grid;
-    grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);
-    column-gap:36px;
-    row-gap:0;
-    align-items:start;
-    padding:26px 30px 30px;
-    max-width:1180px;
-    margin:0 auto;
-  }
-  .calc-carousel .calc-card > .calc-hd{grid-column:1 / -1;margin-bottom:22px}
-  /* 입력 행/빠른 버튼은 모두 좌측 */
-  .calc-carousel .calc-card > .calc-input-row,
-  .calc-carousel .calc-card > .calc-qb-row{grid-column:1}
-  /* 결과는 우측, 모든 행을 차지 */
-  .calc-carousel .calc-card > .calc-res{
-    grid-column:2;
-    grid-row:2 / span 200;
-    margin-top:0;
-    padding:0 0 0 30px;
-    border-top:none;
-    border-left:1px solid var(--bd);
-    align-self:stretch;
-    min-height:100%;
-  }
-  .calc-carousel .calc-pb-wrap{margin-top:18px}
-  /* 입력 폭은 더 시원하게 */
-  .calc-carousel .ci{width:160px}
+/* ── 넓은 화면: 단일 카드를 화면 폭 전체로 펼치고 콘텐츠를 시원하게 ── */
+@media(min-width:760px){
+  .calc-carousel .widget-track > .calc-card{padding:28px 32px 32px;border-radius:18px}
+  .calc-carousel .calc-hd{margin-bottom:24px;padding-bottom:16px}
+  .calc-carousel .calc-name{font-size:20px}
+  .calc-carousel .calc-input-row{padding:12px 16px;gap:18px;margin-bottom:12px}
+  .calc-carousel .calc-l{font-size:14px;font-weight:700}
+  .calc-carousel .ci{width:240px;font-size:17px;padding:10px 14px}
+  .calc-carousel .calc-qb-row{gap:8px;padding:0 4px}
+  .calc-carousel .calc-qb{font-size:11px;padding:8px 14px}
+  .calc-carousel .calc-res{margin-top:24px;padding-top:24px;gap:11px}
+  .calc-carousel .crr{font-size:14px}
+  .calc-carousel .crl{font-size:13px}
+  .calc-carousel .crv{font-size:16px}
+  .calc-carousel .calc-pb-wrap{padding:18px 22px;margin-top:18px;border-radius:14px}
+  .calc-carousel .calc-pb-name{font-size:15px}
+  .calc-carousel .calc-pb-meta{font-size:11px}
+  .calc-carousel .calc-pb-val{font-size:28px}
+  .calc-carousel .calc-pb-track{height:16px}
+  .calc-carousel .calc-pb-foot{font-size:12px;margin-top:10px}
 }
-@media(min-width:1280px){
-  .calc-carousel .widget-track > .calc-card{
-    grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);
-    column-gap:48px;
-    padding:28px 36px 32px;
-  }
-  .calc-carousel .ci{width:180px;font-size:16px}
-  .calc-carousel .calc-name{font-size:19px}
-  .calc-carousel .calc-pb-val{font-size:26px}
+@media(min-width:1100px){
+  .calc-carousel .widget-track > .calc-card{padding:32px 40px 36px}
+  .calc-carousel .calc-name{font-size:22px}
+  .calc-carousel .ci{width:280px;font-size:18px}
+  .calc-carousel .calc-l{font-size:15px}
+  .calc-carousel .calc-pb-val{font-size:32px}
+  .calc-carousel .calc-pb-track{height:18px}
 }
 @media(max-width:600px){
   .calc-carousel .widget-track > .calc-card{padding:18px 16px 20px;border-radius:14px}
@@ -357,37 +345,75 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .inv-paid-spent .ips-text{flex:1;min-width:0;line-height:1.5}
 .inv-paid-spent .ips-reset{padding:5px 10px;font-size:10px;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:6px;color:var(--mu2);cursor:pointer;font-weight:800;flex-shrink:0;transition:all .15s}
 .inv-paid-spent .ips-reset:hover{background:rgba(248,113,113,.14);color:var(--rd);border-color:rgba(248,113,113,.35)}
-/* ── 넓은 화면: 재화 보유량 카드도 가로로 시원하게 ── */
-@media(min-width:900px){
-  .inv-grid{grid-template-columns:1fr;gap:16px;max-width:1180px;margin:0 auto}
-  .inv-primary-block{padding:26px 30px 28px}
-  .inv-primary-header{padding-bottom:16px;margin-bottom:20px}
-  .inv-primary-header .inv-l > div:first-child{font-size:18px}
-  .ipt-value{font-size:30px}
-  .ipt-monthly{font-size:16px}
-  .ipt-pulls{font-size:12px}
-  .ipt-pulls strong{font-size:14px}
-  /* 무료/유료 입력 박스 + 빠른 버튼을 가로로 배치 */
-  .inv-card-body{
-    display:grid;
-    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-    column-gap:28px;
-    align-items:start;
-  }
-  .inv-card-body .inv-split-row{grid-column:1}
-  .inv-card-body .inv-qb-stack{grid-column:2;display:flex;flex-direction:column;gap:8px;border-left:1px solid var(--bd);padding-left:28px;align-self:stretch}
-  .inv-card-body .inv-qb-stack .inv-qb-row{margin-top:0;padding-top:0;border-top:none}
-  .inv-card-body .inv-qb-stack .inv-qb-row + .inv-qb-row{margin-top:0;padding-top:10px;border-top:1px dashed var(--bd)}
-  .inv-card-body .inv-paid-spent{grid-column:1 / -1;margin-top:14px}
-  .inv-month{margin-top:18px}
-  .inv-month-grid{grid-template-columns:1fr 1fr 1.4fr;gap:14px}
-  .inv-month-grid > .inv-month-remain-card{margin-top:0}
+/* ── 재화 보유량 캐러셀 (계산기와 동일 스타일) ── */
+.inv-carousel{margin:0 -2px}
+.inv-carousel .widget-track{padding:4px 4px 12px;gap:14px}
+.inv-carousel .widget-track > .inv-card{
+  margin:0;
+  padding:22px 22px 24px;
+  border-radius:16px;
+  background:linear-gradient(180deg,var(--sf),rgba(20,25,40,0.5));
+  border:1px solid var(--bd);
+  position:relative;
+  overflow:hidden;
 }
-@media(min-width:1280px){
-  .inv-grid{max-width:1320px}
-  .inv-primary-block{padding:28px 36px 32px}
-  .inv-card-body{column-gap:36px}
-  .inv-card-body .inv-qb-stack{padding-left:36px}
+.inv-carousel .widget-track > .inv-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:4px;
+  background:linear-gradient(180deg,var(--gc,var(--bl)),transparent);
+  border-radius:16px 0 0 16px;pointer-events:none;
+}
+.inv-carousel .widget-track > .inv-card::after{
+  content:'';position:absolute;top:-50px;right:-50px;width:160px;height:160px;
+  border-radius:50%;background:var(--gc,var(--bl));filter:blur(45px);opacity:0.12;pointer-events:none;
+}
+.inv-carousel .inv-hd{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bd);position:relative}
+.inv-carousel .inv-name{font-size:18px;font-weight:900;letter-spacing:.2px;text-shadow:0 0 12px var(--gc-glow,rgba(96,165,250,.3))}
+
+/* ── 넓은 화면(>=760px): 카드 콘텐츠 시원하게 ── */
+@media(min-width:760px){
+  .inv-carousel .widget-track > .inv-card{padding:28px 32px 32px;border-radius:18px}
+  .inv-carousel .inv-name{font-size:22px}
+  .inv-primary-block{padding:24px 28px;margin-bottom:16px}
+  .inv-primary-header{padding-bottom:18px;margin-bottom:22px}
+  .inv-primary-header .inv-icon{width:48px;height:48px;font-size:24px;border-radius:14px}
+  .inv-primary-header .inv-l > div:first-child{font-size:18px}
+  .inv-primary-header .inv-l small{font-size:12px}
+  .ipt-value{font-size:34px}
+  .ipt-monthly{font-size:18px}
+  .ipt-pulls{font-size:13px}
+  .ipt-pulls strong{font-size:15px}
+  .inv-split-row{gap:16px}
+  .inv-split-item{padding:14px 18px;border-radius:14px}
+  .inv-split-item label{font-size:12px}
+  .inv-split-item input{font-size:20px !important;padding:12px 14px !important}
+  .inv-split-item .iss-pct{font-size:11px}
+  .inv-qb-row{margin-top:18px;padding-top:14px;gap:8px}
+  .inv-qb-label{font-size:11px}
+  .inv-qb{font-size:12px;padding:9px 14px;min-width:54px;border-radius:9px}
+  .inv-paid-spent{margin-top:16px;padding:13px 18px;font-size:13px;border-radius:12px}
+  .inv-month{margin-top:22px;padding:18px 22px;border-radius:14px}
+  .inv-month-l{font-size:16px}
+  .inv-month-info{font-size:12px;margin-top:10px}
+  .inv-month-grid{gap:14px;margin-top:14px}
+  .inv-month-grid label{font-size:12px}
+  .inv-month-grid input{font-size:14px !important;padding:11px 14px !important}
+  .inv-month-remain-card{padding:14px 18px;margin-top:14px;border-radius:12px}
+  .inv-month-remain-card .imrc-days{font-size:14px}
+  .inv-month-remain-card .imrc-days strong{font-size:22px}
+  .inv-month-remain-card .imrc-amt{font-size:14px}
+  .inv-month-remain-card .imrc-amt strong{font-size:22px}
+  .inv-month-remain-card .imrc-formula{font-size:11px;margin-top:10px}
+  /* 보조 통화(티켓) 행도 큼직 */
+  .inv-row{margin-bottom:12px}
+  .inv-row .inv-input{width:200px;font-size:16px;padding:10px 14px}
+}
+@media(min-width:1100px){
+  .inv-carousel .widget-track > .inv-card{padding:32px 40px 36px}
+  .inv-carousel .inv-name{font-size:24px}
+  .inv-primary-block{padding:28px 32px}
+  .ipt-value{font-size:38px}
+  .inv-split-item input{font-size:22px !important}
+  .inv-row .inv-input{width:240px;font-size:17px}
 }
 @media(max-width:600px){
   .inv-primary-block{padding:18px 16px 20px;border-radius:14px}
@@ -3957,7 +3983,7 @@ function renderInventory(){
       const paidSpent=inv[primCur.id+'_paid_spent']||0;
       const paidSpentKRW=paidSpent * (g.gacha.pricePerPull/g.gacha.pullCost);
       
-      cards.push(`<div class="inv-card">
+      cards.push(`<div class="inv-card" style="--gc:${g.color};--gc-glow:${g.color}55" data-game="${g.id}" data-srv="${srv}">
         <div class="inv-hd">
           <div class="inv-name" style="color:${g.color}">${g.name}${srv!=='all'?`<span class="inv-srv-tag ${srv}">${SRV_LBL[srv]}</span>`:''}</div>
         </div>
@@ -3986,46 +4012,42 @@ function renderInventory(){
                   <div class="ipt-pulls">${showMonthlyAdd?`합계 <strong style="color:var(--g)">${grandTotal.toLocaleString()}</strong> · `:''}🎲 뽑기 <strong>${Math.floor(grandTotal/g.gacha.pullCost)}</strong>회</div>
                 </div>
               </div>
-              <div class="inv-card-body">
-                <div class="inv-split-row">
-                  <div class="inv-split-item inv-split-free">
-                    <label>🆓 무료돌${total>0?`<span class="iss-pct" style="margin-left:auto;color:var(--g)">${freePct}%</span>`:''}</label>
-                    <input class="inv-input" type="number" inputmode="numeric" min="0" placeholder="0" value="${free||''}" oninput="saveInv('${key}','${c.id}',this.value)" onblur="finalizeInv()">
-                  </div>
-                  <div class="inv-split-item inv-split-paid">
-                    <label>💳 유료돌${total>0?`<span class="iss-pct" style="margin-left:auto;color:var(--gold)">${paidPct}%</span>`:''}</label>
-                    <input class="inv-input" type="number" inputmode="numeric" min="0" placeholder="0" value="${paid||''}" oninput="saveInv('${key}','${c.id}_paid',this.value)" onblur="finalizeInv()">
-                  </div>
+              <div class="inv-split-row">
+                <div class="inv-split-item inv-split-free">
+                  <label>🆓 무료돌${total>0?`<span class="iss-pct" style="margin-left:auto;color:var(--g)">${freePct}%</span>`:''}</label>
+                  <input class="inv-input" type="number" inputmode="numeric" min="0" placeholder="0" value="${free||''}" oninput="saveInv('${key}','${c.id}',this.value)" onblur="finalizeInv()">
                 </div>
-                <div class="inv-qb-stack">
-                  <div class="inv-qb-row">
-                    <span class="inv-qb-label">±조정</span>
-                    <span class="inv-qb-group">
-                      <button class="inv-qb inv-qb-minus" onclick="qAddInv('${key}','${c.id}',-1000)">−1000</button>
-                      <button class="inv-qb inv-qb-minus" onclick="qAddInv('${key}','${c.id}',-100)">−100</button>
-                      <button class="inv-qb inv-qb-minus" onclick="qAddInv('${key}','${c.id}',-10)">−10</button>
-                    </span>
-                    <span class="inv-qb-divider"></span>
-                    <span class="inv-qb-group">
-                      <button class="inv-qb" onclick="qAddInv('${key}','${c.id}',10)">+10</button>
-                      <button class="inv-qb" onclick="qAddInv('${key}','${c.id}',100)">+100</button>
-                      <button class="inv-qb" onclick="qAddInv('${key}','${c.id}',1000)">+1000</button>
-                    </span>
-                  </div>
-                  <div class="inv-qb-row">
-                    <span class="inv-qb-label">🎲 뽑기 단위</span>
-                    <span class="inv-qb-group">
-                      ${[1,5,10].map(n=>`<button class="inv-qb inv-qb-pull" onclick="qAddInv('${key}','${c.id}',${g.gacha.pullCost*n})">+${n}뽑</button>`).join('')}
-                    </span>
-                  </div>
+                <div class="inv-split-item inv-split-paid">
+                  <label>💳 유료돌${total>0?`<span class="iss-pct" style="margin-left:auto;color:var(--gold)">${paidPct}%</span>`:''}</label>
+                  <input class="inv-input" type="number" inputmode="numeric" min="0" placeholder="0" value="${paid||''}" oninput="saveInv('${key}','${c.id}_paid',this.value)" onblur="finalizeInv()">
                 </div>
-                ${paidSpent>0?`
-                  <div class="inv-paid-spent">
-                    <span class="ips-text">💸 누적 유료돌 사용 <strong style="color:var(--gold)">${paidSpent.toLocaleString()} ${c.name}</strong> · 환산 <strong style="color:var(--bl)">₩${Math.round(paidSpentKRW).toLocaleString()}</strong></span>
-                    <button class="ips-reset" onclick="resetPaidSpent('${key}','${c.id}')">초기화</button>
-                  </div>
-                `:''}
               </div>
+              <div class="inv-qb-row">
+                <span class="inv-qb-label">±조정</span>
+                <span class="inv-qb-group">
+                  <button class="inv-qb inv-qb-minus" onclick="qAddInv('${key}','${c.id}',-1000)">−1000</button>
+                  <button class="inv-qb inv-qb-minus" onclick="qAddInv('${key}','${c.id}',-100)">−100</button>
+                  <button class="inv-qb inv-qb-minus" onclick="qAddInv('${key}','${c.id}',-10)">−10</button>
+                </span>
+                <span class="inv-qb-divider"></span>
+                <span class="inv-qb-group">
+                  <button class="inv-qb" onclick="qAddInv('${key}','${c.id}',10)">+10</button>
+                  <button class="inv-qb" onclick="qAddInv('${key}','${c.id}',100)">+100</button>
+                  <button class="inv-qb" onclick="qAddInv('${key}','${c.id}',1000)">+1000</button>
+                </span>
+              </div>
+              <div class="inv-qb-row">
+                <span class="inv-qb-label">🎲 뽑기 단위</span>
+                <span class="inv-qb-group">
+                  ${[1,5,10].map(n=>`<button class="inv-qb inv-qb-pull" onclick="qAddInv('${key}','${c.id}',${g.gacha.pullCost*n})">+${n}뽑</button>`).join('')}
+                </span>
+              </div>
+              ${paidSpent>0?`
+                <div class="inv-paid-spent">
+                  <span class="ips-text">💸 누적 유료돌 사용 <strong style="color:var(--gold)">${paidSpent.toLocaleString()} ${c.name}</strong> · 환산 <strong style="color:var(--bl)">₩${Math.round(paidSpentKRW).toLocaleString()}</strong></span>
+                  <button class="ips-reset" onclick="resetPaidSpent('${key}','${c.id}')">초기화</button>
+                </div>
+              `:''}
             </div>`;
           }
           
@@ -4074,14 +4096,35 @@ function renderInventory(){
       </div>`);
     });
   });
+  const invGridEl=document.getElementById('invGrid');
   if(!cards.length){
-    document.getElementById('invGrid').innerHTML=`<div class="empty-big" style="grid-column:1/-1">
+    invGridEl.innerHTML=`<div class="empty-big" style="grid-column:1/-1">
       <div class="empty-icon-big">⭐</div>
       <h3>즐겨찾기한 게임이 없습니다</h3>
       <p>픽업 스케줄 페이지에서 게임 칩을 클릭해 즐겨찾기에 추가하세요.</p>
     </div>`;
+  } else if(cards.length===1){
+    invGridEl.innerHTML=cards[0];
   } else {
-    document.getElementById('invGrid').innerHTML=cards.join('');
+    // 게임별 위젯 캐러셀로 통합 (계산기와 동일)
+    const meta=[];
+    GAMES.filter(gameHasAnyFav).forEach(gx=>{
+      const srvList=gx.servers.length>1?gx.servers:['all'];
+      srvList.forEach(srv=>{
+        if(serverFilter!=='all'&&srv!=='all'&&srv!==serverFilter)return;
+        if(srv!=='all'&&!isFavored(gx.id, srv))return;
+        meta.push({g:gx, srv, key:`${gx.id}-${srv}`});
+      });
+    });
+    invGridEl.innerHTML=`<div class="widget-carousel inv-carousel">
+      <div class="widget-track" data-wc="inv">${cards.join('')}</div>
+      <div class="widget-dots" data-wc-dots="inv">${meta.map((m,i)=>`<button class="widget-dot ${i===0?'active':''}" data-idx="${i}" title="${m.g.short}${m.srv!=='all'?` (${SRV_LBL[m.srv]||m.srv})`:''}" onclick="scrollWidgetTo('inv',${i})" style="${i===0?`background:${m.g.color}`:''}"></button>`).join('')}</div>
+      <div class="widget-hint">← 게임별로 스와이프 ${meta.length}/${meta.length} →</div>
+    </div>`;
+    setTimeout(()=>{
+      const track=invGridEl.querySelector('.widget-track[data-wc="inv"]');
+      if(track) bindCarousel(track);
+    }, 50);
   }
 }
 
