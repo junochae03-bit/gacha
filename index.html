@@ -208,9 +208,68 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
 .inv-grid,.calc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}
 .inv-card,.calc-card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:16px}
+/* 계산기 캐러셀 내부 카드는 크고 고급스럽게 */
 .calc-carousel{margin:0 -2px}
-.calc-carousel .widget-track{padding:2px 4px 8px}
-.calc-carousel .widget-track > .calc-card{margin:0}
+.calc-carousel .widget-track{padding:4px 4px 12px;gap:14px}
+.calc-carousel .widget-track > .calc-card{
+  margin:0;
+  padding:22px 22px 24px;
+  border-radius:16px;
+  background:linear-gradient(180deg,var(--sf),rgba(20,25,40,0.5));
+  border:1px solid var(--bd);
+  position:relative;
+  overflow:hidden;
+}
+.calc-carousel .widget-track > .calc-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:4px;
+  background:linear-gradient(180deg,var(--cc,var(--bl)),transparent);
+  border-radius:16px 0 0 16px;pointer-events:none;
+}
+.calc-carousel .widget-track > .calc-card::after{
+  content:'';position:absolute;top:-50px;right:-50px;width:160px;height:160px;
+  border-radius:50%;background:var(--cc,var(--bl));filter:blur(45px);opacity:0.12;pointer-events:none;
+}
+.calc-carousel .calc-hd{
+  margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.calc-carousel .calc-name{font-size:17px;font-weight:900;letter-spacing:.2px;text-shadow:0 0 12px var(--cc-glow,rgba(96,165,250,.3))}
+.calc-carousel .calc-input-row{
+  margin-bottom:11px;gap:14px;
+  padding:9px 12px;background:rgba(255,255,255,.02);border:1px solid var(--bd);border-radius:9px;
+  transition:border-color .2s,background .2s;
+}
+.calc-carousel .calc-input-row:focus-within{border-color:var(--cc,var(--bl));background:rgba(255,255,255,.04)}
+.calc-carousel .calc-l{font-size:12px;font-weight:600;color:var(--mu2)}
+.calc-carousel .ci{
+  font-size:15px;padding:8px 12px;width:130px;border-radius:7px;
+  background:rgba(0,0,0,.25);border:1px solid var(--bd);
+}
+.calc-carousel .ci:focus{border-color:var(--cc,var(--bl));background:rgba(0,0,0,.4);box-shadow:0 0 0 2px var(--cc-glow,rgba(96,165,250,.2))}
+.calc-carousel .calc-qb-row{gap:6px;margin:8px 0 4px;padding:0 2px}
+.calc-carousel .calc-qb{
+  font-size:10px;padding:6px 11px;border-radius:7px;font-weight:800;
+  background:rgba(96,165,250,.07);border-color:rgba(96,165,250,.25);color:var(--bl);
+  transition:all .15s;
+}
+.calc-carousel .calc-qb:hover{background:rgba(96,165,250,.18);transform:translateY(-1px)}
+.calc-carousel .calc-res{margin-top:18px;padding-top:18px;gap:9px}
+.calc-carousel .crr{font-size:13px;align-items:center}
+.calc-carousel .crl{font-size:12px;color:var(--mu2);font-weight:500}
+.calc-carousel .crv{font-size:14px;font-weight:800}
+.calc-carousel .cdiv{margin:8px 0;height:1px;background:linear-gradient(90deg,transparent,var(--bd),transparent)}
+.calc-carousel .calc-pb-wrap{padding:14px 16px;margin-top:14px;border-radius:12px}
+.calc-carousel .calc-pb-name{font-size:13px;font-weight:900}
+.calc-carousel .calc-pb-meta{font-size:10px}
+.calc-carousel .calc-pb-val{font-size:22px}
+.calc-carousel .calc-pb-track{height:14px}
+.calc-carousel .calc-pb-foot{font-size:11px;margin-top:8px}
+@media(max-width:600px){
+  .calc-carousel .widget-track > .calc-card{padding:18px 16px 20px;border-radius:14px}
+  .calc-carousel .calc-name{font-size:15px}
+  .calc-carousel .ci{width:110px;font-size:14px}
+  .calc-carousel .calc-pb-val{font-size:19px}
+}
 .inv-hd,.calc-hd{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--bd);flex-wrap:wrap}
 .inv-name,.calc-name{font-size:13px;font-weight:700}
 .inv-srv-tag{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:700}
@@ -4073,7 +4132,7 @@ function renderCalc(){
       const ticketHave=ticketCur?(inv[ticketCur.id]||0):0;
       const monthKey=`${g.id}-${srv}-monthly`;
       const monthOnState=monthlyOn[monthKey]||false;
-      cards.push(`<div class="calc-card">
+      cards.push(`<div class="calc-card" style="--cc:${g.color};--cc-glow:${g.color}55">
         <div class="calc-hd">
           <div class="calc-name" style="color:${g.color}">${g.name}</div>
           ${srv!=='all'?`<span class="inv-srv-tag ${srv}">${SRV_LBL[srv]}</span>`:''}
