@@ -366,6 +366,29 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 @keyframes calcPbShine{0%,100%{opacity:0.4}50%{opacity:0.9}}
 .calc-pb-foot{margin-top:6px;font-size:10px;color:var(--mu);font-weight:500}
 .calc-pb-foot.full{color:var(--g);font-weight:700}
+
+/* 통계 위젯 — 게임별 시점/결과/성공률 분포 카드 */
+.stat-widget{position:relative;overflow:hidden;background:linear-gradient(180deg,var(--sf),rgba(20,25,40,0.6));border:1px solid var(--bd);border-radius:14px;padding:16px 18px;margin-bottom:14px}
+.stat-widget::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;filter:blur(40px);opacity:0.18;background:var(--w-accent,var(--bl));pointer-events:none}
+.stat-widget::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--w-accent,var(--bl)),transparent);border-radius:14px 0 0 14px}
+.sw-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:10px;position:relative;z-index:1;flex-wrap:wrap}
+.sw-title{display:flex;align-items:center;gap:9px;flex:1;min-width:0}
+.sw-icon{font-size:22px;filter:drop-shadow(0 0 10px var(--w-accent,var(--bl)))}
+.sw-name{font-size:14px;font-weight:800;color:var(--tx);letter-spacing:.3px}
+.sw-sub{font-size:10px;color:var(--mu);margin-top:2px;font-weight:500}
+.sw-hero{text-align:right;flex-shrink:0}
+.sw-hero-label{font-size:9px;color:var(--mu);font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:2px}
+.sw-hero-val{font-family:'Orbitron',monospace;font-size:24px;font-weight:900;color:var(--w-accent,var(--bl));text-shadow:0 0 14px var(--w-glow,rgba(96,165,250,0.45));line-height:1}
+.sw-hero-sub{font-size:9px;color:var(--mu2);margin-top:3px}
+.sw-body{display:flex;flex-direction:column;gap:10px;position:relative;z-index:1}
+.sw-row{background:rgba(255,255,255,0.02);border-radius:8px;padding:10px 12px;border-left:3px solid var(--row-c,var(--bl))}
+.sw-row-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:6px;flex-wrap:wrap}
+.sw-row-game{font-size:12px;font-weight:800;color:var(--row-c)}
+.sw-row-meta{font-size:10px;color:var(--mu)}
+/* Theme variants */
+.stat-widget.cyan{--w-accent:#67e8f9;--w-glow:rgba(103,232,249,0.45)}
+.stat-widget.gold{--w-accent:#fbbf24;--w-glow:rgba(251,191,36,0.45)}
+.stat-widget.purple{--w-accent:#a78bfa;--w-glow:rgba(167,139,250,0.45)}
 .guarantee-box{background:linear-gradient(135deg,rgba(95,217,156,.15),rgba(95,217,156,.06));border:1px solid rgba(95,217,156,.35);border-radius:7px;padding:10px;margin-top:8px;text-align:center;font-size:12px;font-weight:700;color:var(--g)}
 
 /* 픽업 카드 천장 바 */
@@ -7455,7 +7478,6 @@ function aggregateCharacters(){
       };
     }
     const g=GAMES.find(x=>x.id===e.game);
-    const pricePer=g?g.gacha.pricePerPull:0;
     all.forEach(a=>{
       if(a.result==='success'){
         byKey[key].copies++;
@@ -7466,9 +7488,15 @@ function aggregateCharacters(){
         byKey[key].fails++;
       }
       byKey[key].totalPulls += a.spentPulls||0;
-      byKey[key].totalKrw += (a.spentPulls||0)*pricePer;
       byKey[key].attempts.push({...a, eventDate:e.start, eventId:e.id, eventType:e.type});
     });
+    // 지출은 명함(첫 시도)의 paidCurrencyUsed만 환산 (무료돌 제외)
+    if(g){
+      const paid=e.paidCurrencyUsed||0;
+      if(paid>0){
+        byKey[key].totalKrw += Math.round(paid * (g.gacha.pricePerPull/g.gacha.pullCost));
+      }
+    }
     byKey[key].events.push(e);
   });
   // 성공 1번 이상 있는 캐릭터만 (실패만 한 캐릭터는 갤러리에서 제외)
@@ -7507,32 +7535,36 @@ function renderGallery(){
     return;
   }
 
-  // 통계 요약
-  const totalChars=chars.length;
-  const totalCopies=chars.reduce((s,c)=>s+c.copies,0);
-  const totalKrw=chars.reduce((s,c)=>s+c.totalKrw,0);
-  const totalPulls=chars.reduce((s,c)=>s+c.totalPulls,0);
-  const avgPullsPerChar=totalChars?Math.round(totalPulls/totalCopies):0;
+  // 통계 요약 — 게임 필터 적용 시 해당 게임만 집계
+  const filteredChars = curFilter==='all' ? chars : chars.filter(c=>c.game===curFilter);
+  const totalChars=filteredChars.length;
+  const totalCopies=filteredChars.reduce((s,c)=>s+c.copies,0);
+  const totalKrw=filteredChars.reduce((s,c)=>s+c.totalKrw,0);
+  const totalPulls=filteredChars.reduce((s,c)=>s+c.totalPulls,0);
+  const avgPullsPerChar=totalCopies?Math.round(totalPulls/totalCopies):0;
+  // 필터 라벨
+  const filterGame = curFilter==='all' ? null : GAMES.find(x=>x.id===curFilter);
+  const subPrefix = filterGame ? `${filterGame.short} 기준 · ` : '';
   summary.innerHTML=`<div class="gallery-summary">
     <div class="gal-stat" style="--gameC:var(--bl)">
       <div class="gal-stat-label">획득 캐릭터</div>
       <div class="gal-stat-value">${totalChars}</div>
-      <div class="gal-stat-sub">고유 캐릭터</div>
+      <div class="gal-stat-sub">${subPrefix}고유 캐릭터</div>
     </div>
     <div class="gal-stat" style="--gameC:var(--gold)">
       <div class="gal-stat-label">총 보유</div>
       <div class="gal-stat-value">${totalCopies}</div>
-      <div class="gal-stat-sub">명함 + 돌파 합산</div>
+      <div class="gal-stat-sub">${subPrefix}명함 + 돌파 합산</div>
     </div>
     <div class="gal-stat" style="--gameC:var(--g)">
       <div class="gal-stat-label">평균 뽑기</div>
       <div class="gal-stat-value">${avgPullsPerChar}</div>
-      <div class="gal-stat-sub">캐릭터 1개당</div>
+      <div class="gal-stat-sub">${subPrefix}캐릭터 1개당</div>
     </div>
     <div class="gal-stat" style="--gameC:var(--rd)">
       <div class="gal-stat-label">총 지출</div>
       <div class="gal-stat-value">${totalKrw>=10000?Math.round(totalKrw/10000)+'만':Math.round(totalKrw/1000)+'K'}</div>
-      <div class="gal-stat-sub">~₩${totalKrw.toLocaleString()}</div>
+      <div class="gal-stat-sub">${subPrefix}~₩${totalKrw.toLocaleString()}</div>
     </div>
   </div>`;
 
@@ -8669,14 +8701,29 @@ function buildEnhancedStats(){
   });
   let roiHtml='';
   if(Object.keys(byGame).length){
-    roiHtml=`<div style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-bottom:14px">
-      <div style="font-size:13px;font-weight:800;margin-bottom:10px">🎯 게임별 픽업 성공률 vs 평균 이론 확률</div>
-      <div style="font-size:10px;color:var(--mu);margin-bottom:10px;line-height:1.6">💡 <strong>이론 확률</strong> = N뽑 안에 픽업 캐릭터를 1명 이상 얻을 누적 확률 <code style="background:var(--sf2);padding:1px 5px;border-radius:3px">1 − (1 − p)<sup>N</sup></code> (p = 한 뽑당 픽업 확률)<br>· 천장/소프트 픽시 무시한 단순 누적 모델 (옛 FGO처럼 무한 시도 가정)<br>· 픽뚫 기록은 평균에서 제외</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
+    // 전체 평균 운빨 (히어로)
+    const allProbs=Object.values(byGame).flatMap(d=>d.successProbs);
+    const overallTheory=allProbs.length?(allProbs.reduce((a,b)=>a+b,0)/allProbs.length*100):null;
+    const overallLuckLabel=overallTheory===null?'—':(overallTheory<25?'🍀 매우 운 좋음':overallTheory<50?'😊 운 좋음':overallTheory<75?'😐 평균':'😢 운 나쁨');
+    roiHtml=`<div class="stat-widget purple">
+      <div class="sw-head">
+        <div class="sw-title">
+          <span class="sw-icon">🎲</span>
+          <div>
+            <div class="sw-name">게임별 성공률 vs 이론 확률</div>
+            <div class="sw-sub">단순 누적 1−(1−p)<sup>N</sup> · 픽뚫 제외 평균</div>
+          </div>
+        </div>
+        <div class="sw-hero">
+          <div class="sw-hero-label">평균 운빨</div>
+          <div class="sw-hero-val">${overallTheory!==null?overallTheory.toFixed(0):'—'}<span style="font-size:14px;font-weight:700">%</span></div>
+          <div class="sw-hero-sub">${overallLuckLabel}</div>
+        </div>
+      </div>
+      <div class="sw-body">
         ${Object.values(byGame).sort((a,b)=>(b.success+b.fail)-(a.success+a.fail)).map(d=>{
           const total=d.success+d.fail;
           const myRate=total?Math.round(d.success/total*100):0;
-          // 성공 픽업들의 N뽑 평균 이론 확률
           const hasProbs=d.successProbs.length>0;
           const avgTheory=hasProbs?(d.successProbs.reduce((a,b)=>a+b,0)/d.successProbs.length*100):null;
           const avgPulls=hasProbs?Math.round(d.successPulls.reduce((a,b)=>a+b,0)/d.successPulls.length):null;
@@ -8685,19 +8732,18 @@ function buildEnhancedStats(){
           const luckColor=avgTheory===null?'var(--mu)':(avgTheory<25?'var(--g)':avgTheory<50?'var(--bl)':avgTheory<75?'var(--gold)':'var(--rd)');
           const maxPulls=getMaxGuaranteedPulls(d.g);
           const sysLabel=(d.g.gacha.pickupSystem||'5050')==='5050'?'반천장':'천장 보장';
-          return `<div style="background:var(--sf2);border-radius:8px;padding:10px 12px;border-left:3px solid ${d.g.color}">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-              <span style="font-size:12px;font-weight:800;color:${d.g.color}">${d.g.short}</span>
-              <span style="font-size:10px;color:var(--mu)">총 ${total}회 (성공 ${d.success} · 픽뚫 ${d.fail})</span>
+          return `<div class="sw-row" style="--row-c:${d.g.color}">
+            <div class="sw-row-head">
+              <span class="sw-row-game">${d.g.short} <span style="font-size:10px;color:var(--mu);font-weight:500;margin-left:4px">총 ${total}회 (✨${d.success} · 💔${d.fail})</span></span>
+              <span class="sw-row-meta">📐 ${sysLabel}: <strong style="color:var(--cy);font-family:'Orbitron',monospace">${maxPulls}뽑</strong></span>
             </div>
-            <div style="font-size:9px;color:var(--mu);margin-bottom:6px">📐 ${sysLabel}: 최대 <strong style="color:var(--cy);font-family:'Orbitron',monospace">${maxPulls}뽑</strong> 안에 픽업 보장</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:10px">
-              <div><span style="color:var(--mu)">내 성공률</span><br><strong style="font-family:'Orbitron',monospace;font-size:14px;color:var(--bl)">${myRate}%</strong></div>
-              <div><span style="color:var(--mu)">이론 확률 (평균)</span><br><strong style="font-family:'Orbitron',monospace;font-size:14px;color:${luckColor}">${avgTheory!==null?avgTheory.toFixed(1)+'%':'—'}</strong></div>
-              <div><span style="color:var(--mu)">평균 뽑기</span><br><strong style="font-family:'Orbitron',monospace;font-size:14px;color:var(--mu2)">${avgPulls!==null?avgPulls+'뽑':'—'}</strong></div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:10px">
+              <div><span style="color:var(--mu)">내 성공률</span><br><strong style="font-family:'Orbitron',monospace;font-size:15px;color:var(--bl)">${myRate}%</strong></div>
+              <div><span style="color:var(--mu)">이론 확률 (평균)</span><br><strong style="font-family:'Orbitron',monospace;font-size:15px;color:${luckColor}">${avgTheory!==null?avgTheory.toFixed(1)+'%':'—'}</strong></div>
+              <div><span style="color:var(--mu)">평균 뽑기</span><br><strong style="font-family:'Orbitron',monospace;font-size:15px;color:var(--mu2)">${avgPulls!==null?avgPulls+'뽑':'—'}</strong></div>
             </div>
             ${luckLabel?`<div style="margin-top:6px;font-size:11px;color:${luckColor};font-weight:700">${luckLabel}</div>`:''}
-            ${d.success>0?`<div style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--bd);font-size:10px;color:var(--mu2)">픽업 1개당 평균 <strong style="color:var(--gold);font-family:'Orbitron',monospace">₩${krwPerPickup.toLocaleString()}</strong> · 누적 <strong style="color:var(--tx)">${d.pulls}뽑</strong> / <strong>₩${d.krw.toLocaleString()}</strong></div>`:''}
+            ${d.success>0?`<div style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--bd);font-size:10px;color:var(--mu2)">픽업 1개당 <strong style="color:var(--gold);font-family:'Orbitron',monospace">₩${krwPerPickup.toLocaleString()}</strong> · 누적 <strong style="color:var(--tx)">${d.pulls}뽑</strong> / <strong>₩${d.krw.toLocaleString()}</strong></div>`:''}
           </div>`;
         }).join('')}
       </div>
@@ -8846,15 +8892,30 @@ function buildEnhancedStats(){
   // 필터 활성 시: 1개라도 있으면 표시 / 비활성 시: 2개 이상인 게임만
   const histGames=Object.keys(successPullsByGame).filter(gid=>histFilterGid?successPullsByGame[gid].length>=1:successPullsByGame[gid].length>=2);
   if(histGames.length){
-    histHtml=`<div style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-bottom:14px">
-      <div style="font-size:13px;font-weight:800;margin-bottom:10px">📊 게임별 픽업 시점 분포 <span style="font-size:10px;color:var(--mu);font-weight:400">성공 시 몇뽑에 먹었는가</span></div>
-      <div style="display:flex;flex-direction:column;gap:14px">
+    // 전체 평균 (히어로 통계)
+    const allPulls=histGames.flatMap(gid=>successPullsByGame[gid]);
+    const overallAvg=allPulls.length?Math.round(allPulls.reduce((a,b)=>a+b,0)/allPulls.length):0;
+    histHtml=`<div class="stat-widget cyan">
+      <div class="sw-head">
+        <div class="sw-title">
+          <span class="sw-icon">📊</span>
+          <div>
+            <div class="sw-name">게임별 픽업 시점 분포</div>
+            <div class="sw-sub">성공한 픽업이 몇뽑에 먹혔는지 분포</div>
+          </div>
+        </div>
+        <div class="sw-hero">
+          <div class="sw-hero-label">전체 평균</div>
+          <div class="sw-hero-val">${overallAvg}<span style="font-size:14px;color:var(--mu);font-weight:700">뽑</span></div>
+          <div class="sw-hero-sub">${histGames.length}개 게임 · 총 ${allPulls.length}회</div>
+        </div>
+      </div>
+      <div class="sw-body">
       ${histGames.map(gid=>{
         const g=GAMES.find(x=>x.id===gid);
         if(!g) return '';
         const pulls=successPullsByGame[gid].slice().sort((a,b)=>a-b);
         const maxPulls=getMaxGuaranteedPulls(g);
-        // 4구간 분포: 0-25%, 25-50%, 50-75%, 75-100% of max
         const q1=Math.round(maxPulls*0.25),q2=Math.round(maxPulls*0.5),q3=Math.round(maxPulls*0.75),q4=maxPulls;
         const buckets=[0,0,0,0];
         const ranges=[`1~${q1}뽑`, `${q1+1}~${q2}뽑`, `${q2+1}~${q3}뽑`, `${q3+1}~${q4}뽑+`];
@@ -8868,38 +8929,29 @@ function buildEnhancedStats(){
         });
         const totalCount=pulls.length;
         const maxBucket=Math.max(...buckets,1);
-        // 평균 / 중앙값
         const avg=Math.round(pulls.reduce((a,b)=>a+b,0)/totalCount);
         const median=pulls[Math.floor(totalCount/2)];
         const minP=pulls[0], maxP=pulls[pulls.length-1];
         const colorByZone=['#5fd99c','#60a5fa','#fbbf24','#f87171'];
-        return `<div style="background:var(--sf2);border-radius:8px;padding:12px 14px;border-left:3px solid ${g.color}">
-          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:6px">
-            <div>
-              <span style="font-size:13px;font-weight:800;color:${g.color}">${g.short}</span>
-              <span style="font-size:10px;color:var(--mu);margin-left:8px">총 <strong style="color:var(--tx);font-family:'Orbitron',monospace">${totalCount}회</strong> 성공</span>
-            </div>
-            <div style="font-size:10px;color:var(--mu2);font-family:'Orbitron',monospace">
-              평균 <strong style="color:var(--bl)">${avg}뽑</strong> · 중앙값 <strong>${median}뽑</strong> · 범위 ${minP}~${maxP}
-            </div>
+        return `<div class="sw-row" style="--row-c:${g.color}">
+          <div class="sw-row-head">
+            <span class="sw-row-game">${g.short} <span style="font-size:10px;color:var(--mu);font-weight:500;margin-left:4px">총 ${totalCount}회 성공</span></span>
+            <span class="sw-row-meta" style="font-family:'Orbitron',monospace">평균 <strong style="color:var(--bl)">${avg}뽑</strong> · 중앙값 ${median} · 범위 ${minP}~${maxP}</span>
           </div>
-          <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;flex-direction:column;gap:5px">
             ${buckets.map((cnt,i)=>{
               const w=Math.round(cnt/maxBucket*100);
               const pct=totalCount?Math.round(cnt/totalCount*100):0;
-              return `<div style="display:flex;align-items:center;gap:10px;font-size:11px">
-                <div style="width:90px;flex-shrink:0;color:${colorByZone[i]};font-weight:700">${labelEmojis[i]} ${ranges[i]}</div>
-                <div style="flex:1;background:rgba(255,255,255,0.04);border-radius:4px;height:18px;position:relative;overflow:hidden">
-                  <div style="position:absolute;left:0;top:0;bottom:0;width:${w}%;background:linear-gradient(90deg,${colorByZone[i]},${colorByZone[i]}88);border-radius:4px;transition:width .3s"></div>
-                  <div style="position:absolute;inset:0;display:flex;align-items:center;padding:0 8px;font-family:'Orbitron',monospace;font-weight:700;color:#fff;font-size:10px;text-shadow:0 1px 2px rgba(0,0,0,.6)">
+              return `<div style="display:flex;align-items:center;gap:8px;font-size:11px">
+                <div style="width:80px;flex-shrink:0;color:${colorByZone[i]};font-weight:700;font-size:10px">${labelEmojis[i]} ${ranges[i]}</div>
+                <div style="flex:1;background:rgba(255,255,255,0.04);border-radius:4px;height:16px;position:relative;overflow:hidden">
+                  <div style="position:absolute;left:0;top:0;bottom:0;width:${w}%;background:linear-gradient(90deg,${colorByZone[i]},${colorByZone[i]}88);border-radius:4px;transition:width .4s;box-shadow:0 0 8px ${colorByZone[i]}55"></div>
+                  <div style="position:absolute;inset:0;display:flex;align-items:center;padding:0 7px;font-family:'Orbitron',monospace;font-weight:700;color:#fff;font-size:9px;text-shadow:0 1px 2px rgba(0,0,0,.7)">
                     ${cnt>0?`${cnt}회 (${pct}%)`:''}
                   </div>
                 </div>
               </div>`;
             }).join('')}
-          </div>
-          <div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--bd);font-size:9px;color:var(--mu)">
-            천장 ${maxPulls}뽑 기준 · 가까울수록 운 좋음
           </div>
         </div>`;
       }).join('')}
@@ -8926,9 +8978,26 @@ function buildEnhancedStats(){
     return (d.success+d.fail+d.pending)>0;
   });
   if(distGames.length){
-    resultDistHtml=`<div style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-bottom:14px">
-      <div style="font-size:13px;font-weight:800;margin-bottom:10px">🎯 게임별 결과 분포 <span style="font-size:10px;color:var(--mu);font-weight:400">성공 / 픽뚫 / 진행 중 (모든 시도 포함)</span></div>
-      <div style="display:flex;flex-direction:column;gap:10px">
+    // 전체 성공률 (히어로)
+    const totSuccess=distGames.reduce((s,gid)=>s+resultByGame[gid].success,0);
+    const totFail=distGames.reduce((s,gid)=>s+resultByGame[gid].fail,0);
+    const overallSr=(totSuccess+totFail)>0?Math.round(totSuccess/(totSuccess+totFail)*100):0;
+    resultDistHtml=`<div class="stat-widget gold">
+      <div class="sw-head">
+        <div class="sw-title">
+          <span class="sw-icon">🎯</span>
+          <div>
+            <div class="sw-name">게임별 결과 분포</div>
+            <div class="sw-sub">성공 / 픽뚫 / 진행 중 (모든 시도 포함)</div>
+          </div>
+        </div>
+        <div class="sw-hero">
+          <div class="sw-hero-label">전체 성공률</div>
+          <div class="sw-hero-val">${overallSr}<span style="font-size:14px;font-weight:700">%</span></div>
+          <div class="sw-hero-sub">✨${totSuccess} · 💔${totFail}</div>
+        </div>
+      </div>
+      <div class="sw-body">
       ${distGames.map(gid=>{
         const g=GAMES.find(x=>x.id===gid);
         if(!g) return '';
@@ -8937,14 +9006,15 @@ function buildEnhancedStats(){
         const sPct=(d.success/tot*100).toFixed(1);
         const fPct=(d.fail/tot*100).toFixed(1);
         const pPct=(d.pending/tot*100).toFixed(1);
-        return `<div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-            <span style="font-size:11px;font-weight:700;color:${g.color}">${g.short}</span>
-            <span style="font-size:10px;color:var(--mu)">총 ${tot}회 (✨${d.success} · 💔${d.fail}${d.pending?` · ⏭${d.pending}`:''})</span>
+        const myRate=(d.success+d.fail)>0?Math.round(d.success/(d.success+d.fail)*100):0;
+        return `<div class="sw-row" style="--row-c:${g.color}">
+          <div class="sw-row-head">
+            <span class="sw-row-game">${g.short} <span style="font-size:10px;color:var(--mu);font-weight:500;margin-left:4px">총 ${tot}회</span></span>
+            <span class="sw-row-meta" style="font-family:'Orbitron',monospace">성공률 <strong style="color:var(--gold)">${myRate}%</strong> · ✨${d.success} · 💔${d.fail}${d.pending?` · ⏭${d.pending}`:''}</span>
           </div>
           <div style="display:flex;height:18px;background:rgba(255,255,255,0.04);border-radius:4px;overflow:hidden;border:1px solid var(--bd)">
-            ${d.success?`<div style="width:${sPct}%;background:linear-gradient(90deg,var(--gold),#fde68a);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#1a1408" title="성공 ${d.success}회 (${sPct}%)">${sPct>=10?sPct+'%':''}</div>`:''}
-            ${d.fail?`<div style="width:${fPct}%;background:linear-gradient(90deg,var(--rd),#fca5a5);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#1a1408" title="픽뚫 ${d.fail}회 (${fPct}%)">${fPct>=10?fPct+'%':''}</div>`:''}
+            ${d.success?`<div style="width:${sPct}%;background:linear-gradient(90deg,#fbbf24,#fde68a);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#1a1408;box-shadow:0 0 8px rgba(251,191,36,0.4)" title="성공 ${d.success}회 (${sPct}%)">${sPct>=10?sPct+'%':''}</div>`:''}
+            ${d.fail?`<div style="width:${fPct}%;background:linear-gradient(90deg,#f87171,#fca5a5);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#1a1408" title="픽뚫 ${d.fail}회 (${fPct}%)">${fPct>=10?fPct+'%':''}</div>`:''}
             ${d.pending?`<div style="width:${pPct}%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:var(--mu2)" title="진행 중 ${d.pending}회 (${pPct}%)">${pPct>=10?pPct+'%':''}</div>`:''}
           </div>
         </div>`;
