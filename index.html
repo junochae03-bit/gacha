@@ -8504,6 +8504,8 @@ function togglePin(eid){
 function toggleSelectMode(){
   _selectMode=!_selectMode;
   if(!_selectMode) _selectedEids.clear();
+  // 즉시 UI 잔류 클래스 정리
+  cleanupSelectionDom();
   renderSchedule();
   updateBatchToolbar();
 }
@@ -8517,10 +8519,23 @@ function toggleSelect(eid){
 function clearSelection(){
   _selectedEids.clear();
   _selectMode=false;
+  // 즉시 UI 잔류 클래스 정리 (renderSchedule 전에)
+  cleanupSelectionDom();
   renderSchedule();
   updateBatchToolbar();
 }
+// 잔류 선택 UI 강제 제거 (방어적)
+function cleanupSelectionDom(){
+  document.querySelectorAll('.select-checkbox.show').forEach(el=>el.classList.remove('show','checked'));
+  document.querySelectorAll('.card.selected').forEach(el=>el.classList.remove('selected'));
+}
 function updateBatchToolbar(){
+  // 선택모드가 아니면 도구바를 DOM에서 완전히 제거 (잔류 트랜지션/스타일 방지)
+  if(!_selectMode){
+    const old=document.getElementById('batchToolbar');
+    if(old) old.remove();
+    return;
+  }
   let bar=document.getElementById('batchToolbar');
   if(!bar){
     bar=document.createElement('div');
@@ -8536,13 +8551,13 @@ function updateBatchToolbar(){
       <button class="btn-xs" onclick="clearSelection()">취소</button>
     `;
     document.body.appendChild(bar);
-  }
-  if(_selectMode){
-    document.getElementById('batchCount').textContent=_selectedEids.size>0?`${_selectedEids.size}개 선택됨`:'선택 모드';
-    bar.classList.add('show');
+    // 애니메이션이 적용되도록 다음 프레임에 show 추가
+    requestAnimationFrame(()=>bar.classList.add('show'));
   } else {
-    bar.classList.remove('show');
+    bar.classList.add('show');
   }
+  const cntEl=document.getElementById('batchCount');
+  if(cntEl) cntEl.textContent=_selectedEids.size>0?`${_selectedEids.size}개 선택됨`:'선택 모드';
 }
 function batchSelectAll(){
   // 현재 보이는 즐겨찾기·서버 일치 픽업 모두 선택
