@@ -350,6 +350,22 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 .pb-f{height:100%;border-radius:999px;transition:width .5s}
 .pb-label{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
 .pb-label .crl{font-family:'Noto Sans KR',sans-serif;font-size:11px;font-weight:500}
+
+/* 계산기 진행바 — 초록색 그라데이션 */
+.calc-pb-wrap{background:linear-gradient(135deg,rgba(95,217,156,0.04),rgba(95,217,156,0.01));border:1px solid rgba(95,217,156,0.18);border-radius:10px;padding:10px 12px;margin-top:10px}
+.calc-pb-head{display:flex;align-items:baseline;gap:8px;margin-bottom:7px;flex-wrap:wrap}
+.calc-pb-name{font-size:11px;font-weight:800;color:var(--tx);letter-spacing:.3px}
+.calc-pb-meta{font-size:9px;color:var(--mu);flex:1}
+.calc-pb-val{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:var(--g);text-shadow:0 0 10px rgba(95,217,156,0.4)}
+.calc-pb-val.full{color:#a7f3d0;text-shadow:0 0 14px rgba(167,243,208,0.6)}
+.calc-pb-track{position:relative;height:10px;background:rgba(255,255,255,0.04);border-radius:99px;overflow:hidden;border:1px solid rgba(255,255,255,0.06)}
+.calc-pb-fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#5fd99c,#a7f3d0);border-radius:99px;transition:width .6s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 12px rgba(95,217,156,0.5)}
+.calc-pb-fill.full{background:linear-gradient(90deg,#5fd99c,#a7f3d0,#fbbf24);animation:calcPbPulse 2s ease-in-out infinite}
+@keyframes calcPbPulse{0%,100%{box-shadow:0 0 12px rgba(95,217,156,0.5)}50%{box-shadow:0 0 22px rgba(167,243,208,0.85)}}
+.calc-pb-shine{position:absolute;top:0;bottom:0;width:30px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.55),transparent);transform:translateX(-50%);pointer-events:none;animation:calcPbShine 2.5s ease-in-out infinite}
+@keyframes calcPbShine{0%,100%{opacity:0.4}50%{opacity:0.9}}
+.calc-pb-foot{margin-top:6px;font-size:10px;color:var(--mu);font-weight:500}
+.calc-pb-foot.full{color:var(--g);font-weight:700}
 .guarantee-box{background:linear-gradient(135deg,rgba(95,217,156,.15),rgba(95,217,156,.06));border:1px solid rgba(95,217,156,.35);border-radius:7px;padding:10px;margin-top:8px;text-align:center;font-size:12px;font-weight:700;color:var(--g)}
 
 /* 픽업 카드 천장 바 */
@@ -3615,9 +3631,11 @@ function renderInventory(){
                   <small>${c.desc||''}</small>
                 </div>
                 <div class="inv-primary-total">
-                  <div style="font-size:9px;color:var(--mu)">${showMonthlyAdd?'합계 (월정액 포함)':'합계'}</div>
-                  <div style="font-family:'Orbitron',monospace;font-size:14px;font-weight:800;color:${g.color}">${grandTotal.toLocaleString()}</div>
-                  ${showMonthlyAdd?`<div style="font-size:9px;color:var(--mu2)">${total.toLocaleString()} <span style="color:var(--cy)">+ ${monthlyRemaining.toLocaleString()}</span></div>`:''}
+                  <div style="font-size:9px;color:var(--mu)">${showMonthlyAdd?'재화량 (월정액 포함)':'재화량'}</div>
+                  <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:${g.color};line-height:1.1">
+                    ${total.toLocaleString()}${showMonthlyAdd?`<span style="font-size:13px;color:var(--cy);font-weight:700">(+${monthlyRemaining.toLocaleString()})</span>`:''}
+                  </div>
+                  ${showMonthlyAdd?`<div style="font-size:9px;color:var(--mu2);margin-top:2px">합계 <strong style="color:var(--g);font-family:'Orbitron',monospace">${grandTotal.toLocaleString()}</strong> · 뽑기 <strong style="color:var(--bl);font-family:'Orbitron',monospace">${Math.floor(grandTotal/g.gacha.pullCost)}</strong>회</div>`:`<div style="font-size:9px;color:var(--mu2);margin-top:2px">뽑기 <strong style="color:var(--bl);font-family:'Orbitron',monospace">${Math.floor(grandTotal/g.gacha.pullCost)}</strong>회</div>`}
                 </div>
               </div>
               <div class="inv-split-row">
@@ -3935,22 +3953,39 @@ function ccCalc(key,gid,srv){
       const maxGuar = getMaxGuaranteedPulls(g);
       const totalAvail = effectivePulls + pity; // 보유 뽑기 + 현재 천장 카운트
       const achPct = maxGuar>0 ? Math.min(100, Math.round(totalAvail / maxGuar * 100)) : 0;
-      const aColor = achPct>=100 ? 'var(--g)' : achPct>=70 ? 'var(--gold)' : achPct>=40 ? 'var(--bl)' : 'var(--rd)';
-      const aLabel = achPct>=100 ? '✅ 천장 도달' : `${maxGuar - totalAvail}뽑 부족`;
-      return `<div>
-        <div class="pb-label"><span class="crl">달성도 <span style="font-size:9px;color:var(--mu);font-weight:400">(보유 ${totalAvail}뽑 / 천장 ${maxGuar}뽑)</span></span><span style="color:${aColor}">${achPct}% · ${aLabel}</span></div>
-        <div class="pb-w"><div class="pb-f" style="width:${achPct}%;background:linear-gradient(90deg,${aColor},${aColor}99)"></div></div>
+      const isFull = achPct>=100;
+      const aLabel = isFull ? '✅ 천장 도달' : `${maxGuar - totalAvail}뽑 부족`;
+      return `<div class="calc-pb-wrap">
+        <div class="calc-pb-head">
+          <span class="calc-pb-name">🎯 달성도</span>
+          <span class="calc-pb-meta">${totalAvail}뽑 / 천장 ${maxGuar}뽑</span>
+          <span class="calc-pb-val ${isFull?'full':''}">${achPct}%</span>
+        </div>
+        <div class="calc-pb-track">
+          <div class="calc-pb-fill ${isFull?'full':''}" style="width:${achPct}%"></div>
+          ${achPct>0?`<div class="calc-pb-shine" style="left:${achPct}%"></div>`:''}
+        </div>
+        <div class="calc-pb-foot ${isFull?'full':''}">${aLabel}</div>
       </div>`;
     })()}
     ${(()=>{
       // 단순 확률: 1 - (1 - p)^N
       const theoryProb = calcPickupProb(g, effectivePulls);
       const theoryPct = (theoryProb * 100);
-      const tColor = theoryPct>=90?'var(--g)':theoryPct>=60?'var(--gold)':theoryPct>=30?'var(--bl)':'var(--rd)';
+      const isHigh = theoryPct>=90;
       const pAbs = (g.gacha.pickupAbsRate != null) ? g.gacha.pickupAbsRate : ((g.gacha.baseRate||0.006)*(g.gacha.pickupRate||0.5)*100);
-      return `<div style="margin-top:8px">
-        <div class="pb-label"><span class="crl">단순 확률 <span style="font-size:9px;color:var(--mu);font-weight:400">(1−(1−p)<sup>N</sup>·천장 무시·p=${pAbs.toFixed(2)}%)</span></span><span style="color:${tColor}">${theoryPct.toFixed(2)}%</span></div>
-        <div class="pb-w"><div class="pb-f" style="width:${Math.min(100,theoryPct).toFixed(1)}%;background:linear-gradient(90deg,${tColor},${tColor}99)"></div></div>
+      const fillW=Math.min(100,theoryPct).toFixed(1);
+      return `<div class="calc-pb-wrap">
+        <div class="calc-pb-head">
+          <span class="calc-pb-name">📊 단순 확률</span>
+          <span class="calc-pb-meta">p=${pAbs.toFixed(2)}% · ${effectivePulls}뽑 시도</span>
+          <span class="calc-pb-val ${isHigh?'full':''}">${theoryPct.toFixed(2)}%</span>
+        </div>
+        <div class="calc-pb-track">
+          <div class="calc-pb-fill ${isHigh?'full':''}" style="width:${fillW}%"></div>
+          ${theoryPct>0?`<div class="calc-pb-shine" style="left:${fillW}%"></div>`:''}
+        </div>
+        <div class="calc-pb-foot">1−(1−p)<sup>N</sup> · 천장 무시 단순 누적 확률</div>
       </div>`;
     })()}
     <div class="cost-box ${needPullsForAvg===0?'ok':''}">
