@@ -3930,18 +3930,26 @@ function ccCalc(key,gid,srv){
     <div class="crr"><span class="crl">상위 90% 필요 (안정권)</span><span class="crv gold">${costStats.p90.toLocaleString()} 회</span></div>
     <div class="crr"><span class="crl">100% 천장 보장</span><span class="crv g">${maxCeiling.toLocaleString()} 회</span></div>
     <div class="cdiv"></div>
-    <div>
-      <div class="pb-label"><span class="crl">달성 확률 <span style="font-size:9px;color:var(--mu);font-weight:400">(시뮬레이션·천장 반영)</span></span><span style="color:${pctColor}">${pct}%</span></div>
-      <div class="pb-w"><div class="pb-f" style="width:${pct}%;background:linear-gradient(90deg,${g.color},${g.color}99)"></div></div>
-    </div>
     ${(()=>{
-      // 단순 누적 이론 확률: 1 - (1 - p)^N
+      // 달성도 = 보유 뽑기 / 천장 보장 횟수 비율 (얼마나 천장까지 차 있는지)
+      const maxGuar = getMaxGuaranteedPulls(g);
+      const totalAvail = effectivePulls + pity; // 보유 뽑기 + 현재 천장 카운트
+      const achPct = maxGuar>0 ? Math.min(100, Math.round(totalAvail / maxGuar * 100)) : 0;
+      const aColor = achPct>=100 ? 'var(--g)' : achPct>=70 ? 'var(--gold)' : achPct>=40 ? 'var(--bl)' : 'var(--rd)';
+      const aLabel = achPct>=100 ? '✅ 천장 도달' : `${maxGuar - totalAvail}뽑 부족`;
+      return `<div>
+        <div class="pb-label"><span class="crl">달성도 <span style="font-size:9px;color:var(--mu);font-weight:400">(보유 ${totalAvail}뽑 / 천장 ${maxGuar}뽑)</span></span><span style="color:${aColor}">${achPct}% · ${aLabel}</span></div>
+        <div class="pb-w"><div class="pb-f" style="width:${achPct}%;background:linear-gradient(90deg,${aColor},${aColor}99)"></div></div>
+      </div>`;
+    })()}
+    ${(()=>{
+      // 단순 확률: 1 - (1 - p)^N
       const theoryProb = calcPickupProb(g, effectivePulls);
       const theoryPct = (theoryProb * 100);
       const tColor = theoryPct>=90?'var(--g)':theoryPct>=60?'var(--gold)':theoryPct>=30?'var(--bl)':'var(--rd)';
       const pAbs = (g.gacha.pickupAbsRate != null) ? g.gacha.pickupAbsRate : ((g.gacha.baseRate||0.006)*(g.gacha.pickupRate||0.5)*100);
       return `<div style="margin-top:8px">
-        <div class="pb-label"><span class="crl">이론 확률 <span style="font-size:9px;color:var(--mu);font-weight:400">(1−(1−p)<sup>N</sup>·천장 무시·p=${pAbs.toFixed(2)}%)</span></span><span style="color:${tColor}">${theoryPct.toFixed(2)}%</span></div>
+        <div class="pb-label"><span class="crl">단순 확률 <span style="font-size:9px;color:var(--mu);font-weight:400">(1−(1−p)<sup>N</sup>·천장 무시·p=${pAbs.toFixed(2)}%)</span></span><span style="color:${tColor}">${theoryPct.toFixed(2)}%</span></div>
         <div class="pb-w"><div class="pb-f" style="width:${Math.min(100,theoryPct).toFixed(1)}%;background:linear-gradient(90deg,${tColor},${tColor}99)"></div></div>
       </div>`;
     })()}
@@ -5001,28 +5009,40 @@ function renderStats(){
     const g=GAMES.find(x=>x.id===grp.game);
     if(!g)return;
     const pc=g.gacha;
-    const succ=grp.pickups.filter(p=>p.result==='success').length;
-    const fail=grp.pickups.filter(p=>p.result==='fail').length;
-    const untried=grp.pickups.length-succ-fail;
-    const total=grp.pickups.length;
-    const succPct=total?(succ/total)*100:0;
-    const failPct=total?(fail/total)*100:0;
-    const untriedPct=total?(untried/total)*100:0;
-    let groupPulls=0,groupCurrency=0,groupFreeUsed=0,groupPaidUsed=0;
+    // 모든 시도(명함+돌파+픽뚫) 누적 집계
+    let succ=0, fail=0;
+    let groupPulls=0, groupCurrency=0, groupFreeUsed=0, groupPaidUsed=0;
     grp.pickups.forEach(p=>{
-      groupPulls+=p.spentPulls||0;
-      groupCurrency+=p.spentCurrency||0;
-      // freeCurrencyUsed + paidCurrencyUsed = spentCurrency 보장
-      // 둘 다 0이면 spentCurrency 전체를 무료로 간주 (레거시 데이터)
+      const all=getAllAttempts(p);
+      all.forEach(a=>{
+        if(a.result==='success') succ++;
+        else if(a.result==='fail') fail++;
+        groupPulls += a.spentPulls||0;
+        groupCurrency += a.spentCurrency||0;
+      });
+      // 명함(첫 시도)만 free/paid 메타 보유 — 추가 시도는 무료로 간주
       const free=p.freeCurrencyUsed||0;
       const paid=p.paidCurrencyUsed||0;
       if(free===0 && paid===0){
-        groupFreeUsed+=p.spentCurrency||0; // 레거시: 전체를 무료로
+        groupFreeUsed+=p.spentCurrency||0; // 레거시: 첫 시도는 전체 무료
       } else {
         groupFreeUsed+=free;
         groupPaidUsed+=paid;
       }
+      // 추가 시도들의 spentCurrency는 일단 무료로 간주 (메타 미입력)
+      (p.attempts||[]).forEach(a=>{
+        groupFreeUsed += a.spentCurrency||0;
+      });
     });
+    // 결과 없는 픽업은 untried (아직 결과 미입력 상태로 기록만 한 경우)
+    const untried = grp.pickups.filter(p=>{
+      const all=getAllAttempts(p);
+      return all.length===0 || all.every(a=>a.result!=='success'&&a.result!=='fail');
+    }).length;
+    const total = succ + fail + untried;
+    const succPct=total?(succ/total)*100:0;
+    const failPct=total?(fail/total)*100:0;
+    const untriedPct=total?(untried/total)*100:0;
     // 실제 비용은 유료돌 기준 (없으면 spentCurrency 전체를 무료로 가정)
     const krwPerCurrency=pc.pricePerPull/pc.pullCost;
     const groupKRW=Math.round(groupPaidUsed*krwPerCurrency);
@@ -5653,7 +5673,12 @@ async function callGemini(prompt, useSearch=true, showRetryUi=true){
   const makeBody=(withSearch)=>{
     const b={
       contents:[{parts:[{text:prompt}]}],
-      generationConfig:{temperature:0, maxOutputTokens:2000}
+      // 토큰 절약: maxOutputTokens 2000 → 800 (픽업 정보는 짧음), thinkingBudget 0
+      generationConfig:{
+        temperature:0,
+        maxOutputTokens:withSearch?1200:800,
+        thinkingConfig:{thinkingBudget:0}
+      }
     };
     if(withSearch) b.tools=[{google_search:{}}];
     return b;
@@ -6189,13 +6214,34 @@ ${text}`;
       return;
     }
 
-    // 유효한 항목만 필터링 (start/end YYYY-MM-DD 형식 검사)
-    const datePattern=/^\d{4}-\d{2}-\d{2}$/;
+    // 유효한 항목만 필터링 + 부분 날짜 보정 (YYYY-MM, YYYY-M-D, YYYY.MM.DD 등 허용)
+    const normalizeDate=(s)=>{
+      if(!s||typeof s!=='string') return null;
+      // YYYY.MM.DD or YYYY/MM/DD → YYYY-MM-DD
+      let v=s.trim().replace(/[./]/g,'-');
+      // YYYY-M-D → YYYY-MM-DD (zero-pad)
+      const m=v.match(/^(\d{4})-(\d{1,2})(?:-(\d{1,2}))?$/);
+      if(m){
+        const yyyy=m[1];
+        const mm=m[2].padStart(2,'0');
+        const dd=(m[3]||'01').padStart(2,'0'); // 일 미상이면 1일
+        return `${yyyy}-${mm}-${dd}`;
+      }
+      return null;
+    };
     const validParsed=parsed.filter(p=>{
       if(!p || typeof p!=='object') return false;
-      // start/end 둘 다 유효하지 않으면 제외
-      if(!p.start || !datePattern.test(p.start)) return false;
-      if(!p.end || !datePattern.test(p.end)) return false;
+      const ns=normalizeDate(p.start);
+      const ne=normalizeDate(p.end);
+      // 시작일은 필수, 종료일이 없으면 시작일+14일로 자동 보정 (보수적)
+      if(!ns) return false;
+      p.start=ns;
+      if(!ne){
+        const d=new Date(ns); d.setDate(d.getDate()+14);
+        p.end=d.toISOString().slice(0,10);
+      } else {
+        p.end=ne;
+      }
       return true;
     });
 
@@ -7659,9 +7705,18 @@ function saveSessionResult(eid,result){
     toast(result==='success'?'✨ 명함 성공 저장':'💔 명함 픽뚫 저장');
   } else {
     if(!e.attempts) e.attempts=[];
-    const nextN=e.attempts.length;
-    e.attempts.push({result,spentPulls:cnt,spentCurrency:currency,label:'+'+(nextN+1)+'돌',ts:Date.now()});
-    toast(result==='success'?'✨ +'+(nextN+1)+'돌 성공 저장':'💔 +'+(nextN+1)+'돌 픽뚫 저장');
+    // 라벨은 누적 결과 수 기준 (픽뚫은 돌 카운트에 포함 X)
+    const allBefore = getAllAttempts(e);
+    const successBefore = allBefore.filter(a=>a.result==='success').length;
+    const failBefore = allBefore.filter(a=>a.result==='fail').length;
+    let label;
+    if(result==='success'){
+      label = successBefore===0 ? '명함' : `+${successBefore}돌`;
+    } else {
+      label = failBefore===0 ? '픽뚫' : `픽뚫 #${failBefore+1}`;
+    }
+    e.attempts.push({result,spentPulls:cnt,spentCurrency:currency,label,ts:Date.now()});
+    toast(result==='success'?`✨ ${label} 성공 저장`:`💔 ${label} 저장`);
   }
   delete _pullSessions[eid];
   save();renderAll();
@@ -7819,26 +7874,45 @@ function toggleGameTheme(){
 //  다중 시도 (명함 + 돌파) 누적 헬퍼
 // ════════════════════════════════════════════════════════════════
 // 첫 시도(레거시 필드) + 추가 시도(attempts[]) 통합
+// 라벨은 누적 성공 수 기준으로 동적으로 재계산 (저장된 label은 무시)
+//   - 성공: 첫 성공 = 명함, 이후 +1돌, +2돌, ...
+//   - 픽뚫: "픽뚫" 또는 "픽뚫 #N" (성공과 무관, 별도 카운트)
 function getAllAttempts(e){
   if(!e) return [];
   const list=[];
-  // 첫 시도: 기존 필드 사용 (result/spentPulls/spentCurrency)
+  let successCount = 0;
+  let failCount = 0;
+
+  const labelFor=(result)=>{
+    if(result==='success'){
+      const idx=successCount; // 0=명함, 1=+1돌, 2=+2돌
+      successCount++;
+      return idx===0 ? '명함' : `+${idx}돌`;
+    } else if(result==='fail'){
+      failCount++;
+      return failCount===1 ? '픽뚫' : `픽뚫 #${failCount}`;
+    }
+    return '시도';
+  };
+
+  // 첫 시도 (e.result/e.spentPulls 등으로 표현된 명함)
   if(e.result==='success'||e.result==='fail'||e.spentPulls>0||e.spentCurrency>0){
     list.push({
       result:e.result||'untried',
       spentPulls:e.spentPulls||0,
       spentCurrency:e.spentCurrency||0,
-      label:'명함',
+      label:labelFor(e.result||'untried'),
       isFirst:true
     });
   }
-  // 추가 시도들
+
+  // 추가 시도들 (저장 시점 순서 그대로 라벨 재계산)
   (e.attempts||[]).forEach((a,i)=>{
     list.push({
       result:a.result||'untried',
       spentPulls:a.spentPulls||0,
       spentCurrency:a.spentCurrency||0,
-      label:a.label||`+${i+1}돌`,
+      label:labelFor(a.result||'untried'),
       ts:a.ts,
       idx:i
     });
@@ -7887,10 +7961,12 @@ function openAttemptModal(eid){
     listEl.innerHTML='<div style="font-size:11px;color:var(--mu);padding:8px">아직 등록된 시도가 없습니다.</div>';
   }
 
-  // 자동 라벨 (다음 회차) 제안
-  const nextN=list.length; // 첫 시도는 명함, 다음은 +1돌, +2돌...
-  const autoLabel = nextN===0 ? '명함' : `+${nextN}돌`;
-  document.getElementById('at-label').placeholder=`자동: ${autoLabel}`;
+  // 자동 라벨 (성공 기준 돌 카운트 / 픽뚫은 별도)
+  const successCnt = list.filter(a=>a.result==='success').length;
+  const failCnt = list.filter(a=>a.result==='fail').length;
+  const successLabel = successCnt===0 ? '명함' : `+${successCnt}돌`;
+  const failLabel = failCnt===0 ? '픽뚫' : `픽뚫 #${failCnt+1}`;
+  document.getElementById('at-label').placeholder=`자동: ✨ ${successLabel} / 💔 ${failLabel}`;
   document.getElementById('at-label').value='';
   document.getElementById('at-pulls').value='';
   document.getElementById('at-currency').value='';
@@ -7920,7 +7996,13 @@ function saveAttempt(){
   let label=document.getElementById('at-label').value.trim();
   if(!label){
     const list=getAllAttempts(e);
-    label = list.length===0?'명함':`+${list.length}돌`;
+    const sCnt=list.filter(a=>a.result==='success').length;
+    const fCnt=list.filter(a=>a.result==='fail').length;
+    if(result==='success'){
+      label = sCnt===0 ? '명함' : `+${sCnt}돌`;
+    } else {
+      label = fCnt===0 ? '픽뚫' : `픽뚫 #${fCnt+1}`;
+    }
   }
   if(pulls<=0 && currency<=0){
     toast('⚠️ 뽑기수 또는 재화량 입력 필요');return;
@@ -8159,15 +8241,23 @@ function saveBudget(){
   toast(v?`🎯 월 예산 ₩${v.toLocaleString()} 설정`:'예산 미설정');
 }
 function getCurrentMonthSpending(){
+  // 이번 달 시작일에 등록된 픽업의 실제 과금액 (유료돌만, 무료돌 제외)
   const now=new Date();
   const ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   let total=0;
   events.forEach(e=>{
-    if(!e.spentPulls||!e.start) return;
-    if(!e.start.startsWith(ym)) return;
+    if(!e.start || !e.start.startsWith(ym)) return;
     const g=GAMES.find(x=>x.id===e.game);
     if(!g) return;
-    total += (e.spentPulls||0) * g.gacha.pricePerPull;
+    const krwPerCurrency = g.gacha.pricePerPull / g.gacha.pullCost;
+    // 첫 시도(명함)의 유료돌
+    const free=e.freeCurrencyUsed||0;
+    const paid=e.paidCurrencyUsed||0;
+    if(free>0 || paid>0){
+      total += Math.round(paid * krwPerCurrency);
+    }
+    // 첫 시도가 free/paid 메타 없는 레거시는 무료로 간주 (집계 안 함)
+    // 추가 시도(돌파)도 무료로 간주 (메타 미입력이라 보수적으로 제외)
   });
   return total;
 }
@@ -8520,11 +8610,13 @@ function buildEnhancedStats(){
       ${histGames.map(gid=>{
         const g=GAMES.find(x=>x.id===gid);
         if(!g) return '';
-        const pulls=successPullsByGame[gid];
+        const pulls=successPullsByGame[gid].slice().sort((a,b)=>a-b);
         const maxPulls=getMaxGuaranteedPulls(g);
         // 4구간 분포: 0-25%, 25-50%, 50-75%, 75-100% of max
+        const q1=Math.round(maxPulls*0.25),q2=Math.round(maxPulls*0.5),q3=Math.round(maxPulls*0.75),q4=maxPulls;
         const buckets=[0,0,0,0];
-        const labels=[`1-${Math.round(maxPulls*0.25)}뽑`,`-${Math.round(maxPulls*0.5)}뽑`,`-${Math.round(maxPulls*0.75)}뽑`,`-${maxPulls}뽑`];
+        const ranges=[`1~${q1}뽑`, `${q1+1}~${q2}뽑`, `${q2+1}~${q3}뽑`, `${q3+1}~${q4}뽑+`];
+        const labelEmojis=['🍀','😊','😐','😢'];
         pulls.forEach(p=>{
           const ratio=p/maxPulls;
           if(ratio<=0.25) buckets[0]++;
@@ -8534,23 +8626,39 @@ function buildEnhancedStats(){
         });
         const totalCount=pulls.length;
         const maxBucket=Math.max(...buckets,1);
-        const W=380,H=80,bW=Math.floor(W/4)-8;
-        return `<div>
-          <div style="font-size:11px;font-weight:700;color:${g.color};margin-bottom:6px">${g.short} <span style="font-size:9px;color:var(--mu);font-weight:400">총 ${totalCount}개 성공</span></div>
-          <svg viewBox="0 0 ${W} ${H+24}" style="width:100%;height:auto;display:block">
+        // 평균 / 중앙값
+        const avg=Math.round(pulls.reduce((a,b)=>a+b,0)/totalCount);
+        const median=pulls[Math.floor(totalCount/2)];
+        const minP=pulls[0], maxP=pulls[pulls.length-1];
+        const colorByZone=['#5fd99c','#60a5fa','#fbbf24','#f87171'];
+        return `<div style="background:var(--sf2);border-radius:8px;padding:12px 14px;border-left:3px solid ${g.color}">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+            <div>
+              <span style="font-size:13px;font-weight:800;color:${g.color}">${g.short}</span>
+              <span style="font-size:10px;color:var(--mu);margin-left:8px">총 <strong style="color:var(--tx);font-family:'Orbitron',monospace">${totalCount}회</strong> 성공</span>
+            </div>
+            <div style="font-size:10px;color:var(--mu2);font-family:'Orbitron',monospace">
+              평균 <strong style="color:var(--bl)">${avg}뽑</strong> · 중앙값 <strong>${median}뽑</strong> · 범위 ${minP}~${maxP}
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
             ${buckets.map((cnt,i)=>{
-              const x=i*Math.floor(W/4)+4;
-              const h=Math.round(cnt/maxBucket*H);
-              const y=H-h;
-              const colorByZone=['#5fd99c','#60a5fa','#fbbf24','#f87171'];
-              return `<g>
-                <rect x="${x}" y="${y}" width="${bW}" height="${h}" fill="${colorByZone[i]}" opacity="0.85" rx="2"><title>${labels[i]}: ${cnt}개</title></rect>
-                <text x="${x+bW/2}" y="${H+12}" font-size="8" fill="var(--mu)" text-anchor="middle">${labels[i]}</text>
-                ${cnt>0?`<text x="${x+bW/2}" y="${y-3}" font-size="9" fill="var(--tx)" text-anchor="middle" font-weight="700">${cnt}</text>`:''}
-              </g>`;
+              const w=Math.round(cnt/maxBucket*100);
+              const pct=totalCount?Math.round(cnt/totalCount*100):0;
+              return `<div style="display:flex;align-items:center;gap:10px;font-size:11px">
+                <div style="width:90px;flex-shrink:0;color:${colorByZone[i]};font-weight:700">${labelEmojis[i]} ${ranges[i]}</div>
+                <div style="flex:1;background:rgba(255,255,255,0.04);border-radius:4px;height:18px;position:relative;overflow:hidden">
+                  <div style="position:absolute;left:0;top:0;bottom:0;width:${w}%;background:linear-gradient(90deg,${colorByZone[i]},${colorByZone[i]}88);border-radius:4px;transition:width .3s"></div>
+                  <div style="position:absolute;inset:0;display:flex;align-items:center;padding:0 8px;font-family:'Orbitron',monospace;font-weight:700;color:#fff;font-size:10px;text-shadow:0 1px 2px rgba(0,0,0,.6)">
+                    ${cnt>0?`${cnt}회 (${pct}%)`:''}
+                  </div>
+                </div>
+              </div>`;
             }).join('')}
-            <line x1="0" y1="${H}" x2="${W}" y2="${H}" stroke="var(--bd)" stroke-width="0.5"/>
-          </svg>
+          </div>
+          <div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--bd);font-size:9px;color:var(--mu)">
+            천장 ${maxPulls}뽑 기준 · 가까울수록 운 좋음
+          </div>
         </div>`;
       }).join('')}
       </div>
