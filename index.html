@@ -264,6 +264,47 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .calc-carousel .calc-pb-val{font-size:22px}
 .calc-carousel .calc-pb-track{height:14px}
 .calc-carousel .calc-pb-foot{font-size:11px;margin-top:8px}
+/* ── 넓은 화면(>=900px): 2-열 레이아웃 — 좌측 입력, 우측 결과 ── */
+@media(min-width:900px){
+  .calc-carousel .widget-track > .calc-card{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);
+    column-gap:36px;
+    row-gap:0;
+    align-items:start;
+    padding:26px 30px 30px;
+    max-width:1180px;
+    margin:0 auto;
+  }
+  .calc-carousel .calc-card > .calc-hd{grid-column:1 / -1;margin-bottom:22px}
+  /* 입력 행/빠른 버튼은 모두 좌측 */
+  .calc-carousel .calc-card > .calc-input-row,
+  .calc-carousel .calc-card > .calc-qb-row{grid-column:1}
+  /* 결과는 우측, 모든 행을 차지 */
+  .calc-carousel .calc-card > .calc-res{
+    grid-column:2;
+    grid-row:2 / span 200;
+    margin-top:0;
+    padding:0 0 0 30px;
+    border-top:none;
+    border-left:1px solid var(--bd);
+    align-self:stretch;
+    min-height:100%;
+  }
+  .calc-carousel .calc-pb-wrap{margin-top:18px}
+  /* 입력 폭은 더 시원하게 */
+  .calc-carousel .ci{width:160px}
+}
+@media(min-width:1280px){
+  .calc-carousel .widget-track > .calc-card{
+    grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);
+    column-gap:48px;
+    padding:28px 36px 32px;
+  }
+  .calc-carousel .ci{width:180px;font-size:16px}
+  .calc-carousel .calc-name{font-size:19px}
+  .calc-carousel .calc-pb-val{font-size:26px}
+}
 @media(max-width:600px){
   .calc-carousel .widget-track > .calc-card{padding:18px 16px 20px;border-radius:14px}
   .calc-carousel .calc-name{font-size:15px}
@@ -316,6 +357,38 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .inv-paid-spent .ips-text{flex:1;min-width:0;line-height:1.5}
 .inv-paid-spent .ips-reset{padding:5px 10px;font-size:10px;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:6px;color:var(--mu2);cursor:pointer;font-weight:800;flex-shrink:0;transition:all .15s}
 .inv-paid-spent .ips-reset:hover{background:rgba(248,113,113,.14);color:var(--rd);border-color:rgba(248,113,113,.35)}
+/* ── 넓은 화면: 재화 보유량 카드도 가로로 시원하게 ── */
+@media(min-width:900px){
+  .inv-grid{grid-template-columns:1fr;gap:16px;max-width:1180px;margin:0 auto}
+  .inv-primary-block{padding:26px 30px 28px}
+  .inv-primary-header{padding-bottom:16px;margin-bottom:20px}
+  .inv-primary-header .inv-l > div:first-child{font-size:18px}
+  .ipt-value{font-size:30px}
+  .ipt-monthly{font-size:16px}
+  .ipt-pulls{font-size:12px}
+  .ipt-pulls strong{font-size:14px}
+  /* 무료/유료 입력 박스 + 빠른 버튼을 가로로 배치 */
+  .inv-card-body{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    column-gap:28px;
+    align-items:start;
+  }
+  .inv-card-body .inv-split-row{grid-column:1}
+  .inv-card-body .inv-qb-stack{grid-column:2;display:flex;flex-direction:column;gap:8px;border-left:1px solid var(--bd);padding-left:28px;align-self:stretch}
+  .inv-card-body .inv-qb-stack .inv-qb-row{margin-top:0;padding-top:0;border-top:none}
+  .inv-card-body .inv-qb-stack .inv-qb-row + .inv-qb-row{margin-top:0;padding-top:10px;border-top:1px dashed var(--bd)}
+  .inv-card-body .inv-paid-spent{grid-column:1 / -1;margin-top:14px}
+  .inv-month{margin-top:18px}
+  .inv-month-grid{grid-template-columns:1fr 1fr 1.4fr;gap:14px}
+  .inv-month-grid > .inv-month-remain-card{margin-top:0}
+}
+@media(min-width:1280px){
+  .inv-grid{max-width:1320px}
+  .inv-primary-block{padding:28px 36px 32px}
+  .inv-card-body{column-gap:36px}
+  .inv-card-body .inv-qb-stack{padding-left:36px}
+}
 @media(max-width:600px){
   .inv-primary-block{padding:18px 16px 20px;border-radius:14px}
   .inv-primary-header .inv-l > div:first-child{font-size:14px}
@@ -3913,42 +3986,46 @@ function renderInventory(){
                   <div class="ipt-pulls">${showMonthlyAdd?`합계 <strong style="color:var(--g)">${grandTotal.toLocaleString()}</strong> · `:''}🎲 뽑기 <strong>${Math.floor(grandTotal/g.gacha.pullCost)}</strong>회</div>
                 </div>
               </div>
-              <div class="inv-split-row">
-                <div class="inv-split-item inv-split-free">
-                  <label>🆓 무료돌${total>0?`<span class="iss-pct" style="margin-left:auto;color:var(--g)">${freePct}%</span>`:''}</label>
-                  <input class="inv-input" type="number" inputmode="numeric" min="0" placeholder="0" value="${free||''}" oninput="saveInv('${key}','${c.id}',this.value)" onblur="finalizeInv()">
+              <div class="inv-card-body">
+                <div class="inv-split-row">
+                  <div class="inv-split-item inv-split-free">
+                    <label>🆓 무료돌${total>0?`<span class="iss-pct" style="margin-left:auto;color:var(--g)">${freePct}%</span>`:''}</label>
+                    <input class="inv-input" type="number" inputmode="numeric" min="0" placeholder="0" value="${free||''}" oninput="saveInv('${key}','${c.id}',this.value)" onblur="finalizeInv()">
+                  </div>
+                  <div class="inv-split-item inv-split-paid">
+                    <label>💳 유료돌${total>0?`<span class="iss-pct" style="margin-left:auto;color:var(--gold)">${paidPct}%</span>`:''}</label>
+                    <input class="inv-input" type="number" inputmode="numeric" min="0" placeholder="0" value="${paid||''}" oninput="saveInv('${key}','${c.id}_paid',this.value)" onblur="finalizeInv()">
+                  </div>
                 </div>
-                <div class="inv-split-item inv-split-paid">
-                  <label>💳 유료돌${total>0?`<span class="iss-pct" style="margin-left:auto;color:var(--gold)">${paidPct}%</span>`:''}</label>
-                  <input class="inv-input" type="number" inputmode="numeric" min="0" placeholder="0" value="${paid||''}" oninput="saveInv('${key}','${c.id}_paid',this.value)" onblur="finalizeInv()">
+                <div class="inv-qb-stack">
+                  <div class="inv-qb-row">
+                    <span class="inv-qb-label">±조정</span>
+                    <span class="inv-qb-group">
+                      <button class="inv-qb inv-qb-minus" onclick="qAddInv('${key}','${c.id}',-1000)">−1000</button>
+                      <button class="inv-qb inv-qb-minus" onclick="qAddInv('${key}','${c.id}',-100)">−100</button>
+                      <button class="inv-qb inv-qb-minus" onclick="qAddInv('${key}','${c.id}',-10)">−10</button>
+                    </span>
+                    <span class="inv-qb-divider"></span>
+                    <span class="inv-qb-group">
+                      <button class="inv-qb" onclick="qAddInv('${key}','${c.id}',10)">+10</button>
+                      <button class="inv-qb" onclick="qAddInv('${key}','${c.id}',100)">+100</button>
+                      <button class="inv-qb" onclick="qAddInv('${key}','${c.id}',1000)">+1000</button>
+                    </span>
+                  </div>
+                  <div class="inv-qb-row">
+                    <span class="inv-qb-label">🎲 뽑기 단위</span>
+                    <span class="inv-qb-group">
+                      ${[1,5,10].map(n=>`<button class="inv-qb inv-qb-pull" onclick="qAddInv('${key}','${c.id}',${g.gacha.pullCost*n})">+${n}뽑</button>`).join('')}
+                    </span>
+                  </div>
                 </div>
+                ${paidSpent>0?`
+                  <div class="inv-paid-spent">
+                    <span class="ips-text">💸 누적 유료돌 사용 <strong style="color:var(--gold)">${paidSpent.toLocaleString()} ${c.name}</strong> · 환산 <strong style="color:var(--bl)">₩${Math.round(paidSpentKRW).toLocaleString()}</strong></span>
+                    <button class="ips-reset" onclick="resetPaidSpent('${key}','${c.id}')">초기화</button>
+                  </div>
+                `:''}
               </div>
-              <div class="inv-qb-row">
-                <span class="inv-qb-label">±조정</span>
-                <span class="inv-qb-group">
-                  <button class="inv-qb inv-qb-minus" onclick="qAddInv('${key}','${c.id}',-1000)">−1000</button>
-                  <button class="inv-qb inv-qb-minus" onclick="qAddInv('${key}','${c.id}',-100)">−100</button>
-                  <button class="inv-qb inv-qb-minus" onclick="qAddInv('${key}','${c.id}',-10)">−10</button>
-                </span>
-                <span class="inv-qb-divider"></span>
-                <span class="inv-qb-group">
-                  <button class="inv-qb" onclick="qAddInv('${key}','${c.id}',10)">+10</button>
-                  <button class="inv-qb" onclick="qAddInv('${key}','${c.id}',100)">+100</button>
-                  <button class="inv-qb" onclick="qAddInv('${key}','${c.id}',1000)">+1000</button>
-                </span>
-              </div>
-              <div class="inv-qb-row">
-                <span class="inv-qb-label">🎲 뽑기 단위</span>
-                <span class="inv-qb-group">
-                  ${[1,5,10].map(n=>`<button class="inv-qb inv-qb-pull" onclick="qAddInv('${key}','${c.id}',${g.gacha.pullCost*n})">+${n}뽑</button>`).join('')}
-                </span>
-              </div>
-              ${paidSpent>0?`
-                <div class="inv-paid-spent">
-                  <span class="ips-text">💸 누적 유료돌 사용 <strong style="color:var(--gold)">${paidSpent.toLocaleString()} ${c.name}</strong> · 환산 <strong style="color:var(--bl)">₩${Math.round(paidSpentKRW).toLocaleString()}</strong></span>
-                  <button class="ips-reset" onclick="resetPaidSpent('${key}','${c.id}')">초기화</button>
-                </div>
-              `:''}
             </div>`;
           }
           
