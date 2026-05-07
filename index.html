@@ -367,6 +367,29 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 .calc-pb-foot{margin-top:6px;font-size:10px;color:var(--mu);font-weight:500}
 .calc-pb-foot.full{color:var(--g);font-weight:700}
 
+/* 게임별 통계 요약 위젯 스택 */
+.game-stat-stack{margin-bottom:18px}
+.gss-head{font-size:13px;font-weight:800;color:var(--tx);margin-bottom:10px;letter-spacing:.3px}
+.gss-grid{display:flex;flex-direction:column;gap:10px}
+.gss-card{background:linear-gradient(180deg,var(--sf),rgba(20,25,40,0.6));border:1px solid var(--bd);border-radius:12px;padding:12px 14px;border-left:4px solid var(--gc,var(--bl));position:relative;overflow:hidden;transition:all .2s}
+.gss-card::before{content:'';position:absolute;top:-30px;right:-30px;width:110px;height:110px;border-radius:50%;filter:blur(35px);opacity:0.2;background:var(--gc,var(--bl));pointer-events:none}
+.gss-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.3),0 0 24px rgba(var(--gcr,96,165,250),0.1)}
+.gss-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;position:relative}
+.gss-game{font-size:14px;font-weight:800;letter-spacing:.3px}
+.gss-pickups{font-family:'Orbitron',monospace;font-size:11px;color:var(--mu2);font-weight:700;background:rgba(255,255,255,0.04);padding:2px 8px;border-radius:99px;border:1px solid var(--bd)}
+.gss-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;position:relative}
+.gss-stat{background:rgba(255,255,255,0.03);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;text-align:center;transition:all .15s}
+.gss-stat:hover{background:rgba(255,255,255,0.06)}
+.gss-stat-label{font-size:9px;color:var(--mu);font-weight:700;letter-spacing:.5px;margin-bottom:4px;white-space:nowrap}
+.gss-stat-val{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;line-height:1.1}
+.gss-stat-val small{font-size:11px;font-weight:700;opacity:0.8;margin-left:1px}
+.gss-stat-val.purple{color:var(--pu);text-shadow:0 0 10px rgba(167,139,250,0.4)}
+.gss-stat-val.green{color:var(--g);text-shadow:0 0 10px rgba(95,217,156,0.4)}
+.gss-stat-val.gold{color:var(--gold);text-shadow:0 0 10px rgba(251,191,36,0.4)}
+.gss-stat-val.red{color:var(--rd);text-shadow:0 0 10px rgba(248,113,113,0.4)}
+.gss-stat-sub{font-size:8px;color:var(--mu2);margin-top:2px}
+@media(max-width:520px){.gss-stats{grid-template-columns:repeat(2,1fr)}}
+
 /* 통계 위젯 — 게임별 시점/결과/성공률 분포 카드 */
 .stat-widget{position:relative;overflow:hidden;background:linear-gradient(180deg,var(--sf),rgba(20,25,40,0.6));border:1px solid var(--bd);border-radius:14px;padding:16px 18px;margin-bottom:14px}
 .stat-widget::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;filter:blur(40px);opacity:0.18;background:var(--w-accent,var(--bl));pointer-events:none}
@@ -5044,6 +5067,59 @@ function renderStats(){
       <div class="ssc-sub">유료돌만 (무료 제외)</div>
     </div>
   </div>`;
+
+  // ── 게임별 통계 요약 (위젯 스택) ───────────────────────
+  if(activeFilter==='all' && allGroups.length>=1){
+    html+=`<div class="game-stat-stack">
+      <div class="gss-head">🎮 게임별 통계 요약 <span style="font-size:10px;color:var(--mu);font-weight:400">각 게임의 핵심 지표 한눈에</span></div>
+      <div class="gss-grid">
+      ${allGroups.map(grp=>{
+        const g=GAMES.find(x=>x.id===grp.game); if(!g) return '';
+        const pc=g.gacha;
+        let gSucc=0,gFail=0,gPulls=0,gPaid=0;
+        grp.pickups.forEach(p=>{
+          const all=getAllAttempts(p);
+          all.forEach(a=>{
+            if(a.result==='success') gSucc++;
+            else if(a.result==='fail') gFail++;
+            gPulls += a.spentPulls||0;
+          });
+          const paid=p.paidCurrencyUsed||0;
+          if(paid>0) gPaid += Math.round(paid*(pc.pricePerPull/pc.pullCost));
+        });
+        const gTotal=gSucc+gFail;
+        const gSr=gTotal?Math.round(gSucc/gTotal*100):0;
+        const srvTag=grp.srv!=='all'?`<span class="inv-srv-tag ${grp.srv}" style="font-size:9px;margin-left:6px">${SRV_LBL[grp.srv]||grp.srv}</span>`:'';
+        return `<div class="gss-card" style="--gc:${g.color};--gcr:${g.rgb}">
+          <div class="gss-card-head">
+            <span class="gss-game" style="color:${g.color}">${g.short}${srvTag}</span>
+            <span class="gss-pickups">${grp.pickups.length}건</span>
+          </div>
+          <div class="gss-stats">
+            <div class="gss-stat">
+              <div class="gss-stat-label">📊 기록</div>
+              <div class="gss-stat-val purple">${grp.pickups.length}<small>건</small></div>
+            </div>
+            <div class="gss-stat">
+              <div class="gss-stat-label">✨ 성공률</div>
+              <div class="gss-stat-val green">${gSr}<small>%</small></div>
+              <div class="gss-stat-sub">${gSucc}/${gTotal}</div>
+            </div>
+            <div class="gss-stat">
+              <div class="gss-stat-label">🎲 뽑기</div>
+              <div class="gss-stat-val gold">${gPulls.toLocaleString()}</div>
+            </div>
+            <div class="gss-stat">
+              <div class="gss-stat-label">💸 지출</div>
+              <div class="gss-stat-val red">${fmtKRW(gPaid)}</div>
+              <div class="gss-stat-sub">유료돌</div>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+      </div>
+    </div>`;
+  }
   
   if(allGroups.length>1){
     html+=`<div class="stats-game-filter">
