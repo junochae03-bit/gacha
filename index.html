@@ -427,7 +427,7 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 
 /* 통계 위젯 캐러셀 (삼성 위젯 UI 스타일 — 가로 스와이프) */
 .widget-carousel{position:relative}
-.widget-track{display:flex;flex-direction:row;gap:10px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;padding:0 2px 4px;margin:0 -2px;width:100%}
+.widget-track{display:flex;flex-direction:row;gap:10px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;padding:0 2px 4px;margin:0 -2px;width:100%;position:relative}
 .widget-track::-webkit-scrollbar{display:none}
 .widget-track > *{flex:0 0 calc(100% - 4px) !important;width:calc(100% - 4px);scroll-snap-align:center;scroll-snap-stop:always;margin-bottom:0;min-width:0;box-sizing:border-box}
 .stats-summary-slide{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
@@ -2760,8 +2760,25 @@ const EXCLUDED_DOMAINS = [
 //  STATE
 // ════════════════════════════════════════════════════════════════
 function safeLoad(key, fallback){
-  try{ return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback)); }
-  catch(e){ console.warn(`localStorage 손상 [${key}]:`, e); return fallback; }
+  try{
+    const raw=localStorage.getItem(key);
+    if(raw==null) return fallback;
+    return JSON.parse(raw);
+  } catch(e){ console.warn(`localStorage 손상 [${key}]:`, e); return fallback; }
+}
+let _quotaWarned=false;
+function safeSetItem(key, value){
+  try{
+    localStorage.setItem(key, value);
+    return true;
+  } catch(e){
+    if(!_quotaWarned && (e.name==='QuotaExceededError' || e.code===22)){
+      _quotaWarned=true;
+      try { typeof toast==='function' && toast('⚠ 저장 공간 부족 — 캐릭터 갤러리/AI 캐시 정리 필요'); } catch(_){}
+    }
+    console.error(`safeSetItem 실패 [${key}]:`, e);
+    return false;
+  }
 }
 let events=safeLoad('gv8-events',[]);
 let coupons=safeLoad('gv8-coupons',[]);
@@ -2772,6 +2789,19 @@ let alarms=safeLoad('gv8-alarms',{});
 let inventory=safeLoad('gv8-inv',{});
 let monthlyOn=safeLoad('gv8-monthly',{});
 let monthlyStart=safeLoad('gv8-monthly-start',{});
+// 마이그레이션: 옛 -month-start 키를 -monthly-start로 통일 (1회 실행)
+(()=>{
+  let changed=false;
+  Object.keys(monthlyStart).forEach(k=>{
+    if(k.endsWith('-month-start')){
+      const newKey=k.slice(0,-'-month-start'.length)+'-monthly-start';
+      if(!monthlyStart[newKey]) monthlyStart[newKey]=monthlyStart[k];
+      delete monthlyStart[k];
+      changed=true;
+    }
+  });
+  if(changed) safeSetItem('gv8-monthly-start',JSON.stringify(monthlyStart));
+})();
 let hiddenAutoMira=safeLoad('gv8-hidden-mira',[]);
 let tasks=safeLoad('gv8-tasks',[]);
 let taskState=safeLoad('gv8-taskstate',{});
@@ -2801,13 +2831,13 @@ function init(){
       migrated=true;
     }
   });
-  if(migrated) localStorage.setItem('gv8-favs',JSON.stringify(favs));
+  if(migrated) safeSetItem('gv8-favs',JSON.stringify(favs));
 
   // 버전2: 기존에 전체 자동-즐겨찾기된 데이터를 초기화
   if(!localStorage.getItem('gv8-favs-v2')){
     favs=[];
-    localStorage.setItem('gv8-favs',JSON.stringify(favs));
-    localStorage.setItem('gv8-favs-v2','1');
+    safeSetItem('gv8-favs',JSON.stringify(favs));
+    safeSetItem('gv8-favs-v2','1');
   }
   // 테마 초기화
   const savedTheme=localStorage.getItem('gv8-theme')||'dark';
@@ -2890,20 +2920,20 @@ function populateSels(){
 }
 
 function save(){
-  localStorage.setItem('gv8-events',JSON.stringify(events));
-  localStorage.setItem('gv8-coupons',JSON.stringify(coupons));
-  localStorage.setItem('gv8-game-events',JSON.stringify(gameEvents));
-  localStorage.setItem('gv8-custom-events',JSON.stringify(customEvents));
-  localStorage.setItem('gv8-inv',JSON.stringify(inventory));
-  localStorage.setItem('gv8-monthly',JSON.stringify(monthlyOn));
-  localStorage.setItem('gv8-monthly-start',JSON.stringify(monthlyStart));
-  localStorage.setItem('gv8-hidden-mira',JSON.stringify(hiddenAutoMira));
-  localStorage.setItem('gv8-char-art',JSON.stringify(charArtCache));
+  safeSetItem('gv8-events',JSON.stringify(events));
+  safeSetItem('gv8-coupons',JSON.stringify(coupons));
+  safeSetItem('gv8-game-events',JSON.stringify(gameEvents));
+  safeSetItem('gv8-custom-events',JSON.stringify(customEvents));
+  safeSetItem('gv8-inv',JSON.stringify(inventory));
+  safeSetItem('gv8-monthly',JSON.stringify(monthlyOn));
+  safeSetItem('gv8-monthly-start',JSON.stringify(monthlyStart));
+  safeSetItem('gv8-hidden-mira',JSON.stringify(hiddenAutoMira));
+  safeSetItem('gv8-char-art',JSON.stringify(charArtCache));
 }
 
 function setSrv(s,silent){
   serverFilter=s;
-  localStorage.setItem('gv8-srv',s);
+  safeSetItem('gv8-srv',s);
   document.querySelectorAll('.st-btn').forEach(b=>b.classList.toggle('act',b.dataset.srv===s));
   if(!silent){renderAll();}
 }
@@ -2935,8 +2965,10 @@ function get5StarRate(pity, gachaConfig){
 }
 
 // 단일 시뮬레이션 한 번 (pulls 횟수만큼 뽑아서 픽업 획득 수 반환)
+// 'spark'(프로세카)는 point_only와 동일한 누적-교환형이라 normalize
+function normSys(s){ return s==='spark'?'point_only':(s||'5050'); }
 function simulateOnce(gc, totalPulls, currentPity, hasGuarantee, target){
-  const sys = gc.pickupSystem || '5050';
+  const sys = normSys(gc.pickupSystem);
   let pity=currentPity, guarantee=hasGuarantee, pickups=0;
   let pointsAccumulated = 0;
   
@@ -3009,16 +3041,34 @@ function simulateOnce(gc, totalPulls, currentPity, hasGuarantee, target){
   return pickups;
 }
 
+// LRU 캐시 (최근 32개) — 같은 입력으로 매 키스트로크마다 8000회 재시뮬을 방지
+const _simCache=new Map();
+const _SIM_CACHE_MAX=32;
+function _simKey(gc, totalPulls, currentPity, hasGuarantee, target){
+  // gc는 GAMES_RAW에서 온 객체라 ID 대용으로 hardPity+pickupSystem+pickupRate 조합 사용
+  return `${gc.pickupSystem||'5050'}|${gc.hardPity||0}|${gc.softPity||0}|${gc.baseRate||0}|${gc.pickupRate||0}|${totalPulls}|${currentPity}|${hasGuarantee?1:0}|${target}`;
+}
 function simulateProbability(gc, totalPulls, currentPity, hasGuarantee, target, trials=8000){
+  const k=_simKey(gc, totalPulls, currentPity, hasGuarantee, target)+`|${trials}`;
+  if(_simCache.has(k)){
+    const v=_simCache.get(k);
+    _simCache.delete(k); _simCache.set(k, v); // LRU 갱신
+    return v;
+  }
   let successes=0;
   for(let t=0;t<trials;t++){
     if(simulateOnce(gc, totalPulls, currentPity, hasGuarantee, target) >= target) successes++;
   }
-  return successes/trials;
+  const p=successes/trials;
+  _simCache.set(k, p);
+  if(_simCache.size>_SIM_CACHE_MAX){
+    _simCache.delete(_simCache.keys().next().value);
+  }
+  return p;
 }
 
 function simulateAverageCost(gc, currentPity, hasGuarantee, target, trials=6000){
-  const sys = gc.pickupSystem || '5050';
+  const sys = normSys(gc.pickupSystem);
   const samples=[];let total=0;
   for(let t=0;t<trials;t++){
     let pity=currentPity, guarantee=hasGuarantee, pickups=0, pulls=0;
@@ -3083,20 +3133,21 @@ function simulateAverageCost(gc, currentPity, hasGuarantee, target, trials=6000)
   return {average:Math.round(total/trials),median:samples[Math.floor(trials/2)],p75:samples[Math.floor(trials*0.75)],p90:samples[Math.floor(trials*0.90)]};
 }
 
-function calcMaxCeiling(gc, target, hasGuarantee){
-  const sys = gc.pickupSystem || '5050';
+function calcMaxCeiling(gc, target, hasGuarantee, currentPity){
+  const sys = normSys(gc.pickupSystem);
+  const pity = currentPity||0;
   if(sys === 'no_pity') return gc.hardPity * target * 2; // 천장 없음, 보수적 추정
-  
-  // point_only: 천장당 1개 확정
-  if(sys === 'point_only') return gc.hardPity * target;
-  
+
+  // point_only / spark: 천장당 1개 확정
+  if(sys === 'point_only') return Math.max(0, gc.hardPity * target - pity);
+
   // guaranteed: 천장당 1개 확정 (픽뚫 보정 없음)
-  if(sys === 'guaranteed') return gc.hardPity * target;
-  
+  if(sys === 'guaranteed') return Math.max(0, gc.hardPity * target - pity);
+
   // 5050: 첫 픽업은 픽뚫 시 2배, 이후는 다음 픽업 확정 + 50% 픽뚫
-  if(gc.pickupRate >= 1.0) return gc.hardPity * target;
-  const firstCost = hasGuarantee ? gc.hardPity : gc.hardPity * 2;
-  return firstCost + gc.hardPity * 2 * (target - 1);
+  if(gc.pickupRate >= 1.0) return Math.max(0, gc.hardPity * target - pity);
+  const firstCost = (hasGuarantee ? gc.hardPity : gc.hardPity * 2) - pity;
+  return Math.max(0, firstCost) + gc.hardPity * 2 * (target - 1);
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -3185,7 +3236,7 @@ function renderGF(){
 
 function toggleFav(id){
   favs=favs.includes(id)?favs.filter(x=>x!==id):[...favs,id];
-  localStorage.setItem('gv8-favs',JSON.stringify(favs));
+  safeSetItem('gv8-favs',JSON.stringify(favs));
   renderAll();
 }
 
@@ -3196,7 +3247,7 @@ function unfavGame(gameId){
   if(!confirm(`'${g.name}' 즐겨찾기를 해제할까요?\n할일 목록에서도 제거됩니다.`)) return;
   // 가능한 모든 키 형태 제거 (g.id, g.id-srv)
   favs=favs.filter(k=>k!==gameId && !g.servers.some(s=>k===`${gameId}-${s}`));
-  localStorage.setItem('gv8-favs',JSON.stringify(favs));
+  safeSetItem('gv8-favs',JSON.stringify(favs));
   renderAll();
   toast('★ 즐겨찾기 해제됨');
 }
@@ -3690,7 +3741,7 @@ function renderInventory(){
       const inv=inventory[key]||{};
       const monthKey=`${g.id}-${srv}-monthly`;
       const monthOnState=monthlyOn[monthKey]||false;
-      const monthStartKey=`${g.id}-${srv}-month-start`;
+      const monthStartKey=`${g.id}-${srv}-monthly-start`;
       const monthStartDate=monthlyStart[monthStartKey]||'';
       
       let monthlyRemaining=0, monthlyDaysLeft=0;
@@ -3842,7 +3893,7 @@ function resetPaidSpent(key, cid){
   if(!confirm('이 게임의 누적 유료돌 사용량을 0으로 초기화할까요?'))return;
   if(!inventory[key])inventory[key]={};
   inventory[key][cid+'_paid_spent']=0;
-  localStorage.setItem('gv8-inv',JSON.stringify(inventory));
+  safeSetItem('gv8-inv',JSON.stringify(inventory));
   renderInventory();
   toast('🔄 누적 유료돌 초기화됨');
 }
@@ -3850,7 +3901,7 @@ function saveInv(key,cid,val){
   if(!inventory[key])inventory[key]={};
   inventory[key][cid]=parseInt(val)||0;
   // localStorage 저장만 (UI 재렌더 없이)
-  localStorage.setItem('gv8-inv',JSON.stringify(inventory));
+  safeSetItem('gv8-inv',JSON.stringify(inventory));
   // 직접 입력값을 헤더 총합/뽑기수/비율에 즉시 반영 (포커스 유지)
   updateInvTotals(key);
 }
@@ -3858,8 +3909,7 @@ function saveInv(key,cid,val){
 function updateInvTotals(key){
   const block=document.querySelector(`.inv-primary-block[data-inv-block="${key}"]`);
   if(!block) return;
-  const idx=key.indexOf('-');
-  const gid=key.slice(0,idx), srv=key.slice(idx+1);
+  const [gid, srv]=parseInvKey(key);
   const g=GAMES.find(x=>x.id===gid); if(!g) return;
   const c=g.currencies[0]; if(!c) return;
   const inv=inventory[key]||{};
@@ -3905,7 +3955,7 @@ function saveMonthDays(key, val){
   } else {
     inventory[key]._monthDaysOverride=Math.min(30, v);
   }
-  localStorage.setItem('gv8-inv',JSON.stringify(inventory));
+  safeSetItem('gv8-inv',JSON.stringify(inventory));
 }
 // 입력 종료(blur) 시에만 다른 페이지 갱신
 function finalizeInv(){
@@ -3931,7 +3981,7 @@ function setMonthlyStart(key,date){
 function ccGuarToggle(key,gid,srv,checked){
   if(!inventory[key])inventory[key]={};
   inventory[key]['_guarantee']=checked?1:0;
-  localStorage.setItem('gv8-inv',JSON.stringify(inventory));
+  safeSetItem('gv8-inv',JSON.stringify(inventory));
   ccCalc(key,gid,srv);
 }
 
@@ -4020,24 +4070,10 @@ function renderCalc(){
       <div class="widget-dots" data-wc-dots="calc">${meta.map((m,i)=>`<button class="widget-dot ${i===0?'active':''}" data-idx="${i}" title="${m.g.short}${m.srv!=='all'?` (${SRV_LBL[m.srv]||m.srv})`:''}" onclick="scrollWidgetTo('calc',${i})" style="${i===0?`background:${m.g.color}`:''}"></button>`).join('')}</div>
       <div class="widget-hint">← 게임별로 스와이프 ${meta.length}/${meta.length} →</div>
     </div>`;
-    // 캐러셀 스크롤 ↔ 도트 동기화
+    // 캐러셀 스크롤 ↔ 도트 동기화 (공용 bindCarousel 사용)
     setTimeout(()=>{
       const track=grid.querySelector('.widget-track[data-wc="calc"]');
-      if(track && !track._wcInited){
-        track._wcInited=true;
-        const dots=grid.querySelectorAll('[data-wc-dots="calc"] .widget-dot');
-        const updateDots=()=>{
-          const w=track.clientWidth;
-          const i=Math.round(track.scrollLeft/Math.max(1,w+10));
-          dots.forEach((d,k)=>{
-            d.classList.toggle('active', k===i);
-            if(k===i) d.style.background=meta[k]?.g.color||'';
-            else d.style.background='';
-          });
-        };
-        track.addEventListener('scroll', updateDots, {passive:true});
-        updateDots();
-      }
+      if(track) bindCarousel(track);
     }, 50);
   }
   if(cards.length){
@@ -4064,13 +4100,18 @@ function ccUpd(key,cid,val){
   if(!inventory[key])inventory[key]={};
   inventory[key][cid]=parseInt(val)||0;
   // localStorage 저장만 (즉시)
-  localStorage.setItem('gv8-inv',JSON.stringify(inventory));
+  safeSetItem('gv8-inv',JSON.stringify(inventory));
   // 계산은 350ms 후 (입력 중에는 재계산 안 함)
   if(ccUpdTimer)clearTimeout(ccUpdTimer);
   ccUpdTimer=setTimeout(()=>{
-    const[gid,srv]=key.split('-');
+    const[gid,srv]=parseInvKey(key);
     ccCalc(key,gid,srv);
   },350);
+}
+// gid가 하이픈을 포함해도 안전 (ex: future bluearchive-jp)
+function parseInvKey(key){
+  const i=key.lastIndexOf('-');
+  return i<0?[key,'all']:[key.slice(0,i), key.slice(i+1)];
 }
 function ccCalc(key,gid,srv){
   const g=GAMES.find(x=>x.id===gid);if(!g)return;
@@ -4091,7 +4132,7 @@ function ccCalc(key,gid,srv){
   const effectivePulls=totalPulls+monthBonus;
   const probability=simulateProbability(pc, effectivePulls, pity, guar===1, tgt);
   const costStats=simulateAverageCost(pc, pity, guar===1, tgt);
-  const maxCeiling=calcMaxCeiling(pc, tgt, guar===1);
+  const maxCeiling=calcMaxCeiling(pc, tgt, guar===1, pity);
   const sys = pc.pickupSystem || '5050';
   // 천장 도달 판정 (시스템별)
   // - no_pity: 천장 없음 (FGO 구버전 등)
@@ -4147,6 +4188,10 @@ function ccCalc(key,gid,srv){
     ${(()=>{
       // 달성도 = 보유 뽑기 / 천장 보장 횟수 비율 (얼마나 천장까지 차 있는지)
       const maxGuar = getMaxGuaranteedPulls(g);
+      if(maxGuar==null){
+        // 천장 없는 시스템 (no_pity): 달성도 바 미표시
+        return '';
+      }
       const totalAvail = effectivePulls + pity; // 보유 뽑기 + 현재 천장 카운트
       const achPct = maxGuar>0 ? Math.min(100, Math.round(totalAvail / maxGuar * 100)) : 0;
       const isFull = achPct>=100;
@@ -4552,7 +4597,7 @@ function closeDayDetail(){
 function delCustomEvtFromPopup(id, dateStr){
   if(!confirm('이 일정을 삭제하시겠습니까?')) return;
   customEvents=customEvents.filter(c=>c.id!==id);
-  localStorage.setItem('gv8-custom-events',JSON.stringify(customEvents));
+  safeSetItem('gv8-custom-events',JSON.stringify(customEvents));
   renderCalendar();
   // 팝업 갱신
   closeDayDetail();
@@ -4834,8 +4879,8 @@ function initTaskResets(){
   if(resetD) resets.daily=todayStr;
   if(resetW) resets.weekly=monStr;
   if(resetM) resets.monthly=m1;
-  localStorage.setItem('gv8-task-resets',JSON.stringify(resets));
-  localStorage.setItem('gv8-taskstate',JSON.stringify(taskState));
+  safeSetItem('gv8-task-resets',JSON.stringify(resets));
+  safeSetItem('gv8-taskstate',JSON.stringify(taskState));
 }
 
 function getTaskMax(gid,t){const tid=`${gid}_${t.key}`;return(taskOverrides[tid]&&taskOverrides[tid].max)||t.max||1;}
@@ -5014,12 +5059,12 @@ function toggleTask2(tid){
     max=getTaskMax(gid,t);
   }
   taskState[tid]=(taskState[tid]||0)>=max?0:max;
-  localStorage.setItem('gv8-taskstate',JSON.stringify(taskState));
+  safeSetItem('gv8-taskstate',JSON.stringify(taskState));
   renderTasks();
 }
 function stepTask2(tid,max,delta){
   taskState[tid]=Math.max(0,Math.min(max,(taskState[tid]||0)+delta));
-  localStorage.setItem('gv8-taskstate',JSON.stringify(taskState));
+  safeSetItem('gv8-taskstate',JSON.stringify(taskState));
   renderTasks();
 }
 
@@ -5028,20 +5073,20 @@ function deleteTask2(tid){
   if(tid.startsWith('ct-')){
     // 커스텀 할일 삭제
     customTasks=customTasks.filter(t=>t.id!==tid);
-    localStorage.setItem('gv8-custom-tasks',JSON.stringify(customTasks));
+    safeSetItem('gv8-custom-tasks',JSON.stringify(customTasks));
   } else {
     // 기본 할일 (출석체크 등) 숨기기
     if(!taskHidden.includes(tid)) taskHidden.push(tid);
-    localStorage.setItem('gv8-task-hidden',JSON.stringify(taskHidden));
+    safeSetItem('gv8-task-hidden',JSON.stringify(taskHidden));
   }
   delete taskState[tid];
-  localStorage.setItem('gv8-taskstate',JSON.stringify(taskState));
+  safeSetItem('gv8-taskstate',JSON.stringify(taskState));
   renderTasks();
   toast('🗑 할일 삭제됨');
 }
 function restoreHiddenTasks(gid){
   taskHidden=taskHidden.filter(tid=>!tid.startsWith(gid+'_'));
-  localStorage.setItem('gv8-task-hidden',JSON.stringify(taskHidden));
+  safeSetItem('gv8-task-hidden',JSON.stringify(taskHidden));
   renderTasks();
 }
 function openAddTask(){
@@ -5067,7 +5112,7 @@ function saveAddTask(){
   const freq=document.getElementById('at-freq').value;
   const max=Math.max(1,parseInt(document.getElementById('at-max').value)||1);
   customTasks.push({id:'ct-'+Date.now()+'-'+Math.random().toString(36).slice(2,5),game,name,freq,max});
-  localStorage.setItem('gv8-custom-tasks',JSON.stringify(customTasks));
+  safeSetItem('gv8-custom-tasks',JSON.stringify(customTasks));
   closeAddTask();
   renderTasks();
   toast('✅ 할일 추가됨');
@@ -5100,10 +5145,10 @@ function saveTaskEdit(){
   if(taskEditType==='custom'){
     const ct=customTasks.find(t=>t.id===taskEditTid);
     if(ct){ct.name=name;ct.max=max;}
-    localStorage.setItem('gv8-custom-tasks',JSON.stringify(customTasks));
+    safeSetItem('gv8-custom-tasks',JSON.stringify(customTasks));
   } else {
     taskOverrides[taskEditTid]={name,max};
-    localStorage.setItem('gv8-task-overrides',JSON.stringify(taskOverrides));
+    safeSetItem('gv8-task-overrides',JSON.stringify(taskOverrides));
   }
   closeTaskEdit();
   renderTasks();
@@ -5111,7 +5156,7 @@ function saveTaskEdit(){
 function resetTaskEdit(){
   if(!taskEditTid||taskEditType!=='predefined')return;
   delete taskOverrides[taskEditTid];
-  localStorage.setItem('gv8-task-overrides',JSON.stringify(taskOverrides));
+  safeSetItem('gv8-task-overrides',JSON.stringify(taskOverrides));
   closeTaskEdit();
   renderTasks();
 }
@@ -5175,12 +5220,19 @@ function renderStats(){
       totalFreeUsed+=free;
       totalPaidUsed+=paid;
     }
-    // 추가 시도들의 spentCurrency도 무료로 간주(메타 없음)
+    // 추가 시도들 (신규 스키마: free/paid 분리, 레거시: 무료 간주)
+    let attemptsPaid=0;
     (e.attempts||[]).forEach(a=>{
-      totalFreeUsed += a.spentCurrency||0;
+      if(a.freeCurrencyUsed!=null || a.paidCurrencyUsed!=null){
+        totalFreeUsed += a.freeCurrencyUsed||0;
+        totalPaidUsed += a.paidCurrencyUsed||0;
+        attemptsPaid += a.paidCurrencyUsed||0;
+      } else {
+        totalFreeUsed += a.spentCurrency||0;
+      }
     });
-    // 실제 지출은 유료돌만 환산 (무료돌 제외)
-    totalKRW+=Math.round(paid * (g.gacha.pricePerPull/g.gacha.pullCost));
+    // 실제 지출은 유료돌만 환산 (무료돌 제외, 첫 시도 + 추가 시도 모두 포함)
+    totalKRW+=Math.round((paid+attemptsPaid) * (g.gacha.pricePerPull/g.gacha.pullCost));
   });
   const totalPickups=summarized.length;
   const successRate=(totalSuccess+totalFail)>0?Math.round(totalSuccess/(totalSuccess+totalFail)*100):0;
@@ -5205,7 +5257,7 @@ function renderStats(){
         else if(a.result==='fail') fail++;
         pulls += a.spentPulls||0;
       });
-      const paid=e.paidCurrencyUsed||0;
+      const paid=totalEventPaidUsed(e);
       if(paid>0) kr += Math.round(paid*(g.gacha.pricePerPull/g.gacha.pullCost));
     });
     return {count:evts.length, pulls, succ, fail, krw:kr, sr:(succ+fail)>0?Math.round(succ/(succ+fail)*100):0};
@@ -5293,18 +5345,23 @@ function renderStats(){
         groupPulls += a.spentPulls||0;
         groupCurrency += a.spentCurrency||0;
       });
-      // 명함(첫 시도)만 free/paid 메타 보유 — 추가 시도는 무료로 간주
+      // 명함(첫 시도)
       const free=p.freeCurrencyUsed||0;
       const paid=p.paidCurrencyUsed||0;
       if(free===0 && paid===0){
-        groupFreeUsed+=p.spentCurrency||0; // 레거시: 첫 시도는 전체 무료
+        groupFreeUsed+=p.spentCurrency||0; // 레거시: 전체 무료로 간주
       } else {
         groupFreeUsed+=free;
         groupPaidUsed+=paid;
       }
-      // 추가 시도들의 spentCurrency는 일단 무료로 간주 (메타 미입력)
+      // 추가 시도들 (신규 스키마 우선, 레거시는 spentCurrency를 무료로 간주)
       (p.attempts||[]).forEach(a=>{
-        groupFreeUsed += a.spentCurrency||0;
+        if(a.freeCurrencyUsed!=null || a.paidCurrencyUsed!=null){
+          groupFreeUsed += a.freeCurrencyUsed||0;
+          groupPaidUsed += a.paidCurrencyUsed||0;
+        } else {
+          groupFreeUsed += a.spentCurrency||0;
+        }
       });
     });
     // 결과 없는 픽업은 untried (아직 결과 미입력 상태로 기록만 한 경우)
@@ -5663,7 +5720,7 @@ function saveEvt(){
     const invKey2=`${entry.game}-${srvKey2}`;
     if(!inventory[invKey2])inventory[invKey2]={};
     inventory[invKey2]['_guarantee']=entry.hasGuaranteed?1:0;
-    localStorage.setItem('gv8-inv',JSON.stringify(inventory));
+    safeSetItem('gv8-inv',JSON.stringify(inventory));
   }
   // ──────────────────────────────────────────────────────────────
 
@@ -5671,7 +5728,7 @@ function saveEvt(){
   // 픽업 저장 시 해당 게임/서버 자동 즐겨찾기
   if(g){
     const favKey=g.servers.includes('all')?entry.game:`${entry.game}-${entry.srv}`;
-    if(!favs.includes(favKey)){favs.push(favKey);localStorage.setItem('gv8-favs',JSON.stringify(favs));}
+    if(!favs.includes(favKey)){favs.push(favKey);safeSetItem('gv8-favs',JSON.stringify(favs));}
   }
   save();closeEvt();renderAll();
   toast(newSpentCurrency>0?`✅ 저장${toastSuffix}`:'✅ 저장!');
@@ -5812,7 +5869,7 @@ function setAlarms(idx){
       if(t>now){setTimeout(()=>new Notification('가챠 트래커',{body:msg}),t-now);cnt.push(t);}
     });
     alarms[`e-${idx}`]={char:e.char,n:cnt.length};
-    localStorage.setItem('gv8-alarms',JSON.stringify(alarms));
+    safeSetItem('gv8-alarms',JSON.stringify(alarms));
     renderSchedule();toast(cnt.length?`🔔 알람 ${cnt.length}개 (브라우저 탭 열려있는 동안만 작동)`:`⚠️ 설정할 일정이 없음`);
   });
 }
@@ -5876,7 +5933,7 @@ function saveApiKey(){
   if(!v.startsWith('AIza')){
     if(!confirm('Gemini API 키는 "AIza"로 시작합니다. 그래도 저장하시겠습니까?')) return;
   }
-  localStorage.setItem('gv8-api-key',v);
+  safeSetItem('gv8-api-key',v);
   input.value='';
   refreshApiStatus();
   toast('✅ Gemini API 키 저장됨 (이 기기에만)');
@@ -6872,8 +6929,8 @@ function aiRegPickupBulk(){
       if(!favs.includes(favKey)){favs.push(favKey);}
     }
   });
-  localStorage.setItem('gv8-events',JSON.stringify(events));
-  localStorage.setItem('gv8-favs',JSON.stringify(favs));
+  safeSetItem('gv8-events',JSON.stringify(events));
+  safeSetItem('gv8-favs',JSON.stringify(favs));
   renderAll();
   toast(`✅ ${added}건 등록 완료`);
 }
@@ -7048,7 +7105,7 @@ function applyTheme(theme){
   document.body.classList.toggle('light', theme==='light');
   const btn=document.getElementById('themeBtn');
   if(btn) btn.textContent=theme==='light'?'☀️':'🌙';
-  localStorage.setItem('gv8-theme', theme);
+  safeSetItem('gv8-theme', theme);
 }
 function toggleTheme(){
   applyTheme(document.body.classList.contains('light')?'dark':'light');
@@ -7137,13 +7194,13 @@ function applyImportedData(d){
   if(d.monthlyOn) monthlyOn=d.monthlyOn; if(d.monthlyStart) monthlyStart=d.monthlyStart;
   if(d.favs) favs=d.favs; if(d.alarms) alarms=d.alarms;
   if(d.hiddenAutoMira) hiddenAutoMira=d.hiddenAutoMira;
-  if(d.wishlist) {wishlist=d.wishlist; localStorage.setItem('gv8-wishlist',JSON.stringify(wishlist));}
-  if(d.alarmConfig) {alarmConfig=d.alarmConfig; localStorage.setItem('gv8-alarm-config',JSON.stringify(alarmConfig));}
-  if(typeof d.monthlyBudget==='number') {monthlyBudget=d.monthlyBudget; localStorage.setItem('gv8-monthly-budget',JSON.stringify(monthlyBudget));}
-  if(d.customTasks){customTasks=d.customTasks;localStorage.setItem('gv8-custom-tasks',JSON.stringify(customTasks));}
-  if(d.taskState){taskState=d.taskState;localStorage.setItem('gv8-taskstate',JSON.stringify(taskState));}
-  if(d.taskHidden){taskHidden=d.taskHidden;localStorage.setItem('gv8-task-hidden',JSON.stringify(taskHidden));}
-  if(d.taskOverrides){taskOverrides=d.taskOverrides;localStorage.setItem('gv8-task-overrides',JSON.stringify(taskOverrides));}
+  if(d.wishlist) {wishlist=d.wishlist; safeSetItem('gv8-wishlist',JSON.stringify(wishlist));}
+  if(d.alarmConfig) {alarmConfig=d.alarmConfig; safeSetItem('gv8-alarm-config',JSON.stringify(alarmConfig));}
+  if(typeof d.monthlyBudget==='number') {monthlyBudget=d.monthlyBudget; safeSetItem('gv8-monthly-budget',JSON.stringify(monthlyBudget));}
+  if(d.customTasks){customTasks=d.customTasks;safeSetItem('gv8-custom-tasks',JSON.stringify(customTasks));}
+  if(d.taskState){taskState=d.taskState;safeSetItem('gv8-taskstate',JSON.stringify(taskState));}
+  if(d.taskHidden){taskHidden=d.taskHidden;safeSetItem('gv8-task-hidden',JSON.stringify(taskHidden));}
+  if(d.taskOverrides){taskOverrides=d.taskOverrides;safeSetItem('gv8-task-overrides',JSON.stringify(taskOverrides));}
 }
 
 // ── GitHub Gist 동기화 ────────────────────────────────────
@@ -7171,7 +7228,7 @@ function toggleAutoBackup(on){
     document.getElementById('gist-auto-backup').checked=false;
     return;
   }
-  localStorage.setItem('gv8-auto-backup', on?'1':'0');
+  safeSetItem('gv8-auto-backup', on?'1':'0');
   toast(on?'🔁 자동 백업 켜짐':'자동 백업 꺼짐');
 }
 function closeGistSync(){document.getElementById('gistOvl').classList.remove('open');}
@@ -7181,7 +7238,7 @@ async function gistUpload(){
   const idInput=document.getElementById('gist-id').value.trim();
   if(!tk){toast('⚠️ Token을 입력하세요');return;}
   
-  localStorage.setItem('gv8-gist-token',tk);
+  safeSetItem('gv8-gist-token',tk);
   
   const data={version:'v21',exportedAt:new Date().toISOString(),events,coupons,gameEvents,customEvents,inventory,monthlyOn,monthlyStart,favs,alarms,hiddenAutoMira,serverFilter,wishlist,alarmConfig,monthlyBudget,customTasks,taskState,taskHidden,taskOverrides};
   const content=JSON.stringify(data,null,2);
@@ -7213,8 +7270,8 @@ async function gistUpload(){
     }
     
     const result=await res.json();
-    localStorage.setItem('gv8-gist-id',result.id);
-    localStorage.setItem('gv8-gist-last-sync',new Date().toISOString());
+    safeSetItem('gv8-gist-id',result.id);
+    safeSetItem('gv8-gist-last-sync',new Date().toISOString());
     document.getElementById('gist-id').value=result.id;
     document.getElementById('gist-status').textContent=`✅ 업로드 완료: ${new Date().toLocaleString('ko-KR')}`;
     toast('☁️ Gist에 업로드 완료!');
@@ -7233,8 +7290,8 @@ async function gistDownload(){
   
   if(!confirm('☁️ Gist에서 데이터를 받아옵니다.\n현재 데이터는 덮어쓰여집니다. 계속?')) return;
   
-  localStorage.setItem('gv8-gist-token',tk);
-  localStorage.setItem('gv8-gist-id',id);
+  safeSetItem('gv8-gist-token',tk);
+  safeSetItem('gv8-gist-id',id);
   
   const btn=document.getElementById('gist-download-btn');
   btn.disabled=true; btn.textContent='다운로드 중...';
@@ -7255,7 +7312,7 @@ async function gistDownload(){
     
     applyImportedData(d);
     save(); renderAll();
-    localStorage.setItem('gv8-gist-last-sync',new Date().toISOString());
+    safeSetItem('gv8-gist-last-sync',new Date().toISOString());
     document.getElementById('gist-status').textContent=`✅ 다운로드 완료: ${new Date().toLocaleString('ko-KR')}`;
     toast(`✅ 복원 완료! 픽업 ${events.length}건`);
     closeGistSync();
@@ -7295,16 +7352,26 @@ function eventMatchesResult(e){
 function toggleListView(){} // deprecated
 function toggleGF(){
   const cur=localStorage.getItem('gv8-gf-collapsed')==='1';
-  localStorage.setItem('gv8-gf-collapsed',cur?'0':'1');
+  safeSetItem('gv8-gf-collapsed',cur?'0':'1');
   renderGF();
 }
 function qAddInv(key,cid,amount){
   if(!inventory[key])inventory[key]={};
   const cur=inventory[key][cid]||0;
   // 음수일 때 0 미만으로 가지 않게
-  inventory[key][cid]=Math.max(0, cur+amount);
-  localStorage.setItem('gv8-inv',JSON.stringify(inventory));
-  renderInventory();
+  const next=Math.max(0, cur+amount);
+  inventory[key][cid]=next;
+  safeSetItem('gv8-inv',JSON.stringify(inventory));
+  // 입력 input 값도 동기화 (포커스 유지를 위해 부분 갱신)
+  const block=document.querySelector(`.inv-primary-block[data-inv-block="${key}"]`);
+  if(block){
+    // 전체 input 중 oninput에 cid가 들어간 것 매칭
+    block.querySelectorAll('input.inv-input').forEach(inp=>{
+      const ev=inp.getAttribute('oninput')||'';
+      if(ev.includes(`'${cid}'`)) inp.value=next||'';
+    });
+  }
+  updateInvTotals(key);
   toast((amount>0?'+':'')+amount.toLocaleString()+' 적용');
 }
 function qAddCalc(key,cid,inputId,amount){
@@ -7314,7 +7381,7 @@ function qAddCalc(key,cid,inputId,amount){
   if(el)el.value=nv;
   if(!inventory[key])inventory[key]={};
   inventory[key][cid]=nv;
-  localStorage.setItem('gv8-inv',JSON.stringify(inventory));
+  safeSetItem('gv8-inv',JSON.stringify(inventory));
   const ld=key.lastIndexOf('-');
   ccCalcDebounced(key,key.slice(0,ld),key.slice(ld+1));
 }
@@ -7347,7 +7414,7 @@ function renderStatsCharts(){
   recorded.forEach(e=>{
     const g=GAMES.find(x=>x.id===e.game); if(!g) return;
     if(!gameSpend[g.id]) gameSpend[g.id]={name:g.name,color:g.color,krw:0,pulls:0};
-    gameSpend[g.id].krw+=Math.round((e.paidCurrencyUsed||0)*(g.gacha.pricePerPull/g.gacha.pullCost));
+    gameSpend[g.id].krw+=Math.round(totalEventPaidUsed(e)*(g.gacha.pricePerPull/g.gacha.pullCost));
     gameSpend[g.id].pulls+=e.spentPulls||0;
   });
   const maxKRW=Math.max(...Object.values(gameSpend).map(v=>v.krw),1);
@@ -7461,13 +7528,13 @@ function renderStatsInsight(){
   const fail=recorded.filter(e=>e.result==='fail').length;
   const overallRate=Math.round(succ/recorded.length*100);
   let totalPulls=0,totalPaid=0,totalKRW=0;
-  recorded.forEach(e=>{const g=GAMES.find(x=>x.id===e.game);if(!g)return;totalPulls+=e.spentPulls||0;totalPaid+=e.paidCurrencyUsed||0;totalKRW+=Math.round((e.paidCurrencyUsed||0)*(g.gacha.pricePerPull/g.gacha.pullCost));});
+  recorded.forEach(e=>{const g=GAMES.find(x=>x.id===e.game);if(!g)return;totalPulls+=e.spentPulls||0;const paid=totalEventPaidUsed(e);totalPaid+=paid;totalKRW+=Math.round(paid*(g.gacha.pricePerPull/g.gacha.pullCost));});
   const avgPPS=succ?Math.round(totalPulls/succ):0;
   const r5050=recorded.filter(e=>{const g=GAMES.find(x=>x.id===e.game);return g&&g.gacha.pickupSystem==='5050';});
   const r5050succ=r5050.filter(e=>e.result==='success').length;
   const r5050rate=r5050.length?Math.round(r5050succ/r5050.length*100):null;
   const gameMap={};
-  recorded.forEach(e=>{const g=GAMES.find(x=>x.id===e.game);if(!g)return;if(!gameMap[g.id]){gameMap[g.id]={name:g.name,color:g.color,pulls:0,krw:0,succ:0,total:0};}gameMap[g.id].pulls+=e.spentPulls||0;gameMap[g.id].krw+=Math.round((e.paidCurrencyUsed||0)*(g.gacha.pricePerPull/g.gacha.pullCost));if(e.result==='success')gameMap[g.id].succ++;gameMap[g.id].total++;});
+  recorded.forEach(e=>{const g=GAMES.find(x=>x.id===e.game);if(!g)return;if(!gameMap[g.id]){gameMap[g.id]={name:g.name,color:g.color,pulls:0,krw:0,succ:0,total:0};}gameMap[g.id].pulls+=e.spentPulls||0;gameMap[g.id].krw+=Math.round(totalEventPaidUsed(e)*(g.gacha.pricePerPull/g.gacha.pullCost));if(e.result==='success')gameMap[g.id].succ++;gameMap[g.id].total++;});
   const topGame=Object.values(gameMap).sort((a,b)=>b.krw-a.krw)[0];
   const d30=new Date();d30.setDate(d30.getDate()-30);
   const recent=recorded.filter(e=>new Date(e.start)>=d30).length;
@@ -7623,7 +7690,7 @@ document.addEventListener('keydown',e=>{
 // ════════════════════════════════════════════════════════════════
 function toggleAiFavOnly(){
   const cur=localStorage.getItem('gv8-ai-fav-only')==='1';
-  localStorage.setItem('gv8-ai-fav-only', cur?'0':'1');
+  safeSetItem('gv8-ai-fav-only', cur?'0':'1');
   populateAiGameSelect();
   const btn=document.getElementById('aiFavToggle');
   if(btn){btn.classList.toggle('act',!cur);btn.textContent=!cur?'⭐ 즐겨찾기만':'⭐ 전체';}
@@ -7748,9 +7815,9 @@ function aggregateCharacters(){
       byKey[key].totalPulls += a.spentPulls||0;
       byKey[key].attempts.push({...a, eventDate:e.start, eventId:e.id, eventType:e.type});
     });
-    // 지출은 명함(첫 시도)의 paidCurrencyUsed만 환산 (무료돌 제외)
+    // 지출은 명함+추가 시도들의 paidCurrencyUsed 합산 환산 (무료돌 제외)
     if(g){
-      const paid=e.paidCurrencyUsed||0;
+      const paid=totalEventPaidUsed(e);
       if(paid>0){
         byKey[key].totalKrw += Math.round(paid * (g.gacha.pricePerPull/g.gacha.pullCost));
       }
@@ -7943,7 +8010,7 @@ function openCharArtUpload(){
 function clearCharArt(){
   const ck=`${_galCurGame}::${_galCurChar}`;
   delete charArtCache[ck];
-  localStorage.setItem('gv8-char-art',JSON.stringify(charArtCache));
+  safeSetItem('gv8-char-art',JSON.stringify(charArtCache));
   const imgEl=document.getElementById('galDetailArtImg');
   const svgEl=document.getElementById('galDetailArtSvg');
   const clearBtn=document.getElementById('galArtClearBtn');
@@ -7971,7 +8038,7 @@ document.getElementById('charArtInput').addEventListener('change',function(){
       const dataUrl=canvas.toDataURL('image/jpeg',0.82);
       const ck=`${_galCurGame}::${_galCurChar}`;
       charArtCache[ck]=dataUrl;
-      localStorage.setItem('gv8-char-art',JSON.stringify(charArtCache));
+      safeSetItem('gv8-char-art',JSON.stringify(charArtCache));
       const imgEl=document.getElementById('galDetailArtImg');
       const svgEl=document.getElementById('galDetailArtSvg');
       const clearBtn=document.getElementById('galArtClearBtn');
@@ -8251,7 +8318,7 @@ function applyGameTheme(){
 function toggleGameTheme(){
   const cur=localStorage.getItem('gv8-game-theme')||'auto';
   const next=cur==='off'?'auto':'off';
-  localStorage.setItem('gv8-game-theme',next);
+  safeSetItem('gv8-game-theme',next);
   applyGameTheme();
   toast(next==='off'?'🎨 기본 테마':'🎨 게임 테마 적용 (즐겨찾기 1순위)');
 }
@@ -8263,6 +8330,14 @@ function toggleGameTheme(){
 // 라벨은 누적 성공 수 기준으로 동적으로 재계산 (저장된 label은 무시)
 //   - 성공: 첫 성공 = 명함, 이후 +1돌, +2돌, ...
 //   - 픽뚫: "픽뚫" 또는 "픽뚫 #N" (성공과 무관, 별도 카운트)
+// 이벤트의 명함+attempts[] 전체 유료/무료 합산 (KRW 환산 시 사용)
+function totalEventPaidUsed(e){
+  let p=e.paidCurrencyUsed||0;
+  (e.attempts||[]).forEach(a=>{
+    if(a.paidCurrencyUsed!=null) p += a.paidCurrencyUsed;
+  });
+  return p;
+}
 function getAllAttempts(e){
   if(!e) return [];
   const list=[];
@@ -8394,28 +8469,46 @@ function saveAttempt(){
     toast('⚠️ 뽑기수 또는 재화량 입력 필요');return;
   }
   if(!Array.isArray(e.attempts)) e.attempts=[];
-  // 첫 시도 데이터가 비어있으면 첫 시도로 채움
-  if(!e.result || e.result==='untried') {
-    if(!e.spentPulls && !e.spentCurrency) {
-      e.result=result;
-      e.spentPulls=pulls;
-      e.spentCurrency=currency;
-    } else {
-      e.attempts.push({result,spentPulls:pulls,spentCurrency:currency,label,ts:Date.now()});
-    }
-  } else {
-    e.attempts.push({result,spentPulls:pulls,spentCurrency:currency,label,ts:Date.now()});
-  }
-  // 인벤토리에서 차감 (있는 경우)
+  // 인벤토리에서 무료→유료 순으로 차감 + 사용량 분리 기록
   const g=GAMES.find(x=>x.id===e.game);
+  let freeUsed=0, paidUsed=0;
   if(g && currency>0){
     const srvKey=e.srv==='all'?g.servers[0]:e.srv;
     const invKey=`${e.game}-${srvKey}`;
     if(!inventory[invKey]) inventory[invKey]={};
     const primCurId=g.currencies[0]?.id;
     if(primCurId){
-      inventory[invKey][primCurId]=Math.max(0,(inventory[invKey][primCurId]||0)-currency);
+      let remaining=currency;
+      const freeHave=inventory[invKey][primCurId]||0;
+      const paidHave=inventory[invKey][primCurId+'_paid']||0;
+      freeUsed=Math.min(freeHave, remaining);
+      inventory[invKey][primCurId]=freeHave-freeUsed;
+      remaining-=freeUsed;
+      if(remaining>0){
+        paidUsed=Math.min(paidHave, remaining);
+        inventory[invKey][primCurId+'_paid']=paidHave-paidUsed;
+        remaining-=paidUsed;
+        if(paidUsed>0){
+          inventory[invKey][primCurId+'_paid_spent']=(inventory[invKey][primCurId+'_paid_spent']||0)+paidUsed;
+        }
+      }
+      // 부족분은 무료 사용으로 간주 (인벤토리 미입력 케이스)
+      if(remaining>0){ freeUsed+=remaining; }
     }
+  }
+  // 첫 시도 데이터가 비어있으면 첫 시도로 채움
+  if(!e.result || e.result==='untried') {
+    if(!e.spentPulls && !e.spentCurrency) {
+      e.result=result;
+      e.spentPulls=pulls;
+      e.spentCurrency=currency;
+      e.freeCurrencyUsed=freeUsed;
+      e.paidCurrencyUsed=paidUsed;
+    } else {
+      e.attempts.push({result,spentPulls:pulls,spentCurrency:currency,freeCurrencyUsed:freeUsed,paidCurrencyUsed:paidUsed,label,ts:Date.now()});
+    }
+  } else {
+    e.attempts.push({result,spentPulls:pulls,spentCurrency:currency,freeCurrencyUsed:freeUsed,paidCurrencyUsed:paidUsed,label,ts:Date.now()});
   }
   save();renderAll();
   toast(`✅ ${label} 시도 등록 (${result==='success'?'획득':'픽뚫'})`);
@@ -8426,7 +8519,7 @@ function deleteAttempt(eid, attemptIdx){
   const e=events.find(x=>x.id===eid);
   if(!e || !Array.isArray(e.attempts) || !e.attempts[attemptIdx]) return;
   if(!confirm('이 시도 기록을 삭제할까요?')) return;
-  // 인벤토리 복구
+  // 인벤토리 복구 (무료/유료 분리 + 누적 유료 사용량 차감)
   const a=e.attempts[attemptIdx];
   const g=GAMES.find(x=>x.id===e.game);
   if(g && a.spentCurrency>0){
@@ -8434,7 +8527,16 @@ function deleteAttempt(eid, attemptIdx){
     const invKey=`${e.game}-${srvKey}`;
     if(inventory[invKey]){
       const primCurId=g.currencies[0]?.id;
-      if(primCurId) inventory[invKey][primCurId]=(inventory[invKey][primCurId]||0)+a.spentCurrency;
+      if(primCurId){
+        // 신규 스키마(free/paid 분리) 우선, 없으면 레거시 spentCurrency를 무료로 간주
+        const freeUsed = a.freeCurrencyUsed!=null ? a.freeCurrencyUsed : a.spentCurrency;
+        const paidUsed = a.paidCurrencyUsed||0;
+        if(freeUsed>0) inventory[invKey][primCurId]=(inventory[invKey][primCurId]||0)+freeUsed;
+        if(paidUsed>0){
+          inventory[invKey][primCurId+'_paid']=(inventory[invKey][primCurId+'_paid']||0)+paidUsed;
+          inventory[invKey][primCurId+'_paid_spent']=Math.max(0,(inventory[invKey][primCurId+'_paid_spent']||0)-paidUsed);
+        }
+      }
     }
   }
   e.attempts.splice(attemptIdx,1);
@@ -8468,7 +8570,7 @@ function addWishlist(){
     toast('⚠️ 이미 위시리스트에 있는 캐릭터입니다');return;
   }
   wishlist.push({id:'w-'+Date.now()+'-'+Math.random().toString(36).slice(2,5),game,char,memo,addedAt:new Date().toISOString()});
-  localStorage.setItem('gv8-wishlist',JSON.stringify(wishlist));
+  safeSetItem('gv8-wishlist',JSON.stringify(wishlist));
   document.getElementById('wish-char').value='';
   document.getElementById('wish-memo').value='';
   renderWishlistGrid();
@@ -8481,7 +8583,7 @@ function delWishlist(id){
   if(!w)return;
   if(!confirm(`'${w.char}' 위시리스트에서 제거할까요?`)) return;
   wishlist=wishlist.filter(x=>x.id!==id);
-  localStorage.setItem('gv8-wishlist',JSON.stringify(wishlist));
+  safeSetItem('gv8-wishlist',JSON.stringify(wishlist));
   renderWishlistGrid();
   renderSchedule();
   renderWishlistMatchBanner();
@@ -8559,7 +8661,7 @@ function openAlarmConfig(){
 function closeAlarmConfig(){document.getElementById('alarmOvl').classList.remove('open');}
 function resetAlarmConfig(){
   alarmConfig={daysBeforeStart:[3,1],daysBeforeEnd:[1],onStart:true};
-  localStorage.setItem('gv8-alarm-config',JSON.stringify(alarmConfig));
+  safeSetItem('gv8-alarm-config',JSON.stringify(alarmConfig));
   openAlarmConfig();
   toast('🔔 기본값으로 복원');
 }
@@ -8570,7 +8672,7 @@ function saveAlarmConfig(){
     daysBeforeEnd:getSelected('alarm-before-end'),
     onStart:document.getElementById('alarm-on-start').checked
   };
-  localStorage.setItem('gv8-alarm-config',JSON.stringify(alarmConfig));
+  safeSetItem('gv8-alarm-config',JSON.stringify(alarmConfig));
   closeAlarmConfig();
   toast('✅ 알림 설정 저장됨');
 }
@@ -8604,7 +8706,7 @@ if(_origSetAlarms){
         if(t>now){setTimeout(()=>new Notification('가챠 트래커',{body:msg}),t-now);cnt.push(t);}
       });
       alarms[`e-${idx}`]={char:e.char,n:cnt.length};
-      localStorage.setItem('gv8-alarms',JSON.stringify(alarms));
+      safeSetItem('gv8-alarms',JSON.stringify(alarms));
       renderSchedule();toast(`🔔 알람 ${cnt.length}개!`);
     });
   };
@@ -8621,7 +8723,7 @@ function closeBudget(){document.getElementById('budgetOvl').classList.remove('op
 function saveBudget(){
   const v=parseInt(document.getElementById('bud-amount').value)||0;
   monthlyBudget=v;
-  localStorage.setItem('gv8-monthly-budget',JSON.stringify(monthlyBudget));
+  safeSetItem('gv8-monthly-budget',JSON.stringify(monthlyBudget));
   closeBudget();
   renderStats();
   toast(v?`🎯 월 예산 ₩${v.toLocaleString()} 설정`:'예산 미설정');
@@ -8636,14 +8738,11 @@ function getCurrentMonthSpending(){
     const g=GAMES.find(x=>x.id===e.game);
     if(!g) return;
     const krwPerCurrency = g.gacha.pricePerPull / g.gacha.pullCost;
-    // 첫 시도(명함)의 유료돌
-    const free=e.freeCurrencyUsed||0;
-    const paid=e.paidCurrencyUsed||0;
-    if(free>0 || paid>0){
+    // 명함+추가 시도들의 유료돌 합산 (free/paid 메타 없으면 무료로 간주)
+    const paid=totalEventPaidUsed(e);
+    if(paid>0){
       total += Math.round(paid * krwPerCurrency);
     }
-    // 첫 시도가 free/paid 메타 없는 레거시는 무료로 간주 (집계 안 함)
-    // 추가 시도(돌파)도 무료로 간주 (메타 미입력이라 보수적으로 제외)
   });
   return total;
 }
@@ -8655,14 +8754,14 @@ function maybeShowOnboarding(){
   if(localStorage.getItem('gv8-onboarded')) return;
   if(events.length>0||favs.length>0) {
     // 기존 사용자면 자동으로 완료 처리
-    localStorage.setItem('gv8-onboarded','1');
+    safeSetItem('gv8-onboarded','1');
     return;
   }
   setTimeout(()=>{document.getElementById('onbOvl').classList.add('open');},500);
 }
 function finishOnboarding(addSample){
   document.getElementById('onbOvl').classList.remove('open');
-  localStorage.setItem('gv8-onboarded','1');
+  safeSetItem('gv8-onboarded','1');
   if(addSample) addSampleData();
 }
 function addSampleData(){
@@ -8679,8 +8778,8 @@ function addSampleData(){
     {id:'sample-3',game:'gi',srv:'all',char:'알베도',event:'복각',type:'rerun',start:fmt(addDays(today,15)),end:fmt(addDays(today,36)),result:'untried',predicted:false,memo:'샘플 데이터'}
   ];
   events.push(...sample);
-  localStorage.setItem('gv8-favs',JSON.stringify(favs));
-  localStorage.setItem('gv8-events',JSON.stringify(events));
+  safeSetItem('gv8-favs',JSON.stringify(favs));
+  safeSetItem('gv8-events',JSON.stringify(events));
   renderAll();
   toast('✨ 샘플 데이터 3개 추가됨!');
 }
@@ -8783,9 +8882,13 @@ function calcPickupProb(g, N){
 
 // 게임의 픽업 보장 최대 뽑기수 (안내용 — 단순 모델에선 보장 없음)
 function getMaxGuaranteedPulls(g){
-  const sys=g.gacha.pickupSystem||'5050';
-  const hardPity=g.gacha.hardPity||90;
-  return sys==='5050' ? hardPity*2 : hardPity;
+  const sys=normSys(g.gacha.pickupSystem);
+  const hardPity=g.gacha.hardPity||0;
+  if(sys==='no_pity') return null; // 천장 없음
+  // 5050 + pickupRate<1.0: 픽뚫 시 2천장 필요 (180뽑)
+  if(sys==='5050' && (g.gacha.pickupRate||0)<1.0) return hardPity*2;
+  // 그 외 (point_only/spark/guaranteed/5050 with rate=1.0): 1천장이면 픽업 확정
+  return hardPity;
 }
 
 function buildEnhancedStats(){
@@ -8832,7 +8935,7 @@ function buildEnhancedStats(){
       if(!e.start||!e.start.startsWith(m.key))return;
       const g=GAMES.find(x=>x.id===e.game);
       if(!g)return;
-      const paid=e.paidCurrencyUsed||0;
+      const paid=totalEventPaidUsed(e);
       if(paid<=0) return; // 유료돌 사용분 없으면 지출 0 → 막대 안 그림
       const krwPerCurrency=g.gacha.pricePerPull/g.gacha.pullCost;
       const krw=Math.round(paid*krwPerCurrency);
@@ -8951,8 +9054,8 @@ function buildEnhancedStats(){
       }
       byGame[g.id].pulls += a.spentPulls||0;
     });
-    // krw는 명함(첫 시도)의 paidCurrencyUsed만 환산 (무료돌 제외)
-    const paid=e.paidCurrencyUsed||0;
+    // krw는 명함+추가 시도들의 paidCurrencyUsed 합산 (무료돌 제외)
+    const paid=totalEventPaidUsed(e);
     if(paid>0){
       byGame[g.id].krw += Math.round(paid * (g.gacha.pricePerPull/g.gacha.pullCost));
     }
@@ -8991,7 +9094,8 @@ function buildEnhancedStats(){
           const luckLabel=avgTheory===null?null:(avgTheory<25?'🍀 매우 운 좋음':avgTheory<50?'😊 운 좋음':avgTheory<75?'😐 평균':'😢 운 나쁨');
           const luckColor=avgTheory===null?'var(--mu)':(avgTheory<25?'var(--g)':avgTheory<50?'var(--bl)':avgTheory<75?'var(--gold)':'var(--rd)');
           const maxPulls=getMaxGuaranteedPulls(d.g);
-          const sysLabel=(d.g.gacha.pickupSystem||'5050')==='5050'?'반천장':'천장 보장';
+          const sysNorm=normSys(d.g.gacha.pickupSystem);
+          const sysLabel=sysNorm==='no_pity'?'천장 없음':(sysNorm==='5050' && (d.g.gacha.pickupRate||0)<1.0)?'반천장':'천장 보장';
           return `<div class="sw-row" style="--row-c:${d.g.color}">
             <div class="sw-row-head">
               <span class="sw-row-game">${d.g.short} <span style="font-size:10px;color:var(--mu);font-weight:500;margin-left:4px">총 ${total}회 (✨${d.success} · 💔${d.fail})</span></span>
@@ -9019,8 +9123,8 @@ function buildEnhancedStats(){
     .map(e=>{
       const g=GAMES.find(x=>x.id===e.game);
       if(!g) return {date:e.start, krw:0, gid:e.game};
-      // 유료돌 사용분만 KRW 환산 (재화 보유량의 paid currency 차감분만)
-      const paid=e.paidCurrencyUsed||0;
+      // 유료돌 사용분만 KRW 환산 (명함+추가 시도 합산)
+      const paid=totalEventPaidUsed(e);
       const krwPerCurrency=g.gacha.pricePerPull/g.gacha.pullCost;
       const krw=Math.round(paid*krwPerCurrency);
       return {date:e.start, krw, gid:e.game, char:e.char||'픽업'};
@@ -9179,7 +9283,10 @@ function buildEnhancedStats(){
         const g=GAMES.find(x=>x.id===gid);
         if(!g) return '';
         const pulls=successPullsByGame[gid].slice().sort((a,b)=>a-b);
-        const maxPulls=getMaxGuaranteedPulls(g);
+        // 천장 없는 시스템(no_pity)은 픽업 데이터 평균*2를 기준으로 분포 표시
+        const maxPullsRaw=getMaxGuaranteedPulls(g);
+        const fallback=pulls.length?Math.max(50, Math.round(pulls.reduce((a,b)=>a+b,0)/pulls.length*2)):200;
+        const maxPulls=maxPullsRaw||fallback;
         const q1=Math.round(maxPulls*0.25),q2=Math.round(maxPulls*0.5),q3=Math.round(maxPulls*0.75),q4=maxPulls;
         const buckets=[0,0,0,0];
         const ranges=[`1~${q1}뽑`, `${q1+1}~${q2}뽑`, `${q2+1}~${q3}뽑`, `${q3+1}~${q4}뽑+`];
@@ -9315,32 +9422,47 @@ renderStats=function(){
     wrap.innerHTML=html;
     el.insertBefore(wrap, el.firstChild);
   }
-  // 캐러셀 스크롤 → 도트 인디케이터 동기화 (위젯별로 트랙이 여러개)
+  // 캐러셀 스크롤 → 도트 인디케이터 동기화 (재렌더 시 핸들러 누적 방지)
   setTimeout(()=>{
-    document.querySelectorAll('.widget-track[data-wc]').forEach(track=>{
-      if(track._wcInited) return;
-      track._wcInited=true;
-      const name=track.getAttribute('data-wc');
-      const dots=track.parentElement.querySelectorAll(`[data-wc-dots="${name}"] .widget-dot`);
-      if(!dots.length) return;
-      const updateDots=()=>{
-        const w=track.clientWidth;
-        const idx=Math.round(track.scrollLeft / Math.max(1,w+10));
-        dots.forEach((d,i)=>d.classList.toggle('active', i===idx));
-      };
-      track.addEventListener('scroll', updateDots, {passive:true});
-      updateDots();
-    });
+    document.querySelectorAll('.widget-track[data-wc]').forEach(bindCarousel);
   }, 50);
 };
 
-// 도트 클릭 시 해당 위젯으로 스크롤 (name = hist|result|roi)
+// 캐러셀 트랙에 스크롤 ↔ 도트 동기화 바인딩 (이미 바인딩된 트랙은 스킵, 신규는 AbortController로 추적)
+function bindCarousel(track){
+  if(track._wcCtrl) return; // 같은 DOM 요소에 중복 바인딩 방지
+  const name=track.getAttribute('data-wc');
+  const dotsRoot=track.parentElement;
+  const dots=dotsRoot.querySelectorAll(`[data-wc-dots="${name}"] .widget-dot`);
+  if(!dots.length) return;
+  const ctrl=new AbortController();
+  track._wcCtrl=ctrl;
+  const updateDots=()=>{
+    const slides=track.children;
+    if(!slides.length) return;
+    const trackRect=track.getBoundingClientRect();
+    const center=trackRect.left + trackRect.width/2;
+    let bestIdx=0, bestDist=Infinity;
+    for(let i=0;i<slides.length;i++){
+      const r=slides[i].getBoundingClientRect();
+      const c=r.left + r.width/2;
+      const d=Math.abs(c-center);
+      if(d<bestDist){ bestDist=d; bestIdx=i; }
+    }
+    dots.forEach((d,i)=>d.classList.toggle('active', i===bestIdx));
+  };
+  track.addEventListener('scroll', updateDots, {passive:true, signal: ctrl.signal});
+  updateDots();
+}
+
+// 도트 클릭 시 해당 위젯으로 스크롤 (name = hist|result|roi|summary|calc)
 function scrollWidgetTo(name, idx){
   const track=document.querySelector(`.widget-track[data-wc="${name}"]`);
   if(!track) return;
   const slide=track.children[idx];
   if(slide){
-    track.scrollTo({left: slide.offsetLeft - track.offsetLeft, behavior:'smooth'});
+    // .widget-track이 position:relative라 slide.offsetParent===track → offsetLeft가 곧 트랙 내 좌표
+    track.scrollTo({left: slide.offsetLeft, behavior:'smooth'});
   } else {
     track.scrollTo({left: idx*track.clientWidth, behavior:'smooth'});
   }
