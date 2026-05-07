@@ -1,4 +1,4 @@
-const CACHE = 'gacha-v49';
+const CACHE = 'gacha-v1';
 const SHELL = ['./'];
 
 self.addEventListener('install', e => {
@@ -9,6 +9,7 @@ self.addEventListener('install', e => {
 
 self.addEventListener('activate', e => {
   e.waitUntil(
+    // 이전 버전 캐시 전부 삭제 (gacha-v1만 남김)
     caches.keys().then(keys =>
       Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
