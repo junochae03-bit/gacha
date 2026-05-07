@@ -208,6 +208,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
 .inv-grid,.calc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}
 .inv-card,.calc-card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:16px}
+.calc-carousel{margin:0 -2px}
+.calc-carousel .widget-track{padding:2px 4px 8px}
+.calc-carousel .widget-track > .calc-card{margin:0}
 .inv-hd,.calc-hd{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--bd);flex-wrap:wrap}
 .inv-name,.calc-name{font-size:13px;font-weight:700}
 .inv-srv-tag{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:700}
@@ -3726,7 +3729,7 @@ function renderInventory(){
             const grandTotal=total+(showMonthlyAdd?monthlyRemaining:0);
             const freePct=total>0?Math.round(free/total*100):0;
             const paidPct=total>0?Math.round(paid/total*100):0;
-            return `<div class="inv-primary-block" style="--gc:${g.color}">
+            return `<div class="inv-primary-block" data-inv-block="${key}" style="--gc:${g.color}">
               <div class="inv-primary-header">
                 <span class="inv-icon">${c.icon}</span>
                 <div class="inv-l">
@@ -3848,6 +3851,51 @@ function saveInv(key,cid,val){
   inventory[key][cid]=parseInt(val)||0;
   // localStorage 저장만 (UI 재렌더 없이)
   localStorage.setItem('gv8-inv',JSON.stringify(inventory));
+  // 직접 입력값을 헤더 총합/뽑기수/비율에 즉시 반영 (포커스 유지)
+  updateInvTotals(key);
+}
+// 입력 즉시 헤더 표시 갱신 (포커스 유지를 위해 부분 업데이트만)
+function updateInvTotals(key){
+  const block=document.querySelector(`.inv-primary-block[data-inv-block="${key}"]`);
+  if(!block) return;
+  const idx=key.indexOf('-');
+  const gid=key.slice(0,idx), srv=key.slice(idx+1);
+  const g=GAMES.find(x=>x.id===gid); if(!g) return;
+  const c=g.currencies[0]; if(!c) return;
+  const inv=inventory[key]||{};
+  const free=inv[c.id]||0;
+  const paid=inv[c.id+'_paid']||0;
+  const total=free+paid;
+  const monthKey=`${gid}-${srv}-monthly`;
+  const monthOnState=monthlyOn[monthKey]||false;
+  const monthStartKey=monthKey+'-start';
+  const monthStartDate=monthlyStart[monthStartKey]||'';
+  let monthlyDaysLeft=0;
+  if(monthOnState && g.monthly){
+    if(inv._monthDaysOverride!==undefined){
+      monthlyDaysLeft=parseInt(inv._monthDaysOverride)||0;
+    } else if(monthStartDate){
+      const elapsed=Math.floor((Date.now()-new Date(monthStartDate).getTime())/86400000);
+      monthlyDaysLeft=Math.max(0, 30-elapsed);
+    }
+  }
+  const monthlyRemaining=monthOnState && g.monthly ? monthlyDaysLeft*(g.monthly.daily||0) : 0;
+  const showMonthlyAdd=monthOnState && monthlyRemaining>0;
+  const grandTotal=total+(showMonthlyAdd?monthlyRemaining:0);
+  const valueEl=block.querySelector('.ipt-value');
+  const pullsEl=block.querySelector('.ipt-pulls');
+  if(valueEl){
+    valueEl.innerHTML=total.toLocaleString()+(showMonthlyAdd?`<span class="ipt-monthly">+${monthlyRemaining.toLocaleString()}</span>`:'');
+  }
+  if(pullsEl){
+    pullsEl.innerHTML=(showMonthlyAdd?`합계 <strong style="color:var(--g)">${grandTotal.toLocaleString()}</strong> · `:'')+`🎲 뽑기 <strong>${Math.floor(grandTotal/g.gacha.pullCost)}</strong>회`;
+  }
+  const freePct=total>0?Math.round(free/total*100):0;
+  const paidPct=total>0?Math.round(paid/total*100):0;
+  const freePctEl=block.querySelector('.inv-split-free .iss-pct');
+  const paidPctEl=block.querySelector('.inv-split-paid .iss-pct');
+  if(freePctEl) freePctEl.textContent=freePct+'%';
+  if(paidPctEl) paidPctEl.textContent=paidPct+'%';
 }
 function saveMonthDays(key, val){
   if(!inventory[key])inventory[key]={};
@@ -3947,14 +3995,52 @@ function renderCalc(){
       </div>`);
     });
   });
+  const grid=document.getElementById('calcGrid');
   if(!cards.length){
-    document.getElementById('calcGrid').innerHTML=`<div class="empty-big" style="grid-column:1/-1">
+    grid.innerHTML=`<div class="empty-big" style="grid-column:1/-1">
       <div class="empty-icon-big">⭐</div>
       <h3>즐겨찾기한 게임이 없습니다</h3>
       <p>픽업 스케줄 페이지에서 게임 칩을 클릭해 즐겨찾기에 추가하세요.</p>
     </div>`;
+  } else if(cards.length===1){
+    grid.innerHTML=cards[0];
   } else {
-    document.getElementById('calcGrid').innerHTML=cards.join('');
+    // 게임별 위젯 캐러셀로 통합
+    const meta=[];
+    GAMES.filter(gameHasAnyFav).forEach(g=>{
+      const srvList=g.servers.length>1?g.servers:['all'];
+      srvList.forEach(srv=>{
+        if(serverFilter!=='all'&&srv!=='all'&&srv!==serverFilter)return;
+        if(srv!=='all'&&!isFavored(g.id, srv))return;
+        meta.push({g, srv, key:`${g.id}-${srv}`});
+      });
+    });
+    grid.innerHTML=`<div class="widget-carousel calc-carousel">
+      <div class="widget-track" data-wc="calc">${cards.join('')}</div>
+      <div class="widget-dots" data-wc-dots="calc">${meta.map((m,i)=>`<button class="widget-dot ${i===0?'active':''}" data-idx="${i}" title="${m.g.short}${m.srv!=='all'?` (${SRV_LBL[m.srv]||m.srv})`:''}" onclick="scrollWidgetTo('calc',${i})" style="${i===0?`background:${m.g.color}`:''}"></button>`).join('')}</div>
+      <div class="widget-hint">← 게임별로 스와이프 ${meta.length}/${meta.length} →</div>
+    </div>`;
+    // 캐러셀 스크롤 ↔ 도트 동기화
+    setTimeout(()=>{
+      const track=grid.querySelector('.widget-track[data-wc="calc"]');
+      if(track && !track._wcInited){
+        track._wcInited=true;
+        const dots=grid.querySelectorAll('[data-wc-dots="calc"] .widget-dot');
+        const updateDots=()=>{
+          const w=track.clientWidth;
+          const i=Math.round(track.scrollLeft/Math.max(1,w+10));
+          dots.forEach((d,k)=>{
+            d.classList.toggle('active', k===i);
+            if(k===i) d.style.background=meta[k]?.g.color||'';
+            else d.style.background='';
+          });
+        };
+        track.addEventListener('scroll', updateDots, {passive:true});
+        updateDots();
+      }
+    }, 50);
+  }
+  if(cards.length){
     requestAnimationFrame(()=>{
       GAMES.filter(gameHasAnyFav).forEach(g=>{
         const srvList=g.servers.length>1?g.servers:['all'];
