@@ -223,19 +223,36 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .inv-input:focus,.ci:focus{outline:none;border-color:var(--bl);background:var(--sf3)}
 
 /* 무료/유료 분리 입력 */
-.inv-primary-block{background:rgba(255,255,255,.02);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin-bottom:8px}
-.inv-primary-header{display:flex;align-items:center;gap:10px;padding-bottom:10px;border-bottom:1px dashed var(--bd)}
+.inv-primary-block{background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.005));border:1px solid var(--bd);border-radius:12px;padding:12px 14px;margin-bottom:10px;position:relative;overflow:hidden}
+.inv-primary-block::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--gc,var(--bl)),transparent);border-radius:12px 0 0 12px;pointer-events:none}
+.inv-primary-header{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--bd)}
+.inv-primary-header .inv-icon{font-size:20px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:10px}
 .inv-primary-header .inv-l{flex:1;min-width:0}
-.inv-primary-total{text-align:right}
-.inv-split-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-.inv-split-item{display:flex;flex-direction:column;gap:4px}
-.inv-split-item label{font-size:10px;font-weight:700;letter-spacing:.5px}
+.inv-primary-header .inv-l > div:first-child{font-size:13px;font-weight:800;color:var(--tx);letter-spacing:.2px}
+.inv-primary-header .inv-l small{font-size:10px;color:var(--mu);margin-top:1px}
+.inv-primary-total{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:0}
+.ipt-label{font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:1.2px;font-weight:700}
+.ipt-value{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;line-height:1}
+.ipt-monthly{font-size:12px;color:var(--cy);font-weight:700;margin-left:2px}
+.ipt-pulls{font-size:10px;color:var(--mu2);margin-top:1px}
+.ipt-pulls strong{color:var(--bl);font-family:'Orbitron',monospace}
+.inv-split-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:0}
+.inv-split-item{background:var(--sf2);border:1px solid var(--bd2);border-radius:10px;padding:9px 11px;display:flex;flex-direction:column;gap:6px;transition:border-color .2s,background .2s}
+.inv-split-free{border-color:rgba(110,231,183,.22);background:linear-gradient(180deg,rgba(110,231,183,.06),transparent)}
+.inv-split-paid{border-color:rgba(251,191,36,.22);background:linear-gradient(180deg,rgba(251,191,36,.06),transparent)}
+.inv-split-free:focus-within{border-color:var(--g)}
+.inv-split-paid:focus-within{border-color:var(--gold)}
+.inv-split-item label{font-size:10px;font-weight:800;letter-spacing:.4px;display:flex;align-items:center;gap:4px}
 .inv-split-free label{color:var(--g)}
 .inv-split-paid label{color:var(--gold)}
-.inv-split-item input{width:100% !important}
-.inv-split-free input:focus{border-color:var(--g)!important}
-.inv-split-paid input:focus{border-color:var(--gold)!important}
-.inv-paid-spent{margin-top:10px;padding:8px 10px;background:linear-gradient(135deg,rgba(251,191,36,.06),rgba(96,165,250,.04));border:1px solid rgba(251,191,36,.2);border-radius:7px;font-size:11px;color:var(--mu2)}
+.inv-split-item input{width:100% !important;background:rgba(0,0,0,.18) !important;border:1px solid var(--bd) !important;font-size:14px !important;padding:7px 10px !important;text-align:right}
+.inv-split-free input:focus{border-color:var(--g)!important;background:rgba(110,231,183,.06) !important}
+.inv-split-paid input:focus{border-color:var(--gold)!important;background:rgba(251,191,36,.06) !important}
+.inv-split-item .iss-pct{font-size:9px;color:var(--mu);text-align:right;font-family:'Orbitron',monospace;font-weight:700;letter-spacing:.5px}
+.inv-paid-spent{margin-top:10px;padding:9px 12px;background:linear-gradient(135deg,rgba(251,191,36,.07),rgba(96,165,250,.04));border:1px solid rgba(251,191,36,.22);border-radius:8px;font-size:11px;color:var(--mu2);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.inv-paid-spent .ips-text{flex:1;min-width:0;line-height:1.4}
+.inv-paid-spent .ips-reset{padding:4px 9px;font-size:9px;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:6px;color:var(--mu2);cursor:pointer;font-weight:700;flex-shrink:0;transition:all .15s}
+.inv-paid-spent .ips-reset:hover{background:rgba(248,113,113,.12);color:var(--rd);border-color:rgba(248,113,113,.3)}
 
 /* 통계 비용 분석 박스 */
 .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,.05),rgba(251,191,36,.03));border:1px solid rgba(96,165,250,.2);border-radius:10px;padding:11px 13px;margin-bottom:12px}
@@ -335,10 +352,25 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 .ic-sub{font-size:11px;color:var(--mu2);margin-top:6px;position:relative;font-weight:500}
 .ic-bar{height:4px;border-radius:99px;margin-top:12px;position:relative;background:rgba(255,255,255,.06)}
 .ic-bar-fill{height:100%;border-radius:99px;transition:width 1s ease}
-.inv-month{margin-top:12px;padding-top:10px;border-top:1px solid var(--bd)}
-.inv-month-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:6px 0}
-.inv-month-l{font-size:11px;color:var(--cy);font-weight:600}
-.inv-month-info{font-size:10px;color:var(--mu);margin-top:4px}
+.inv-month{margin-top:14px;padding:11px 12px;background:linear-gradient(135deg,rgba(103,232,249,.06),rgba(167,139,250,.03));border:1px solid rgba(103,232,249,.22);border-radius:10px;position:relative;overflow:hidden}
+.inv-month::before{content:'';position:absolute;top:-30px;right:-30px;width:90px;height:90px;border-radius:50%;background:rgba(103,232,249,.12);filter:blur(30px);pointer-events:none}
+.inv-month-toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;position:relative}
+.inv-month-l{font-size:12px;color:var(--cy);font-weight:800;display:flex;align-items:center;gap:5px}
+.inv-month-info{font-size:10px;color:var(--mu);margin-top:6px;position:relative}
+.inv-month-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;position:relative}
+.inv-month-grid > div{display:flex;flex-direction:column;gap:4px}
+.inv-month-grid label{font-size:10px;color:var(--mu2);font-weight:700;letter-spacing:.3px;display:flex;align-items:center;gap:4px}
+.inv-month-grid input{padding:7px 10px !important;font-size:12px !important;width:100% !important;background:var(--sf2) !important;border:1px solid var(--bd) !important;border-radius:7px !important}
+.inv-month-grid input:focus{border-color:var(--cy) !important;background:var(--sf3) !important}
+.inv-month-remain-card{margin-top:10px;padding:10px 12px;background:linear-gradient(90deg,rgba(103,232,249,.14),rgba(103,232,249,.04));border:1px solid rgba(103,232,249,.3);border-radius:8px;position:relative}
+.inv-month-remain-card .imrc-row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.inv-month-remain-card .imrc-days{font-size:11px;color:var(--cy);font-weight:700}
+.inv-month-remain-card .imrc-days strong{font-family:'Orbitron',monospace;font-size:14px}
+.inv-month-remain-card .imrc-amt{font-size:11px;color:var(--g);font-weight:700;font-family:'Orbitron',monospace}
+.inv-month-remain-card .imrc-amt strong{font-size:14px}
+.inv-month-remain-card .imrc-formula{font-size:9px;color:var(--mu);margin-top:5px;letter-spacing:.2px}
+.inv-month-expired{margin-top:10px;padding:9px 12px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.22);border-radius:7px;font-size:10px;color:var(--rd);font-weight:600;display:flex;align-items:center;gap:6px}
+.inv-month-hint{margin-top:10px;padding:9px 12px;background:rgba(167,139,250,.05);border:1px dashed rgba(167,139,250,.2);border-radius:7px;font-size:10px;color:var(--mu2);display:flex;align-items:center;gap:6px}
 
 .calc-res{margin-top:14px;padding-top:14px;border-top:1px solid var(--bd);display:flex;flex-direction:column;gap:7px}
 .crr{display:flex;justify-content:space-between;align-items:center;font-size:12px}
@@ -1485,11 +1517,18 @@ body.light .btn-primary{animation:none !important}
 .ob-step-body p{font-size:11px;color:var(--mu2);margin-top:3px;line-height:1.5}
 .ob-btns{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
 /* ── Quick-add buttons ── */
-.inv-qb-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:1px solid var(--bd);align-items:center}
-.inv-qb{font-size:10px;padding:4px 9px;border:1px solid var(--bd2);border-radius:6px;background:var(--sf2);color:var(--mu2);cursor:pointer;transition:all .15s;font-family:'Orbitron',monospace;font-weight:700}
-.inv-qb:hover{background:var(--sf3);color:var(--tx);border-color:var(--bd3)}
+.inv-qb-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px dashed var(--bd);align-items:center}
+.inv-qb-row + .inv-qb-row{margin-top:6px;padding-top:8px;border-top-style:dotted}
+.inv-qb-label{font-size:9px;color:var(--mu);font-weight:800;letter-spacing:.6px;text-transform:uppercase;margin-right:auto}
+.inv-qb-group{display:inline-flex;gap:3px}
+.inv-qb-divider{width:1px;height:18px;background:var(--bd);margin:0 4px;align-self:center}
+.inv-qb{font-size:10px;padding:5px 10px;border:1px solid var(--bd2);border-radius:6px;background:var(--sf2);color:var(--mu2);cursor:pointer;transition:all .15s;font-family:'Orbitron',monospace;font-weight:700;line-height:1.2;min-width:42px}
+.inv-qb:hover{background:var(--sf3);color:var(--tx);border-color:var(--bd3);transform:translateY(-1px)}
+.inv-qb:active{transform:translateY(0)}
 .inv-qb.inv-qb-minus{color:var(--rd);border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.06)}
-.inv-qb.inv-qb-minus:hover{background:rgba(248,113,113,.14);color:var(--rd);border-color:rgba(248,113,113,.5)}
+.inv-qb.inv-qb-minus:hover{background:rgba(248,113,113,.16);border-color:rgba(248,113,113,.5)}
+.inv-qb.inv-qb-pull{color:var(--bl);border-color:rgba(96,165,250,.28);background:rgba(96,165,250,.07)}
+.inv-qb.inv-qb-pull:hover{background:rgba(96,165,250,.18);border-color:rgba(96,165,250,.5)}
 .calc-qb-row{display:flex;gap:5px;flex-wrap:wrap;margin:4px 0}
 .calc-qb{font-size:9px;padding:3px 8px;border:1px solid var(--bd2);border-radius:5px;background:var(--sf2);color:var(--mu2);cursor:pointer;transition:all .15s;font-family:'Orbitron',monospace;font-weight:700}
 .calc-qb:hover{background:var(--sf3);color:var(--tx);border-color:var(--bd3)}
@@ -3685,7 +3724,9 @@ function renderInventory(){
             const paid=inv[c.id+'_paid']||0;
             const total=free+paid;
             const grandTotal=total+(showMonthlyAdd?monthlyRemaining:0);
-            return `<div class="inv-primary-block">
+            const freePct=total>0?Math.round(free/total*100):0;
+            const paidPct=total>0?Math.round(paid/total*100):0;
+            return `<div class="inv-primary-block" style="--gc:${g.color}">
               <div class="inv-primary-header">
                 <span class="inv-icon">${c.icon}</span>
                 <div class="inv-l">
@@ -3693,41 +3734,45 @@ function renderInventory(){
                   <small>${c.desc||''}</small>
                 </div>
                 <div class="inv-primary-total">
-                  <div style="font-size:9px;color:var(--mu)">${showMonthlyAdd?'재화량 (월정액 포함)':'재화량'}</div>
-                  <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:${g.color};line-height:1.1">
-                    ${total.toLocaleString()}${showMonthlyAdd?`<span style="font-size:13px;color:var(--cy);font-weight:700">(+${monthlyRemaining.toLocaleString()})</span>`:''}
-                  </div>
-                  ${showMonthlyAdd?`<div style="font-size:9px;color:var(--mu2);margin-top:2px">합계 <strong style="color:var(--g);font-family:'Orbitron',monospace">${grandTotal.toLocaleString()}</strong> · 뽑기 <strong style="color:var(--bl);font-family:'Orbitron',monospace">${Math.floor(grandTotal/g.gacha.pullCost)}</strong>회</div>`:`<div style="font-size:9px;color:var(--mu2);margin-top:2px">뽑기 <strong style="color:var(--bl);font-family:'Orbitron',monospace">${Math.floor(grandTotal/g.gacha.pullCost)}</strong>회</div>`}
+                  <div class="ipt-label">${showMonthlyAdd?'재화량 (월정액 포함)':'보유 재화량'}</div>
+                  <div class="ipt-value" style="color:${g.color}">${total.toLocaleString()}${showMonthlyAdd?`<span class="ipt-monthly">+${monthlyRemaining.toLocaleString()}</span>`:''}</div>
+                  <div class="ipt-pulls">${showMonthlyAdd?`합계 <strong style="color:var(--g)">${grandTotal.toLocaleString()}</strong> · `:''}🎲 뽑기 <strong>${Math.floor(grandTotal/g.gacha.pullCost)}</strong>회</div>
                 </div>
               </div>
               <div class="inv-split-row">
                 <div class="inv-split-item inv-split-free">
-                  <label>🆓 무료돌</label>
+                  <label>🆓 무료돌${total>0?`<span class="iss-pct" style="margin-left:auto;color:var(--g)">${freePct}%</span>`:''}</label>
                   <input class="inv-input" type="number" inputmode="numeric" min="0" placeholder="0" value="${free||''}" oninput="saveInv('${key}','${c.id}',this.value)" onblur="finalizeInv()">
                 </div>
                 <div class="inv-split-item inv-split-paid">
-                  <label>💳 유료돌</label>
+                  <label>💳 유료돌${total>0?`<span class="iss-pct" style="margin-left:auto;color:var(--gold)">${paidPct}%</span>`:''}</label>
                   <input class="inv-input" type="number" inputmode="numeric" min="0" placeholder="0" value="${paid||''}" oninput="saveInv('${key}','${c.id}_paid',this.value)" onblur="finalizeInv()">
                 </div>
               </div>
               <div class="inv-qb-row">
-                <span style="font-size:10px;color:var(--mu2)">빠른 추가/차감</span>
-                <button class="inv-qb inv-qb-minus" onclick="qAddInv('${key}','${c.id}',-1000)" title="−1000">−1000</button>
-                <button class="inv-qb inv-qb-minus" onclick="qAddInv('${key}','${c.id}',-100)" title="−100">−100</button>
-                <button class="inv-qb inv-qb-minus" onclick="qAddInv('${key}','${c.id}',-10)" title="−10">−10</button>
-                <button class="inv-qb" onclick="qAddInv('${key}','${c.id}',10)" title="+10">+10</button>
-                <button class="inv-qb" onclick="qAddInv('${key}','${c.id}',100)" title="+100">+100</button>
-                <button class="inv-qb" onclick="qAddInv('${key}','${c.id}',1000)" title="+1000">+1000</button>
+                <span class="inv-qb-label">±조정</span>
+                <span class="inv-qb-group">
+                  <button class="inv-qb inv-qb-minus" onclick="qAddInv('${key}','${c.id}',-1000)">−1000</button>
+                  <button class="inv-qb inv-qb-minus" onclick="qAddInv('${key}','${c.id}',-100)">−100</button>
+                  <button class="inv-qb inv-qb-minus" onclick="qAddInv('${key}','${c.id}',-10)">−10</button>
+                </span>
+                <span class="inv-qb-divider"></span>
+                <span class="inv-qb-group">
+                  <button class="inv-qb" onclick="qAddInv('${key}','${c.id}',10)">+10</button>
+                  <button class="inv-qb" onclick="qAddInv('${key}','${c.id}',100)">+100</button>
+                  <button class="inv-qb" onclick="qAddInv('${key}','${c.id}',1000)">+1000</button>
+                </span>
               </div>
-              <div class="inv-qb-row" style="margin-top:4px">
-                <span style="font-size:10px;color:var(--mu2)">1뽑·10뽑</span>
-                ${[1,5,10].map(n=>`<button class="inv-qb" onclick="qAddInv('${key}','${c.id}',${g.gacha.pullCost*n})">+${g.gacha.pullCost*n}</button>`).join('')}
+              <div class="inv-qb-row">
+                <span class="inv-qb-label">🎲 뽑기 단위</span>
+                <span class="inv-qb-group">
+                  ${[1,5,10].map(n=>`<button class="inv-qb inv-qb-pull" onclick="qAddInv('${key}','${c.id}',${g.gacha.pullCost*n})">+${n}뽑</button>`).join('')}
+                </span>
               </div>
               ${paidSpent>0?`
                 <div class="inv-paid-spent">
-                  💸 누적 유료돌 사용: <strong style="color:var(--gold)">${paidSpent.toLocaleString()} ${c.name}</strong> 
-                  (≈ <strong style="color:var(--bl)">₩${Math.round(paidSpentKRW).toLocaleString()}</strong>)
-                  <button class="btn-xs" style="float:right;font-size:9px" onclick="resetPaidSpent('${key}','${c.id}')">초기화</button>
+                  <span class="ips-text">💸 누적 유료돌 사용 <strong style="color:var(--gold)">${paidSpent.toLocaleString()} ${c.name}</strong> · 환산 <strong style="color:var(--bl)">₩${Math.round(paidSpentKRW).toLocaleString()}</strong></span>
+                  <button class="ips-reset" onclick="resetPaidSpent('${key}','${c.id}')">초기화</button>
                 </div>
               `:''}
             </div>`;
@@ -3747,29 +3792,32 @@ function renderInventory(){
           <div class="inv-month">
             <div class="inv-month-toggle">
               <div class="inv-month-l">🌙 ${g.monthly.name}</div>
-              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;color:var(--mu2)">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;color:var(--mu2);font-weight:600">
                 <input type="checkbox" ${monthOnState?'checked':''} onchange="toggleMonthly('${key}',this.checked)" style="width:14px;height:14px;cursor:pointer;accent-color:var(--cy)"> 구독 중
               </label>
             </div>
-            <div class="inv-month-info">₩ ${g.monthly.cost.toLocaleString()}/월 · ${g.monthly.desc}</div>
+            <div class="inv-month-info">💰 ₩${g.monthly.cost.toLocaleString()}/월 · ${g.monthly.desc}</div>
             ${monthOnState?`
-              <div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px">
+              <div class="inv-month-grid">
                 <div>
-                  <div style="color:var(--mu2);font-size:10px;margin-bottom:3px">📅 구독 시작일</div>
-                  <input type="date" class="fi" style="padding:5px 8px;font-size:11px;width:100%" value="${monthStartDate}" onchange="setMonthlyStart('${monthStartKey}',this.value);renderInventory()">
+                  <label>📅 구독 시작일</label>
+                  <input type="date" value="${monthStartDate}" onchange="setMonthlyStart('${monthStartKey}',this.value);renderInventory()">
                 </div>
                 <div>
-                  <div style="color:var(--mu2);font-size:10px;margin-bottom:3px">⏳ 남은 일수 (수동)</div>
-                  <input type="number" class="fi" style="padding:5px 8px;font-size:11px;width:100%" inputmode="numeric" min="0" max="30" placeholder="자동" value="${inv._monthDaysOverride||''}" oninput="saveMonthDays('${key}',this.value)" onblur="renderInventory()">
+                  <label>⏳ 남은 일수 (수동)</label>
+                  <input type="number" inputmode="numeric" min="0" max="30" placeholder="자동" value="${inv._monthDaysOverride||''}" oninput="saveMonthDays('${key}',this.value)" onblur="renderInventory()">
                 </div>
               </div>
               ${(monthlyDaysLeft>0||monthlyRemaining>0)?`
-                <div class="inv-month-remain" style="margin-top:8px;padding:8px 10px;background:linear-gradient(90deg,rgba(103,232,249,.12),rgba(103,232,249,.04));border:1px solid rgba(103,232,249,.25);border-radius:6px;font-size:11px;color:var(--cy);font-family:'Orbitron',monospace">
-                  ⏳ <strong>${monthlyDaysLeft}일</strong> 남음 → 받을 수 있는 ${primCur.name} <strong style="color:var(--g)">+${monthlyRemaining.toLocaleString()}</strong>
-                  <div style="font-size:9px;color:var(--mu);margin-top:3px;font-family:'Noto Sans KR',sans-serif;font-weight:500">매일 ${g.monthly.daily}개 × ${monthlyDaysLeft}일 = ${monthlyRemaining}개 (무료돌로 추가)</div>
+                <div class="inv-month-remain-card">
+                  <div class="imrc-row">
+                    <div class="imrc-days">⏳ <strong>${monthlyDaysLeft}일</strong> 남음</div>
+                    <div class="imrc-amt">+<strong>${monthlyRemaining.toLocaleString()}</strong> ${primCur.name}</div>
+                  </div>
+                  <div class="imrc-formula">매일 ${g.monthly.daily}개 × ${monthlyDaysLeft}일 = ${monthlyRemaining}개 (무료돌로 합산)</div>
                 </div>`:(monthStartDate?`
-                <div style="margin-top:8px;padding:8px;background:rgba(248,113,113,.08);border-radius:6px;font-size:10px;color:var(--rd)">⚠ 월정액 만료됨 (시작일로부터 30일 경과)</div>`:`
-                <div style="margin-top:8px;padding:8px;background:rgba(167,139,250,.05);border-radius:6px;font-size:10px;color:var(--mu2)">📌 시작일을 입력하거나 남은 일수를 직접 입력하세요</div>`)}
+                <div class="inv-month-expired">⚠ 월정액 만료됨 (시작일로부터 30일 경과)</div>`:`
+                <div class="inv-month-hint">📌 시작일을 입력하거나 남은 일수를 직접 입력하세요</div>`)}
             `:''}
           </div>`:''}
       </div>`);
