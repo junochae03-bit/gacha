@@ -6024,7 +6024,64 @@ async function doAi(){
   el.textContent='🔍 Google 검색 중...';
   el.classList.add('loading');
   
-  const srvLabel={kr:'한국 서버',jp:'일본 서버',global:'글로벌 서버'}[srv]||'한국 서버';
+  // 서버별 상세 컨텍스트 (게임별 발행사·국가·언어를 명시해 한섭/일섭 혼동 방지)
+  const SRV_CTX_BY_GAME={
+    ba:{
+      kr:'한국 서버 (Nexon Korea, ko-KR, 블루아카이브) — 한섭 일정만',
+      jp:'일본 서버 (Yostar Japan, ja-JP, ブルーアーカイブ) — 일섭 일정만 (한섭/글로벌 일정 무관)',
+      global:'글로벌 서버 (Yostar Global, EN, Blue Archive) — 글로벌 일정만'
+    },
+    uma:{
+      kr:'한국 서버 (카카오게임즈, ko-KR) — 한섭 일정만 (일본 카토이치 일정과 다름)',
+      jp:'일본 서버 (Cygames, ja-JP, ウマ娘 プリティーダービー) — 일섭 일정만'
+    },
+    fgo:{
+      kr:'한국 서버 (Netmarble, ko-KR) — 한섭 일정만 (일섭은 약 2년 앞서감)',
+      jp:'일본 서버 (Delight Works, ja-JP, Fate/Grand Order) — 일섭 일정만'
+    },
+    pjsk:{
+      kr:'한국 서버 (Kakao, ko-KR, 프로젝트 세카이) — 한섭 일정만',
+      jp:'일본 서버 (SEGA + ColorPalette, ja-JP, プロジェクトセカイ) — 일섭 일정만'
+    },
+    trickcal:{
+      kr:'한국 서버 (Epid Games, ko-KR) — 한섭 일정만',
+      jp:'일본 서버 (Epid Games, ja-JP) — 일섭 일정만'
+    },
+    arknights:{
+      kr:'한국 서버 (Yostar Korea, ko-KR, 명일방주) — 한섭 일정만',
+      jp:'일본 서버 (Yostar Japan, ja-JP, アークナイツ) — 일섭 일정만',
+      global:'글로벌 서버 (Yostar Global, EN, Arknights) — 글로벌 일정만'
+    },
+    e7:{
+      kr:'한국 서버 (Smilegate, ko-KR, 에픽세븐) — 한섭 일정만',
+      global:'글로벌 서버 (Smilegate Global, EN) — 글로벌 일정만'
+    },
+    cs:{
+      kr:'한국 서버 (Nexon Korea, ko-KR, 카운터사이드) — 한섭 일정만',
+      jp:'일본 서버 (Studio BB, ja-JP) — 일섭 일정만',
+      global:'글로벌 서버 (Studio BB Global, EN) — 글로벌 일정만'
+    },
+    limbus:{
+      kr:'한국 서버 (Project Moon, ko-KR, 림버스 컴퍼니) — 한섭 일정만',
+      global:'글로벌 서버 (Project Moon Global, EN) — 글로벌 일정만'
+    },
+    gfl2:{
+      kr:'한국 서버 (Sunborn Korea, ko-KR, 소녀전선2: 망명) — 한섭 일정만',
+      global:'글로벌 서버 (Sunborn Global) — 글로벌 일정만'
+    },
+    bd2:{
+      kr:'한국 서버 (Neowiz, ko-KR, 브라운더스트2) — 한섭 일정만',
+      global:'글로벌 서버 (Neowiz Global, EN) — 글로벌 일정만'
+    },
+    gkmas:{
+      jp:'일본 서버 (Bandai Namco, ja-JP, 学園アイドルマスター) — 일섭 전용'
+    }
+  };
+  const ctx = (SRV_CTX_BY_GAME[g.id]||{})[srv];
+  const srvLabel = ctx
+    ? ctx
+    : ({kr:'한국 서버',jp:'일본 서버',global:'글로벌 서버'}[srv]||'한국 서버');
+  const today = new Date().toISOString().slice(0,10);
 
   const typePrompt={
     pickup: buildPickupPrompt(g, srvLabel),
@@ -6070,11 +6127,13 @@ async function doAi(){
 
   const prompt=`${typePrompt}
 
-공통 규칙:
-- 위 양식을 반드시 지켜줘. 양식 외 설명은 최소화.
+공통 규칙 (중요):
+- 오늘 날짜: ${today} (이 날짜 기준 진행 중/예정 픽업만 응답)
+- ⚠️ 서버 구분 엄수: "${srvLabel}" 만 답변. 다른 서버(예: 한섭과 일섭)는 일정·캐릭이 완전히 다르므로 절대 섞지 말 것
+- 위 양식을 반드시 지켜줘. 양식 외 설명은 최소화
 - 날짜는 YYYY-MM-DD 또는 MM-DD 형식
-- 불확실한 정보는 [미확인] 표시
-- 공식 홈페이지, 공식 트위터/X, 공식 유튜브만 참고
+- 불확실한 정보는 [미확인] 표시 (추측 금지)
+- 공식 홈페이지, 공식 트위터/X, 공식 유튜브, 게임 내 공지만 참고
 - 나무위키, 인벤, 루리웹, 디시, 아카라이브, 개인 블로그 참고 금지
 - 한국어로 답변`;
   
