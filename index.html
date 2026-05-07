@@ -8497,7 +8497,7 @@ function buildEnhancedStats(){
     </div>`;
   }
 
-  // 월별 지출 그래프 (최근 6개월) — getAllAttempts(e) 기준
+  // 월별 지출 그래프 (최근 6개월) — 유료돌만 환산 (재화 보유량의 paid currency 사용분만)
   const months=[];
   for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({key:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`,label:`${d.getMonth()+1}월`,year:d.getFullYear()});}
   const monthData=months.map(m=>{
@@ -8505,12 +8505,12 @@ function buildEnhancedStats(){
     let sum=0;
     events.forEach(e=>{
       if(!e.start||!e.start.startsWith(m.key))return;
-      const all=getAllAttempts(e);
-      const totalPulls=all.reduce((s,a)=>s+(a.spentPulls||0),0);
-      if(totalPulls<=0) return;
       const g=GAMES.find(x=>x.id===e.game);
       if(!g)return;
-      const krw=totalPulls*g.gacha.pricePerPull;
+      const paid=e.paidCurrencyUsed||0;
+      if(paid<=0) return; // 유료돌 사용분 없으면 지출 0 → 막대 안 그림
+      const krwPerCurrency=g.gacha.pricePerPull/g.gacha.pullCost;
+      const krw=Math.round(paid*krwPerCurrency);
       total[g.id]=(total[g.id]||0)+krw;
       sum+=krw;
     });
@@ -8605,6 +8605,7 @@ function buildEnhancedStats(){
 
   // 게임별 픽업 성공 평균 운빨 (이론 확률 = 본인 N뽑 안에 픽업 획득 확률, 픽뚫 제외)
   // 다중 시도(돌파) 포함: 각 시도를 독립적으로 집계
+  // krw는 유료돌 사용분만 환산 (무료돌 제외)
   const recorded=events.filter(e=>!e.predicted);
   const byGame={};
   recorded.forEach(e=>{
@@ -8624,8 +8625,12 @@ function buildEnhancedStats(){
         byGame[g.id].fail++;
       }
       byGame[g.id].pulls += a.spentPulls||0;
-      byGame[g.id].krw += (a.spentPulls||0) * g.gacha.pricePerPull;
     });
+    // krw는 명함(첫 시도)의 paidCurrencyUsed만 환산 (무료돌 제외)
+    const paid=e.paidCurrencyUsed||0;
+    if(paid>0){
+      byGame[g.id].krw += Math.round(paid * (g.gacha.pricePerPull/g.gacha.pullCost));
+    }
   });
   let roiHtml='';
   if(Object.keys(byGame).length){
@@ -8668,10 +8673,12 @@ function buildEnhancedStats(){
   let cumChartHtml='';
   const allRecords=events.filter(e=>!e.predicted&&e.start)
     .map(e=>{
-      const all=getAllAttempts(e);
-      const totalPulls=all.reduce((s,a)=>s+(a.spentPulls||0),0);
       const g=GAMES.find(x=>x.id===e.game);
-      const krw=g?totalPulls*g.gacha.pricePerPull:0;
+      if(!g) return {date:e.start, krw:0, gid:e.game};
+      // 유료돌 사용분만 KRW 환산 (재화 보유량의 paid currency 차감분만)
+      const paid=e.paidCurrencyUsed||0;
+      const krwPerCurrency=g.gacha.pricePerPull/g.gacha.pullCost;
+      const krw=Math.round(paid*krwPerCurrency);
       return {date:e.start, krw, gid:e.game, char:e.char||'픽업'};
     })
     .filter(r=>r.krw>0)
