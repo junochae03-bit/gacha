@@ -2264,6 +2264,8 @@ body.light .btn-primary{animation:none !important}
   </label>
 
   <button class="btn btn-ghost" onclick="cleanupOldData()" style="width:100%;margin-top:8px;font-size:11px;color:var(--gold);border-color:rgba(251,191,36,.3)">🧹 1년 이상 된 데이터 정리 (저장 공간 절약)</button>
+  <button class="btn btn-ghost" onclick="manualIdbRestore()" style="width:100%;margin-top:6px;font-size:11px;color:var(--cy);border-color:rgba(103,232,249,.3)">💾 로컬 백업(IndexedDB)에서 복원</button>
+  <button class="btn btn-ghost" onclick="runSimTests()" style="width:100%;margin-top:6px;font-size:11px;color:var(--mu2);border-color:var(--bd2)">🧪 시뮬레이터 단위 테스트 실행 (콘솔)</button>
   <button class="btn btn-ghost" onclick="toggleGameTheme()" style="width:100%;margin-top:6px;font-size:11px">🎨 게임별 테마 컬러 토글 (즐겨찾기 1순위 게임 색상)</button>
   
   <details style="margin-top:14px">
@@ -2367,6 +2369,18 @@ if ('serviceWorker' in navigator) {
       .then(reg => console.log('SW registered'))
       .catch(err => console.log('SW reg failed:', err));
   });
+  // SW가 새 버전 알림 보내면 사용자에게 새로고침 배너 표시
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data?.type === 'NEW_VERSION') showSwUpdateBanner();
+  });
+}
+function showSwUpdateBanner(){
+  if (document.getElementById('sw-update-banner')) return;
+  const el = document.createElement('div');
+  el.id = 'sw-update-banner';
+  el.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#67e8f9,#a78bfa);color:#0a0e1c;padding:10px 14px;border-radius:10px;font-size:12px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.4);z-index:9999;display:flex;gap:8px;align-items:center;max-width:90vw';
+  el.innerHTML = '🔄 새 버전이 준비됐습니다 <button onclick="location.reload()" style="background:#0a0e1c;color:#67e8f9;border:none;padding:5px 10px;border-radius:6px;cursor:pointer;font-weight:800;font-size:11px">새로고침</button> <button onclick="this.parentElement.remove()" style="background:transparent;color:#0a0e1c;border:none;cursor:pointer;opacity:.7;font-size:13px;padding:0 4px">✕</button>';
+  document.body.appendChild(el);
 }
 
 // Capture install prompt
@@ -3040,6 +3054,46 @@ function simulateOnce(gc, totalPulls, currentPity, hasGuarantee, target){
   }
   return pickups;
 }
+
+// 시뮬레이터 정합성 단위 테스트 — 콘솔에 결과 표 출력
+function runSimTests(){
+  const cases=[
+    // 5050 + pickupRate<1.0 (호요버스류)
+    {name:'5050 / pity 89 / 1뽑 / no guar', gc:{pickupSystem:'5050',hardPity:90,softPity:74,baseRate:0.006,pickupRate:0.5}, n:1, pity:89, guar:false, tgt:1, range:[0.45,0.6]},
+    {name:'5050 / pity 89 / 1뽑 / WITH guar (확정)', gc:{pickupSystem:'5050',hardPity:90,softPity:74,baseRate:0.006,pickupRate:0.5}, n:1, pity:89, guar:true, tgt:1, range:[0.99,1.0]},
+    {name:'5050 / pity 0 / 90뽑 / no guar', gc:{pickupSystem:'5050',hardPity:90,softPity:74,baseRate:0.006,pickupRate:0.5}, n:90, pity:0, guar:false, tgt:1, range:[0.45,0.6]},
+    {name:'5050 / pity 0 / 180뽑 / no guar (소프트2천장)', gc:{pickupSystem:'5050',hardPity:90,softPity:74,baseRate:0.006,pickupRate:0.5}, n:180, pity:0, guar:false, tgt:1, range:[0.95,1.0]},
+    // 5050 + pickupRate=1.0 (NTE류)
+    {name:'5050+rate1.0 / pity 89 / 1뽑 (90뽑확정)', gc:{pickupSystem:'5050',hardPity:90,softPity:70,baseRate:0.0187,pickupRate:1.0}, n:1, pity:89, guar:false, tgt:1, range:[0.99,1.0]},
+    // point_only (니케/프세카/트릭컬)
+    {name:'point_only / pity 0 / 200뽑 (마일리지 천장)', gc:{pickupSystem:'point_only',hardPity:200,softPity:0,baseRate:0.04,pickupRate:0.5}, n:200, pity:0, guar:false, tgt:1, range:[0.99,1.0]},
+    // spark = point_only로 normalize
+    {name:'spark→point_only / 200뽑', gc:{pickupSystem:'spark',hardPity:200,softPity:0,baseRate:0.025,pickupRate:0.16}, n:200, pity:0, guar:false, tgt:1, range:[0.99,1.0]},
+    // guaranteed (블아/우마/FGO)
+    {name:'guaranteed / 120뽑 / pity 0', gc:{pickupSystem:'guaranteed',hardPity:120,softPity:0,baseRate:0.01,pickupRate:0.2222}, n:120, pity:0, guar:false, tgt:1, range:[0.99,1.0]},
+    {name:'guaranteed / 60뽑 / pity 0 (천장 미도달)', gc:{pickupSystem:'guaranteed',hardPity:120,softPity:0,baseRate:0.01,pickupRate:0.2222}, n:60, pity:0, guar:false, tgt:1, range:[0.05,0.30]},
+    // no_pity (섀도우버스류)
+    {name:'no_pity / baseRate 0.015 / 100뽑', gc:{pickupSystem:'no_pity',hardPity:0,softPity:0,baseRate:0.015,pickupRate:1.0}, n:100, pity:0, guar:false, tgt:1, range:[0.70,0.85]},
+    // 다중 타겟
+    {name:'5050 / 360뽑 / 2장 목표', gc:{pickupSystem:'5050',hardPity:90,softPity:74,baseRate:0.006,pickupRate:0.5}, n:360, pity:0, guar:false, tgt:2, range:[0.85,1.0]},
+  ];
+  console.group('🧪 시뮬레이터 단위 테스트 (각 4000회)');
+  const results=cases.map(c=>{
+    const p=simulateProbability(c.gc, c.n, c.pity, c.guar, c.tgt, 4000);
+    const pass=p>=c.range[0] && p<=c.range[1];
+    return {name:c.name, p:(p*100).toFixed(1)+'%', expected:`${(c.range[0]*100).toFixed(0)}~${(c.range[1]*100).toFixed(0)}%`, pass:pass?'✅':'❌'};
+  });
+  console.table(results);
+  const passed=results.filter(r=>r.pass==='✅').length;
+  console.log(`결과: ${passed}/${results.length} 통과`);
+  console.groupEnd();
+  // 사용자에게도 토스트
+  if(typeof toast==='function'){
+    toast(`🧪 ${passed}/${results.length} 통과 — 콘솔에서 상세 확인`);
+  }
+  return results;
+}
+window.runSimTests=runSimTests;
 
 // LRU 캐시 (최근 32개) — 같은 입력으로 매 키스트로크마다 8000회 재시뮬을 방지
 const _simCache=new Map();
@@ -3904,6 +3958,22 @@ function saveInv(key,cid,val){
   safeSetItem('gv8-inv',JSON.stringify(inventory));
   // 직접 입력값을 헤더 총합/뽑기수/비율에 즉시 반영 (포커스 유지)
   updateInvTotals(key);
+  // 600ms 후 계산기 페이지 파생 상태 동기화
+  scheduleInvCrossSync();
+}
+let _invCrossTimer=null;
+function scheduleInvCrossSync(){
+  if(_invCrossTimer) clearTimeout(_invCrossTimer);
+  _invCrossTimer=setTimeout(()=>{
+    _invCrossTimer=null;
+    // 계산기 페이지가 활성이면 재화 변동 반영
+    if(typeof page!=='undefined' && page==='calc'){
+      const ae=document.activeElement;
+      // 입력에 포커스 중이면 스킵 (사용자 입력 끊김 방지)
+      if(ae && (ae.tagName==='INPUT' || ae.tagName==='TEXTAREA')) return;
+      renderCalc();
+    }
+  }, 600);
 }
 // 입력 즉시 헤더 표시 갱신 (포커스 유지를 위해 부분 업데이트만)
 function updateInvTotals(key){
@@ -5993,7 +6063,11 @@ async function listAvailableModels(){
 //  GEMINI API 호출 헬퍼
 // ════════════════════════════════════════════════════════════════
 let _lastApiCallTs=0;
-async function callGemini(prompt, useSearch=true, showRetryUi=true){
+async function callGemini(prompt, useSearch=true, opts={}){
+  // 호환: 3번째 인자가 boolean이면 옛 showRetryUi 시그니처
+  if(typeof opts==='boolean') opts={showRetryUi:opts};
+  const showRetryUi=opts.showRetryUi!==false;
+  const overrideMax=opts.maxOutputTokens;
   const _now=Date.now(),_gap=_now-_lastApiCallTs;
   if(_gap<1500 && _lastApiCallTs>0) await new Promise(r=>setTimeout(r,1500-_gap));
   _lastApiCallTs=Date.now();
@@ -6003,10 +6077,10 @@ async function callGemini(prompt, useSearch=true, showRetryUi=true){
   const makeBody=(withSearch)=>{
     const b={
       contents:[{parts:[{text:prompt}]}],
-      // 토큰 절약: maxOutputTokens 2000 → 800 (픽업 정보는 짧음), thinkingBudget 0
+      // 토큰 절약: 기본 800/1200 (픽업 정보 짧음), thinkingBudget 0. opts.maxOutputTokens 우선.
       generationConfig:{
         temperature:0,
-        maxOutputTokens:withSearch?1200:800,
+        maxOutputTokens:overrideMax||(withSearch?1200:800),
         thinkingConfig:{thinkingBudget:0}
       }
     };
@@ -6082,10 +6156,18 @@ async function callGemini(prompt, useSearch=true, showRetryUi=true){
 
 // Gemini 응답에서 텍스트 추출
 function extractGeminiText(data){
-  return data?.candidates?.[0]?.content?.parts
-    ?.filter(p=>p.text)
-    ?.map(p=>p.text)
-    ?.join('\n') || '';
+  const c = data?.candidates?.[0];
+  if(!c) return '';
+  const txt = c.content?.parts?.filter(p=>p.text)?.map(p=>p.text)?.join('\n') || '';
+  // 토큰 한도로 잘렸을 때 진단 가능하도록 plain string에 마커 부착
+  if(c.finishReason === 'MAX_TOKENS'){
+    console.warn('[Gemini] 응답이 maxOutputTokens 한도로 잘림 — 결과가 부분일 수 있음');
+    // 결과 String에 비파괴 메타 부착 (호출자가 .__truncated 검사 가능)
+    try { Object.defineProperty(txt && Object(txt), '__truncated', { value: true, enumerable: false }); } catch(_){}
+    // 전역 플래그도 세팅 — UI에서 토스트 표시
+    window._lastGeminiTruncated = true;
+  }
+  return txt;
 }
 
 // 마크다운 → HTML 간단 렌더러
@@ -6513,13 +6595,31 @@ async function doAi(){
 - 한국어로 답변 (서버가 일본/글로벌이어도 응답은 한국어, 단 검색은 원어로 수행)`;
   
   try{
-    const data=await callGemini(prompt, true);
-    const text=extractGeminiText(data);
+    window._lastGeminiTruncated=false;
+    let data=await callGemini(prompt, true);
+    let text=extractGeminiText(data);
+    // 토큰 한도로 잘렸으면 한 번 더 늘려서 재요청
+    if(window._lastGeminiTruncated){
+      console.warn('[AI] 결과가 잘려서 토큰 한도 늘려 재요청');
+      window._lastGeminiTruncated=false;
+      try{
+        data=await callGemini(prompt, true, {maxOutputTokens:2400});
+        const text2=extractGeminiText(data);
+        if(text2 && text2.length>text.length) text=text2;
+      } catch(_){}
+    }
     const sources=extractGeminiSources(data);
-    
+
     el.classList.remove('loading');
     aiLast=text;
     el.innerHTML=text?renderMd(text):'결과를 찾을 수 없습니다.';
+    if(window._lastGeminiTruncated){
+      // 두 번째 시도도 잘렸으면 사용자 알림
+      const warn=document.createElement('div');
+      warn.style.cssText='margin-top:8px;padding:8px 10px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:6px;font-size:10px;color:var(--gold)';
+      warn.innerHTML='⚠️ AI 응답이 토큰 한도로 일부 잘렸습니다. 위 결과는 부분일 수 있어요.';
+      el.appendChild(warn);
+    }
     
     // 캐시 저장 (1차 — 추출 전)
     try{localStorage.setItem(cacheKey,JSON.stringify({text,sources,ts:Date.now()}));}catch(e){}
@@ -8785,9 +8885,15 @@ function addSampleData(){
 }
 
 // ════════════════════════════════════════════════════════════════
-//  INDEXEDDB 미러 백업 (안전망)
+//  INDEXEDDB 미러 백업 (안전망) — localStorage 손실 시 자동/수동 복구
 // ════════════════════════════════════════════════════════════════
 const IDB_DB='gachaTrackerBackup', IDB_STORE='kv', IDB_VER=1;
+// 백업 대상 키 (큰 데이터 + 핵심 설정 모두 포함)
+const IDB_KEYS=[
+  'gv8-events','gv8-coupons','gv8-game-events','gv8-custom-events',
+  'gv8-inv','gv8-favs','gv8-wishlist','gv8-custom-tasks','gv8-taskstate',
+  'gv8-char-art','gv8-monthly','gv8-monthly-start','gv8-alarms','gv8-monthly-budget'
+];
 function idbOpen(){
   return new Promise((resolve,reject)=>{
     const req=indexedDB.open(IDB_DB,IDB_VER);
@@ -8802,8 +8908,7 @@ async function idbBackup(){
     const db=await idbOpen();
     const tx=db.transaction(IDB_STORE,'readwrite');
     const store=tx.objectStore(IDB_STORE);
-    // 큰 데이터만 미러 저장
-    ['gv8-events','gv8-coupons','gv8-game-events','gv8-custom-events','gv8-inv','gv8-favs','gv8-wishlist','gv8-custom-tasks','gv8-taskstate'].forEach(k=>{
+    IDB_KEYS.forEach(k=>{
       const v=localStorage.getItem(k);
       if(v) store.put(v,k);
     });
@@ -8819,16 +8924,51 @@ async function idbRestore(){
     const store=tx.objectStore(IDB_STORE);
     return new Promise((resolve)=>{
       const restored={};
-      const keys=['gv8-events','gv8-coupons','gv8-game-events','gv8-custom-events','gv8-inv','gv8-favs','gv8-wishlist','gv8-custom-tasks','gv8-taskstate'];
       let done=0;
-      keys.forEach(k=>{
+      IDB_KEYS.forEach(k=>{
         const r=store.get(k);
-        r.onsuccess=()=>{if(r.result)restored[k]=r.result;if(++done===keys.length)resolve(restored);};
-        r.onerror=()=>{if(++done===keys.length)resolve(restored);};
+        r.onsuccess=()=>{if(r.result)restored[k]=r.result;if(++done===IDB_KEYS.length){
+          // 메타데이터 _lastBackup 함께 반환
+          const m=store.get('_lastBackup');
+          m.onsuccess=()=>{ restored._lastBackup=m.result||null; resolve(restored); };
+          m.onerror=()=>resolve(restored);
+        }};
+        r.onerror=()=>{if(++done===IDB_KEYS.length)resolve(restored);};
       });
     });
   }catch(e){console.warn('idbRestore 실패:',e);return null;}
 }
+// 시작 시 자동 복구: localStorage가 비어있는데 IDB에 데이터가 있으면 복원 후 새로고침
+async function idbAutoRecover(){
+  // events가 비어있고 favs도 비어있으면 데이터 손실 가능성
+  if((events?.length||0) > 0 || (favs?.length||0) > 0) return;
+  const restored=await idbRestore();
+  if(!restored) return;
+  const sigKeys=['gv8-events','gv8-favs','gv8-inv'];
+  const hasData=sigKeys.some(k=>{
+    try { const v=restored[k]; return v && JSON.parse(v) && (Array.isArray(JSON.parse(v))?JSON.parse(v).length>0:Object.keys(JSON.parse(v)).length>0); } catch(_){ return false; }
+  });
+  if(!hasData) return;
+  // 사용자 확인 후 복원
+  const lastTs = restored._lastBackup ? new Date(restored._lastBackup).toLocaleString('ko-KR') : '?';
+  if(confirm(`💾 백업에서 데이터 복구 가능 (마지막 백업: ${lastTs})\n복원 후 페이지가 새로고침됩니다. 계속할까요?`)){
+    IDB_KEYS.forEach(k=>{ if(restored[k]) localStorage.setItem(k, restored[k]); });
+    location.reload();
+  }
+}
+// 수동 복구 (설정 → 데이터 메뉴에서 호출)
+async function manualIdbRestore(){
+  const restored=await idbRestore();
+  if(!restored){ toast('IndexedDB 백업 없음'); return; }
+  const lastTs=restored._lastBackup?new Date(restored._lastBackup).toLocaleString('ko-KR'):'?';
+  if(!confirm(`💾 IndexedDB 백업에서 복원\n마지막 백업: ${lastTs}\n현재 데이터를 덮어씁니다. 계속할까요?`)) return;
+  IDB_KEYS.forEach(k=>{ if(restored[k]) localStorage.setItem(k, restored[k]); });
+  toast('✅ 복원 완료 — 새로고침');
+  setTimeout(()=>location.reload(), 800);
+}
+window.manualIdbRestore=manualIdbRestore;
+// startup 시 1회 체크 (앱 초기화 직후 호출되도록 windowload 이후 약간 지연)
+window.addEventListener('load', ()=> setTimeout(idbAutoRecover, 1500));
 
 // 용량 경고 인디케이터 — 4MB 초과 시 표시
 function checkIDBQuota(){
