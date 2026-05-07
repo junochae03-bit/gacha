@@ -391,10 +391,10 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 @media(max-width:520px){.gss-stats{grid-template-columns:repeat(2,1fr)}}
 
 /* 통계 위젯 캐러셀 (삼성 위젯 UI 스타일 — 가로 스와이프) */
-.widget-carousel{position:relative;margin-bottom:14px}
-.widget-track{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;padding:0 4px 6px;margin:0 -4px}
+.widget-carousel{position:relative}
+.widget-track{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;padding:0 2px 4px;margin:0 -2px}
 .widget-track::-webkit-scrollbar{display:none}
-.widget-track > .stat-widget{flex:0 0 calc(100% - 8px);scroll-snap-align:center;margin-bottom:0;min-width:0}
+.widget-track > .sw-row{flex:0 0 calc(100% - 4px);scroll-snap-align:center;margin-bottom:0;min-width:0;scroll-snap-stop:always}
 .widget-dots{display:flex;justify-content:center;gap:6px;margin-top:10px;align-items:center}
 .widget-dot{width:8px;height:8px;border-radius:50%;background:var(--bd2);border:none;cursor:pointer;transition:all .3s cubic-bezier(.34,1.56,.64,1);padding:0}
 .widget-dot:hover{background:var(--bd3)}
@@ -8837,6 +8837,7 @@ function buildEnhancedStats(){
     const allProbs=Object.values(byGame).flatMap(d=>d.successProbs);
     const overallTheory=allProbs.length?(allProbs.reduce((a,b)=>a+b,0)/allProbs.length*100):null;
     const overallLuckLabel=overallTheory===null?'—':(overallTheory<25?'🍀 매우 운 좋음':overallTheory<50?'😊 운 좋음':overallTheory<75?'😐 평균':'😢 운 나쁨');
+    const roiList=Object.values(byGame).sort((a,b)=>(b.success+b.fail)-(a.success+a.fail));
     roiHtml=`<div class="stat-widget purple">
       <div class="sw-head">
         <div class="sw-title">
@@ -8852,8 +8853,9 @@ function buildEnhancedStats(){
           <div class="sw-hero-sub">${overallLuckLabel}</div>
         </div>
       </div>
-      <div class="sw-body">
-        ${Object.values(byGame).sort((a,b)=>(b.success+b.fail)-(a.success+a.fail)).map(d=>{
+      <div class="sw-body widget-carousel">
+        <div class="widget-track" data-wc="roi">
+        ${roiList.map(d=>{
           const total=d.success+d.fail;
           const myRate=total?Math.round(d.success/total*100):0;
           const hasProbs=d.successProbs.length>0;
@@ -8878,6 +8880,9 @@ function buildEnhancedStats(){
             ${d.success>0?`<div style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--bd);font-size:10px;color:var(--mu2)">픽업 1개당 <strong style="color:var(--gold);font-family:'Orbitron',monospace">₩${krwPerPickup.toLocaleString()}</strong> · 누적 <strong style="color:var(--tx)">${d.pulls}뽑</strong> / <strong>₩${d.krw.toLocaleString()}</strong></div>`:''}
           </div>`;
         }).join('')}
+        </div>
+        ${roiList.length>1?`<div class="widget-dots" data-wc-dots="roi">${roiList.map((d,i)=>`<button class="widget-dot ${i===0?'active':''}" data-idx="${i}" title="${d.g.short}" onclick="scrollWidgetTo('roi',${i})" style="${i===0?`background:${d.g.color||'var(--gold)'}`:''}"></button>`).join('')}</div>`:''}
+        ${roiList.length>1?`<div class="widget-hint">← 게임별로 스와이프 ${roiList.length}/${roiList.length} →</div>`:''}
       </div>
     </div>`;
   }
@@ -9042,7 +9047,8 @@ function buildEnhancedStats(){
           <div class="sw-hero-sub">${histGames.length}개 게임 · 총 ${allPulls.length}회</div>
         </div>
       </div>
-      <div class="sw-body">
+      <div class="sw-body widget-carousel">
+        <div class="widget-track" data-wc="hist">
       ${histGames.map(gid=>{
         const g=GAMES.find(x=>x.id===gid);
         if(!g) return '';
@@ -9087,6 +9093,9 @@ function buildEnhancedStats(){
           </div>
         </div>`;
       }).join('')}
+        </div>
+        ${histGames.length>1?`<div class="widget-dots" data-wc-dots="hist">${histGames.map((gid,i)=>{const g=GAMES.find(x=>x.id===gid);return `<button class="widget-dot ${i===0?'active':''}" data-idx="${i}" title="${g?g.short:gid}" onclick="scrollWidgetTo('hist',${i})" style="${i===0?`background:${g?.color||'var(--gold)'}`:''}"></button>`;}).join('')}</div>`:''}
+        ${histGames.length>1?`<div class="widget-hint">← 게임별로 스와이프 ${histGames.length}/${histGames.length} →</div>`:''}
       </div>
     </div>`;
   }
@@ -9129,7 +9138,8 @@ function buildEnhancedStats(){
           <div class="sw-hero-sub">✨${totSuccess} · 💔${totFail}</div>
         </div>
       </div>
-      <div class="sw-body">
+      <div class="sw-body widget-carousel">
+        <div class="widget-track" data-wc="result">
       ${distGames.map(gid=>{
         const g=GAMES.find(x=>x.id===gid);
         if(!g) return '';
@@ -9151,26 +9161,14 @@ function buildEnhancedStats(){
           </div>
         </div>`;
       }).join('')}
+        </div>
+        ${distGames.length>1?`<div class="widget-dots" data-wc-dots="result">${distGames.map((gid,i)=>{const g=GAMES.find(x=>x.id===gid);return `<button class="widget-dot ${i===0?'active':''}" data-idx="${i}" title="${g?g.short:gid}" onclick="scrollWidgetTo('result',${i})" style="${i===0?`background:${g?.color||'var(--gold)'}`:''}"></button>`;}).join('')}</div>`:''}
+        ${distGames.length>1?`<div class="widget-hint">← 게임별로 스와이프 ${distGames.length}/${distGames.length} →</div>`:''}
       </div>
     </div>`;
   }
 
-  // 3개 게임별 위젯(시점/결과/성공률)을 캐러셀로 묶음 (삼성 위젯 UI 스타일)
-  const widgets=[histHtml,resultDistHtml,roiHtml].filter(h=>h);
-  let carouselHtml='';
-  if(widgets.length){
-    const labels=['📊 시점 분포','🎯 결과 분포','🎲 성공률'];
-    const labelOrder=[];
-    if(histHtml) labelOrder.push(labels[0]);
-    if(resultDistHtml) labelOrder.push(labels[1]);
-    if(roiHtml) labelOrder.push(labels[2]);
-    carouselHtml=`<div class="widget-carousel">
-      <div class="widget-track" id="widgetTrack">${widgets.join('')}</div>
-      ${widgets.length>1?`<div class="widget-dots">${widgets.map((_,i)=>`<button class="widget-dot ${i===0?'active':''}" data-idx="${i}" title="${labelOrder[i]||''}" onclick="scrollWidgetTo(${i})"></button>`).join('')}</div>`:''}
-      ${widgets.length>1?`<div class="widget-hint">← 좌우로 스와이프 또는 도트 클릭 →</div>`:''}
-    </div>`;
-  }
-  return budgetHtml+chartHtml+cumChartHtml+carouselHtml;
+  return budgetHtml+chartHtml+cumChartHtml+histHtml+resultDistHtml+roiHtml;
 }
 
 // renderStats를 강화
@@ -9191,28 +9189,35 @@ renderStats=function(){
     wrap.innerHTML=html;
     el.insertBefore(wrap, el.firstChild);
   }
-  // 캐러셀 스크롤 → 도트 인디케이터 동기화
+  // 캐러셀 스크롤 → 도트 인디케이터 동기화 (위젯별로 트랙이 여러개)
   setTimeout(()=>{
-    const track=document.getElementById('widgetTrack');
-    if(!track || track._wcInited) return;
-    track._wcInited=true;
-    const dots=track.parentElement.querySelectorAll('.widget-dot');
-    if(!dots.length) return;
-    const updateDots=()=>{
-      const w=track.clientWidth;
-      const idx=Math.round(track.scrollLeft / Math.max(1,w));
-      dots.forEach((d,i)=>d.classList.toggle('active', i===idx));
-    };
-    track.addEventListener('scroll', updateDots, {passive:true});
-    updateDots();
+    document.querySelectorAll('.widget-track[data-wc]').forEach(track=>{
+      if(track._wcInited) return;
+      track._wcInited=true;
+      const name=track.getAttribute('data-wc');
+      const dots=track.parentElement.querySelectorAll(`[data-wc-dots="${name}"] .widget-dot`);
+      if(!dots.length) return;
+      const updateDots=()=>{
+        const w=track.clientWidth;
+        const idx=Math.round(track.scrollLeft / Math.max(1,w+10));
+        dots.forEach((d,i)=>d.classList.toggle('active', i===idx));
+      };
+      track.addEventListener('scroll', updateDots, {passive:true});
+      updateDots();
+    });
   }, 50);
 };
 
-// 도트 클릭 시 해당 위젯으로 스크롤
-function scrollWidgetTo(idx){
-  const track=document.getElementById('widgetTrack');
+// 도트 클릭 시 해당 위젯으로 스크롤 (name = hist|result|roi)
+function scrollWidgetTo(name, idx){
+  const track=document.querySelector(`.widget-track[data-wc="${name}"]`);
   if(!track) return;
-  track.scrollTo({left: idx*track.clientWidth, behavior:'smooth'});
+  const slide=track.children[idx];
+  if(slide){
+    track.scrollTo({left: slide.offsetLeft - track.offsetLeft, behavior:'smooth'});
+  } else {
+    track.scrollTo({left: idx*track.clientWidth, behavior:'smooth'});
+  }
 }
 
 // 픽업 등록 모달에 위시리스트 자동 제안 datalist 갱신
