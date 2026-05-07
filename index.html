@@ -8436,17 +8436,20 @@ function buildEnhancedStats(){
     </div>`;
   }
 
-  // 월별 지출 그래프 (최근 6개월)
+  // 월별 지출 그래프 (최근 6개월) — getAllAttempts(e) 기준
   const months=[];
-  for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({key:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`,label:`${d.getMonth()+1}월`});}
+  for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({key:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`,label:`${d.getMonth()+1}월`,year:d.getFullYear()});}
   const monthData=months.map(m=>{
     const total={};
     let sum=0;
     events.forEach(e=>{
-      if(!e.spentPulls||!e.start||!e.start.startsWith(m.key))return;
+      if(!e.start||!e.start.startsWith(m.key))return;
+      const all=getAllAttempts(e);
+      const totalPulls=all.reduce((s,a)=>s+(a.spentPulls||0),0);
+      if(totalPulls<=0) return;
       const g=GAMES.find(x=>x.id===e.game);
       if(!g)return;
-      const krw=e.spentPulls*g.gacha.pricePerPull;
+      const krw=totalPulls*g.gacha.pricePerPull;
       total[g.id]=(total[g.id]||0)+krw;
       sum+=krw;
     });
@@ -8456,28 +8459,86 @@ function buildEnhancedStats(){
 
   let chartHtml='';
   if(monthData.some(m=>m.sum>0)){
-    const W=320,H=140,bW=Math.floor(W/months.length)-8;
-    chartHtml=`<div style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-bottom:14px">
-      <div style="font-size:13px;font-weight:800;margin-bottom:10px">📊 최근 6개월 지출</div>
-      <div style="overflow-x:auto"><svg viewBox="0 0 ${W} ${H+30}" style="width:100%;max-width:${W*1.5}px;height:auto;display:block">
-        ${monthData.map((m,i)=>{
-          const x=i*Math.floor(W/months.length)+4;
-          const barH=m.sum?Math.max(2,Math.round(m.sum/maxSum*H)):0;
-          const y=H-barH;
-          let acc=0;
-          const segments=Object.keys(m.total).map(gid=>{
-            const g=GAMES.find(x=>x.id===gid);
-            const segH=Math.round(m.total[gid]/maxSum*H);
-            const segY=H-acc-segH;
-            acc+=segH;
-            return `<rect x="${x}" y="${segY}" width="${bW}" height="${segH}" fill="${g?.color||'#888'}" opacity="0.85"><title>${g?.short||gid}: ₩${m.total[gid].toLocaleString()}</title></rect>`;
-          }).join('');
-          return `${segments}
-            <text x="${x+bW/2}" y="${H+12}" font-size="9" fill="${m.key.startsWith(now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0'))?'var(--bl)':'var(--mu)'}" text-anchor="middle" font-weight="700">${m.label}</text>
-            ${m.sum?`<text x="${x+bW/2}" y="${y-3}" font-size="8" fill="var(--mu2)" text-anchor="middle" font-family="Orbitron">${m.sum>=10000?Math.round(m.sum/10000)+'만':Math.round(m.sum/1000)+'K'}</text>`:''}`;
-        }).join('')}
-        <line x1="0" y1="${H}" x2="${W}" y2="${H}" stroke="var(--bd)" stroke-width="0.5"/>
-      </svg></div>
+    const totalSum=monthData.reduce((s,m)=>s+m.sum,0);
+    const avgMonth=Math.round(totalSum/6);
+    const curMonthKey=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    // Y축 눈금 (0, 1/4, 1/2, 3/4, 최대)
+    const yTicks=[0,0.25,0.5,0.75,1].map(r=>{
+      const v=maxSum*r;
+      const fmt=v>=10000?Math.round(v/10000)+'만':v>=1000?Math.round(v/1000)+'K':Math.round(v).toString();
+      return {r, label:fmt, v};
+    });
+    const fmtMoney=v=>v>=10000?`₩${Math.round(v/10000).toLocaleString()}만`:`₩${v.toLocaleString()}`;
+    // 사용된 게임 모음 (범례용)
+    const usedGames={};
+    monthData.forEach(m=>Object.keys(m.total).forEach(gid=>{
+      const g=GAMES.find(x=>x.id===gid);
+      if(g) usedGames[gid]={g,sum:(usedGames[gid]?.sum||0)+m.total[gid]};
+    }));
+    const legendGames=Object.values(usedGames).sort((a,b)=>b.sum-a.sum);
+
+    const W=420,H=180,padL=46,padR=12,padT=20,padB=30;
+    const innerW=W-padL-padR, innerH=H-padT-padB;
+    const colW=innerW/months.length;
+    const bW=Math.min(48, colW-12);
+
+    chartHtml=`<div style="background:linear-gradient(180deg,var(--sf),var(--sf2));border:1px solid var(--bd);border-radius:14px;padding:16px 18px;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-size:14px;font-weight:800;color:var(--tx);margin-bottom:2px">📊 최근 6개월 지출</div>
+          <div style="font-size:11px;color:var(--mu)">${months[0].label} ~ ${months[5].label} · 게임별 누적</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;color:var(--mu);font-weight:700">6개월 합계</div>
+          <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--gold);text-shadow:0 0 12px rgba(244,197,122,0.3)">${fmtMoney(totalSum)}</div>
+          <div style="font-size:9px;color:var(--mu)">월평균 ${fmtMoney(avgMonth)}</div>
+        </div>
+      </div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+        <svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:${W*0.9}px;max-width:${W*1.4}px;height:auto;display:block">
+          <!-- Y축 그리드 -->
+          ${yTicks.map(t=>{
+            const y=padT+innerH-t.r*innerH;
+            return `<g>
+              <line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="var(--bd)" stroke-width="0.5" stroke-dasharray="${t.r===0?'':'2,3'}"/>
+              <text x="${padL-6}" y="${(y+3).toFixed(1)}" font-size="9" fill="var(--mu)" text-anchor="end" font-family="Orbitron">${t.label}</text>
+            </g>`;
+          }).join('')}
+          <!-- 막대 -->
+          ${monthData.map((m,i)=>{
+            const cx=padL+i*colW+colW/2;
+            const x=cx-bW/2;
+            const isCur=m.key===curMonthKey;
+            const barH=m.sum?Math.max(2,Math.round(m.sum/maxSum*innerH)):0;
+            const y=padT+innerH-barH;
+            // 게임별 스택 (정렬: 큰 것부터 위로)
+            const sortedGids=Object.keys(m.total).sort((a,b)=>m.total[b]-m.total[a]);
+            let acc=0;
+            const segments=sortedGids.map(gid=>{
+              const g=GAMES.find(x=>x.id===gid);
+              const segH=Math.round(m.total[gid]/maxSum*innerH);
+              const segY=padT+innerH-acc-segH;
+              acc+=segH;
+              return `<rect x="${x}" y="${segY}" width="${bW}" height="${segH}" fill="${g?.color||'#888'}" rx="2"><title>${g?.short||gid}: ${fmtMoney(m.total[gid])}</title></rect>`;
+            }).join('');
+            const labelY=padT+innerH+14;
+            const valLabel=m.sum?(m.sum>=10000?Math.round(m.sum/10000)+'만':Math.round(m.sum/1000)+'K'):'';
+            return `<g>
+              ${isCur && barH>0?`<rect x="${x-2}" y="${y-2}" width="${bW+4}" height="${barH+4}" fill="none" stroke="${cfgColor='var(--bl)'}" stroke-width="1.5" stroke-dasharray="3,2" rx="3" opacity="0.7"/>`:''}
+              ${segments}
+              ${valLabel?`<text x="${cx}" y="${(y-5).toFixed(1)}" font-size="10" fill="${isCur?'var(--bl)':'var(--tx)'}" text-anchor="middle" font-family="Orbitron" font-weight="800">${valLabel}</text>`:''}
+              <text x="${cx}" y="${labelY}" font-size="10" fill="${isCur?'var(--bl)':'var(--mu2)'}" text-anchor="middle" font-weight="${isCur?'800':'600'}">${m.label}${isCur?' ●':''}</text>
+            </g>`;
+          }).join('')}
+        </svg>
+      </div>
+      ${legendGames.length?`<div style="display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:12px;padding-top:10px;border-top:1px dashed var(--bd);font-size:10px">
+        ${legendGames.map(({g,sum})=>`<div style="display:flex;align-items:center;gap:5px">
+          <span style="width:10px;height:10px;border-radius:2px;background:${g.color}"></span>
+          <span style="color:var(--mu2)">${g.short}</span>
+          <span style="color:var(--gold);font-family:'Orbitron',monospace;font-weight:700">${fmtMoney(sum)}</span>
+        </div>`).join('')}
+      </div>`:''}
     </div>`;
   }
 
@@ -8550,41 +8611,119 @@ function buildEnhancedStats(){
       const totalPulls=all.reduce((s,a)=>s+(a.spentPulls||0),0);
       const g=GAMES.find(x=>x.id===e.game);
       const krw=g?totalPulls*g.gacha.pricePerPull:0;
-      return {date:e.start, krw, gid:e.game};
+      return {date:e.start, krw, gid:e.game, char:e.char||'픽업'};
     })
     .filter(r=>r.krw>0)
     .sort((a,b)=>a.date.localeCompare(b.date));
   if(allRecords.length>=2){
     let cum=0;
-    const points=allRecords.map(r=>{cum+=r.krw;return{date:r.date,cum,gid:r.gid};});
+    const points=allRecords.map(r=>{cum+=r.krw;return{date:r.date,cum,gid:r.gid,delta:r.krw,char:r.char};});
     const maxCum=points[points.length-1].cum;
     const minDate=new Date(points[0].date);
     const maxDate=new Date(points[points.length-1].date);
+    const days=Math.max(1, Math.round((maxDate-minDate)/86400000));
     const range=Math.max(1,maxDate-minDate);
-    const W=420,H=160;
-    const xPos=d=>(new Date(d)-minDate)/range*W;
-    const yPos=v=>H-(v/maxCum)*H;
+    const avgDaily=Math.round(maxCum/days);
+    const avgMonthly=Math.round(avgDaily*30);
+    const fmtMoney=v=>v>=10000?`₩${Math.round(v/10000).toLocaleString()}만`:`₩${v.toLocaleString()}`;
+    const fmtCompact=v=>v>=10000?Math.round(v/10000)+'만':v>=1000?Math.round(v/1000)+'K':String(Math.round(v));
+
+    const W=460,H=200,padL=52,padR=14,padT=20,padB=36;
+    const innerW=W-padL-padR, innerH=H-padT-padB;
+    const xPos=d=>padL+(new Date(d)-minDate)/range*innerW;
+    const yPos=v=>padT+innerH-(v/maxCum)*innerH;
     const pathD='M '+points.map(p=>`${xPos(p.date).toFixed(1)} ${yPos(p.cum).toFixed(1)}`).join(' L ');
-    const dots=points.map(p=>{
+
+    // Y축 눈금
+    const yTicks=[0,0.25,0.5,0.75,1].map(r=>{
+      const v=maxCum*r;
+      return {r, label:fmtCompact(v), v};
+    });
+    // X축 눈금 (월별)
+    const xMonths=[];
+    const startM=new Date(minDate.getFullYear(),minDate.getMonth(),1);
+    const endM=new Date(maxDate.getFullYear(),maxDate.getMonth(),1);
+    let curM=new Date(startM);
+    while(curM<=endM){
+      xMonths.push({date:new Date(curM), label:`${curM.getMonth()+1}월`, isFirstOfYear:curM.getMonth()===0, year:curM.getFullYear()});
+      curM.setMonth(curM.getMonth()+1);
+    }
+    if(xMonths.length>8){
+      // 너무 많으면 띄엄띄엄 표시
+      const step=Math.ceil(xMonths.length/6);
+      xMonths.forEach((m,i)=>{m._show = i%step===0 || i===xMonths.length-1;});
+    } else {
+      xMonths.forEach(m=>{m._show=true;});
+    }
+
+    const dots=points.map((p,i)=>{
       const g=GAMES.find(x=>x.id===p.gid);
-      return `<circle cx="${xPos(p.date).toFixed(1)}" cy="${yPos(p.cum).toFixed(1)}" r="3" fill="${g?.color||'#888'}"><title>${p.date}: ₩${p.cum.toLocaleString()} (누적)</title></circle>`;
+      const isLast=i===points.length-1;
+      const r=isLast?5:3;
+      return `<circle cx="${xPos(p.date).toFixed(1)}" cy="${yPos(p.cum).toFixed(1)}" r="${r}" fill="${g?.color||'#888'}" stroke="${isLast?'#fff':'none'}" stroke-width="${isLast?2:0}"><title>${p.date} · ${p.char} (${g?.short||''})\n+${fmtMoney(p.delta)} → 누적 ${fmtMoney(p.cum)}</title></circle>`;
     }).join('');
-    cumChartHtml=`<div style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-bottom:14px">
-      <div style="font-size:13px;font-weight:800;margin-bottom:10px">📈 누적 지출 추이 <span style="font-size:10px;color:var(--mu);font-weight:400">최대 ₩${maxCum.toLocaleString()}</span></div>
-      <svg viewBox="0 0 ${W} ${H+24}" style="width:100%;height:auto;display:block">
-        <defs>
-          <linearGradient id="cumGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="var(--bl)" stop-opacity="0.4"/>
-            <stop offset="100%" stop-color="var(--bl)" stop-opacity="0"/>
-          </linearGradient>
-        </defs>
-        <path d="${pathD} L ${W} ${H} L 0 ${H} Z" fill="url(#cumGrad)" stroke="none"/>
-        <path d="${pathD}" fill="none" stroke="var(--bl)" stroke-width="2"/>
-        ${dots}
-        <text x="0" y="${H+16}" font-size="9" fill="var(--mu)">${points[0].date}</text>
-        <text x="${W}" y="${H+16}" font-size="9" fill="var(--mu)" text-anchor="end">${points[points.length-1].date}</text>
-        <line x1="0" y1="${H}" x2="${W}" y2="${H}" stroke="var(--bd)" stroke-width="0.5"/>
-      </svg>
+
+    // 마지막 값 라벨
+    const lastP=points[points.length-1];
+    const lastX=xPos(lastP.date), lastY=yPos(lastP.cum);
+
+    cumChartHtml=`<div style="background:linear-gradient(180deg,var(--sf),var(--sf2));border:1px solid var(--bd);border-radius:14px;padding:16px 18px;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-size:14px;font-weight:800;color:var(--tx);margin-bottom:2px">📈 누적 지출 추이</div>
+          <div style="font-size:11px;color:var(--mu)">${points[0].date} ~ ${lastP.date} · ${days}일간 ${points.length}건</div>
+        </div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap">
+          <div style="text-align:right">
+            <div style="font-size:9px;color:var(--mu);font-weight:700;letter-spacing:1px">누적</div>
+            <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--gold);text-shadow:0 0 12px rgba(244,197,122,0.3)">${fmtMoney(maxCum)}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:9px;color:var(--mu);font-weight:700;letter-spacing:1px">월평균</div>
+            <div style="font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--bl)">${fmtMoney(avgMonthly)}</div>
+          </div>
+        </div>
+      </div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+        <svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:${W*0.9}px;max-width:${W*1.4}px;height:auto;display:block">
+          <defs>
+            <linearGradient id="cumGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.45"/>
+              <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+            </linearGradient>
+            <filter id="cumGlow"><feGaussianBlur stdDeviation="2"/></filter>
+          </defs>
+          <!-- Y축 그리드 -->
+          ${yTicks.map(t=>{
+            const y=padT+innerH-t.r*innerH;
+            return `<g>
+              <line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="var(--bd)" stroke-width="0.5" stroke-dasharray="${t.r===0?'':'2,3'}"/>
+              <text x="${padL-6}" y="${(y+3).toFixed(1)}" font-size="9" fill="var(--mu)" text-anchor="end" font-family="Orbitron">${t.label}</text>
+            </g>`;
+          }).join('')}
+          <!-- X축 월별 눈금 -->
+          ${xMonths.filter(m=>m._show).map(m=>{
+            const x=xPos(m.date);
+            return `<g>
+              <line x1="${x.toFixed(1)}" y1="${padT}" x2="${x.toFixed(1)}" y2="${padT+innerH}" stroke="var(--bd)" stroke-width="0.4" stroke-dasharray="1,4" opacity="0.5"/>
+              <text x="${x.toFixed(1)}" y="${(padT+innerH+14).toFixed(1)}" font-size="9" fill="var(--mu)" text-anchor="middle" font-weight="${m.isFirstOfYear?'800':'500'}">${m.label}</text>
+              ${m.isFirstOfYear?`<text x="${x.toFixed(1)}" y="${(padT+innerH+26).toFixed(1)}" font-size="8" fill="var(--mu2)" text-anchor="middle" font-family="Orbitron">${m.year}</text>`:''}
+            </g>`;
+          }).join('')}
+          <!-- 영역 채우기 -->
+          <path d="${pathD} L ${(xPos(lastP.date)).toFixed(1)} ${padT+innerH} L ${padL} ${padT+innerH} Z" fill="url(#cumGrad)" stroke="none"/>
+          <!-- 라인 (글로우 + 메인) -->
+          <path d="${pathD}" fill="none" stroke="#fbbf24" stroke-width="3" opacity="0.4" filter="url(#cumGlow)"/>
+          <path d="${pathD}" fill="none" stroke="#f4c57a" stroke-width="2.2" stroke-linejoin="round"/>
+          <!-- 데이터 포인트 -->
+          ${dots}
+          <!-- 마지막 값 라벨 -->
+          <g>
+            <rect x="${(lastX-46).toFixed(1)}" y="${(lastY-22).toFixed(1)}" width="42" height="16" fill="rgba(244,197,122,0.95)" rx="3"/>
+            <text x="${(lastX-25).toFixed(1)}" y="${(lastY-10).toFixed(1)}" font-size="10" fill="#1a1408" text-anchor="middle" font-family="Orbitron" font-weight="800">${fmtCompact(maxCum)}</text>
+          </g>
+        </svg>
+      </div>
     </div>`;
   }
 
