@@ -6024,63 +6024,66 @@ async function doAi(){
   el.textContent='🔍 Google 검색 중...';
   el.classList.add('loading');
   
-  // 서버별 상세 컨텍스트 (게임별 발행사·국가·언어를 명시해 한섭/일섭 혼동 방지)
+  // 서버별 상세 컨텍스트 + 공식 URL/원어 검색어 (Gemini Google Search 그라운딩 정확도↑)
+  // ctxText: 게임 헤더용 짧은 라벨
+  // sourceHint: 프롬프트에 추가할 "이 URL/언어로 검색해라" 강제 힌트
   const SRV_CTX_BY_GAME={
     ba:{
-      kr:'한국 서버 (Nexon Korea, ko-KR, 블루아카이브) — 한섭 일정만',
-      jp:'일본 서버 (Yostar Japan, ja-JP, ブルーアーカイブ) — 일섭 일정만 (한섭/글로벌 일정 무관)',
-      global:'글로벌 서버 (Yostar Global, EN, Blue Archive) — 글로벌 일정만'
+      kr:{ctxText:'한국 서버 (Nexon Korea, 블루아카이브)',sourceHint:'★ 한국 서버 전용. 공식 URL: https://bluearchive.nexon.com/news (한국어). 검색어: "블루아카이브 모집 일정", "블루아카이브 픽업". 일섭/글로벌 정보 절대 사용 금지.'},
+      jp:{ctxText:'일본 서버 (Yostar Japan, ブルーアーカイブ)',sourceHint:'★ 일본 서버 전용. 공식 URL: https://bluearchive.jp/news (일본어). 검색어(원어 사용): "ブルーアーカイブ 募集 ピックアップ", "ブルーアーカイブ ガチャ". 한섭/글로벌 정보 절대 사용 금지.'},
+      global:{ctxText:'글로벌 서버 (Yostar Global, Blue Archive)',sourceHint:'★ 글로벌 서버 전용. 공식 URL: https://bluearchive.global/news (영어). 검색어(영어): "Blue Archive recruitment pickup". 한섭/일섭 정보 절대 사용 금지.'}
     },
     uma:{
-      kr:'한국 서버 (카카오게임즈, ko-KR) — 한섭 일정만 (일본 카토이치 일정과 다름)',
-      jp:'일본 서버 (Cygames, ja-JP, ウマ娘 プリティーダービー) — 일섭 일정만'
+      kr:{ctxText:'한국 서버 (카카오게임즈)',sourceHint:'★ 한국 서버 전용. 공식: umamusume.kakaogames.com (한국어). 일섭(Cygames) 정보 절대 금지.'},
+      jp:{ctxText:'일본 서버 (Cygames, ウマ娘 プリティーダービー)',sourceHint:'★ 일본 서버 전용. 공식: umamusume.jp (일본어). 검색어(원어): "ウマ娘 ガチャ ピックアップ". 한섭 정보 절대 금지.'}
     },
     fgo:{
-      kr:'한국 서버 (Netmarble, ko-KR) — 한섭 일정만 (일섭은 약 2년 앞서감)',
-      jp:'일본 서버 (Delight Works, ja-JP, Fate/Grand Order) — 일섭 일정만'
+      kr:{ctxText:'한국 서버 (Netmarble, 페이트 그랜드 오더)',sourceHint:'★ 한국 서버 전용. 공식: fate-go.com.kr (한국어). 일섭은 약 2년 앞서가므로 일섭 정보는 한섭에 절대 적용 금지.'},
+      jp:{ctxText:'일본 서버 (Delight Works, Fate/Grand Order)',sourceHint:'★ 일본 서버 전용. 공식: news.fate-go.jp (일본어). 검색어(원어): "FGO ピックアップ 召喚". 한섭 정보 절대 금지.'}
     },
     pjsk:{
-      kr:'한국 서버 (Kakao, ko-KR, 프로젝트 세카이) — 한섭 일정만',
-      jp:'일본 서버 (SEGA + ColorPalette, ja-JP, プロジェクトセカイ) — 일섭 일정만'
+      kr:{ctxText:'한국 서버 (Kakao, 프로젝트 세카이)',sourceHint:'★ 한국 서버 전용. 공식: pjsekai.kakaogames.com (한국어). 일섭 정보 절대 금지.'},
+      jp:{ctxText:'일본 서버 (SEGA + ColorPalette, プロジェクトセカイ)',sourceHint:'★ 일본 서버 전용. 공식: pjsekai.sega.jp (일본어). 검색어(원어): "プロセカ ガチャ ピックアップ". 한섭 정보 절대 금지.'}
     },
     trickcal:{
-      kr:'한국 서버 (Epid Games, ko-KR) — 한섭 일정만',
-      jp:'일본 서버 (Epid Games, ja-JP) — 일섭 일정만'
+      kr:{ctxText:'한국 서버 (Epid Korea)',sourceHint:'★ 한국 서버 전용. 공식: trickcal-revive.com (한국어).'},
+      jp:{ctxText:'일본 서버 (Epid Japan)',sourceHint:'★ 일본 서버 전용. 공식 일본 사이트 (일본어).'}
     },
     arknights:{
-      kr:'한국 서버 (Yostar Korea, ko-KR, 명일방주) — 한섭 일정만',
-      jp:'일본 서버 (Yostar Japan, ja-JP, アークナイツ) — 일섭 일정만',
-      global:'글로벌 서버 (Yostar Global, EN, Arknights) — 글로벌 일정만'
+      kr:{ctxText:'한국 서버 (Yostar Korea, 명일방주)',sourceHint:'★ 한국 서버 전용. 공식 한국어. 일섭/글로벌 정보 절대 금지.'},
+      jp:{ctxText:'일본 서버 (Yostar Japan, アークナイツ)',sourceHint:'★ 일본 서버 전용. 공식: arknights.jp (일본어). 검색어(원어): "アークナイツ ガチャ ピックアップ". 한섭/글로벌 절대 금지.'},
+      global:{ctxText:'글로벌 서버 (Yostar Global, Arknights)',sourceHint:'★ 글로벌 서버 전용. 공식: arknights.global (영어). 한섭/일섭 절대 금지.'}
     },
     e7:{
-      kr:'한국 서버 (Smilegate, ko-KR, 에픽세븐) — 한섭 일정만',
-      global:'글로벌 서버 (Smilegate Global, EN) — 글로벌 일정만'
+      kr:{ctxText:'한국 서버 (Smilegate, 에픽세븐)',sourceHint:'★ 한국 서버 전용. 공식: epicseven.smilegate.com (한국어).'},
+      global:{ctxText:'글로벌 서버 (Smilegate Global)',sourceHint:'★ 글로벌 서버 전용 (영어). 한섭 일정과 다름.'}
     },
     cs:{
-      kr:'한국 서버 (Nexon Korea, ko-KR, 카운터사이드) — 한섭 일정만',
-      jp:'일본 서버 (Studio BB, ja-JP) — 일섭 일정만',
-      global:'글로벌 서버 (Studio BB Global, EN) — 글로벌 일정만'
+      kr:{ctxText:'한국 서버 (Nexon Korea, 카운터사이드)',sourceHint:'★ 한국 서버 전용. 공식: counterside.nexon.com (한국어).'},
+      jp:{ctxText:'일본 서버 (Studio BB Japan)',sourceHint:'★ 일본 서버 전용 (일본어). 한섭/글로벌 정보 절대 금지.'},
+      global:{ctxText:'글로벌 서버 (Studio BB Global)',sourceHint:'★ 글로벌 서버 전용 (영어). 한섭/일섭 정보 절대 금지.'}
     },
     limbus:{
-      kr:'한국 서버 (Project Moon, ko-KR, 림버스 컴퍼니) — 한섭 일정만',
-      global:'글로벌 서버 (Project Moon Global, EN) — 글로벌 일정만'
+      kr:{ctxText:'한국 서버 (Project Moon, 림버스 컴퍼니)',sourceHint:'★ 한국 서버 전용. 공식 한국어.'},
+      global:{ctxText:'글로벌 서버 (Project Moon Global)',sourceHint:'★ 글로벌 서버 전용 (영어).'}
     },
     gfl2:{
-      kr:'한국 서버 (Sunborn Korea, ko-KR, 소녀전선2: 망명) — 한섭 일정만',
-      global:'글로벌 서버 (Sunborn Global) — 글로벌 일정만'
+      kr:{ctxText:'한국 서버 (Sunborn, 소녀전선2: 망명)',sourceHint:'★ 한국 서버 전용 (한국어). 글로벌 정보 절대 금지.'},
+      global:{ctxText:'글로벌 서버 (Sunborn Global)',sourceHint:'★ 글로벌 서버 전용 (영어). 한섭 정보 절대 금지.'}
     },
     bd2:{
-      kr:'한국 서버 (Neowiz, ko-KR, 브라운더스트2) — 한섭 일정만',
-      global:'글로벌 서버 (Neowiz Global, EN) — 글로벌 일정만'
+      kr:{ctxText:'한국 서버 (Neowiz, 브라운더스트2)',sourceHint:'★ 한국 서버 전용 (한국어). 공식: browndust2.com.'},
+      global:{ctxText:'글로벌 서버 (Neowiz Global)',sourceHint:'★ 글로벌 서버 전용 (영어).'}
     },
     gkmas:{
-      jp:'일본 서버 (Bandai Namco, ja-JP, 学園アイドルマスター) — 일섭 전용'
+      jp:{ctxText:'일본 서버 (Bandai Namco, 学園アイドルマスター)',sourceHint:'★ 일본 서버 전용. 공식: gakuen.idolmaster-official.jp (일본어). 검색어(원어): "学園アイドルマスター ガチャ ピックアップ".'}
     }
   };
-  const ctx = (SRV_CTX_BY_GAME[g.id]||{})[srv];
-  const srvLabel = ctx
-    ? ctx
+  const ctxObj = (SRV_CTX_BY_GAME[g.id]||{})[srv];
+  const srvLabel = ctxObj
+    ? ctxObj.ctxText
     : ({kr:'한국 서버',jp:'일본 서버',global:'글로벌 서버'}[srv]||'한국 서버');
+  const sourceHint = ctxObj?.sourceHint || '';
   const today = new Date().toISOString().slice(0,10);
 
   const typePrompt={
@@ -6128,14 +6131,13 @@ async function doAi(){
   const prompt=`${typePrompt}
 
 공통 규칙 (중요):
-- 오늘 날짜: ${today} (이 날짜 기준 진행 중/예정 픽업만 응답)
+- 오늘 날짜: ${today} (이 날짜 기준 진행 중/예정 픽업만 응답)${sourceHint?`\n- ${sourceHint}`:''}
 - ⚠️ 서버 구분 엄수: "${srvLabel}" 만 답변. 다른 서버(예: 한섭과 일섭)는 일정·캐릭이 완전히 다르므로 절대 섞지 말 것
 - 위 양식을 반드시 지켜줘. 양식 외 설명은 최소화
 - 날짜는 YYYY-MM-DD 또는 MM-DD 형식
 - 불확실한 정보는 [미확인] 표시 (추측 금지)
-- 공식 홈페이지, 공식 트위터/X, 공식 유튜브, 게임 내 공지만 참고
-- 나무위키, 인벤, 루리웹, 디시, 아카라이브, 개인 블로그 참고 금지
-- 한국어로 답변`;
+- ★ 검색 시 반드시 위 공식 URL 우선. 한국 블로그/커뮤니티(나무위키·인벤·디시·아카라이브)에서 다른 서버 정보를 끌어오지 말 것
+- 한국어로 답변 (서버가 일본/글로벌이어도 응답은 한국어, 단 검색은 원어로 수행)`;
   
   try{
     const data=await callGemini(prompt, true);
