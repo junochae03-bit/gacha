@@ -1,4 +1,4 @@
-const CACHE = 'gacha-v46';
+const CACHE = 'gacha-v1';
 const SHELL = ['./'];
 
 self.addEventListener('install', e => {
@@ -9,6 +9,7 @@ self.addEventListener('install', e => {
 
 self.addEventListener('activate', e => {
   e.waitUntil(
+    // 이전 버전 캐시 전부 삭제 (gacha-v1만 남김)
     caches.keys().then(keys =>
       Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
@@ -20,16 +21,24 @@ self.addEventListener('fetch', e => {
   if (e.request.url.includes('generativelanguage.googleapis.com')) return;
   if (e.request.url.includes('fonts.googleapis.com')) return;
 
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(res => {
-        // 앱 셸(HTML) 업데이트 시 캐시 갱신
-        if (e.request.mode === 'navigate') {
-          caches.open(CACHE).then(c => c.put(e.request, res.clone()));
-        }
+  // 페이지(HTML) 네비게이션은 network-first — 최신 배포 즉시 반영
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      fetch(e.request).then(res => {
+        const copy = res.clone();
+        caches.open(CACHE).then(c => c.put(e.request, copy));
         return res;
-      }).catch(() => caches.match('./'));
-    })
+      }).catch(() =>
+        caches.match(e.request).then(c => c || caches.match('./'))
+      )
+    );
+    return;
+  }
+
+  // 그 외 정적 리소스는 cache-first
+  e.respondWith(
+    caches.match(e.request).then(cached => cached ||
+      fetch(e.request).catch(() => caches.match('./'))
+    )
   );
 });

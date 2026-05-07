@@ -391,10 +391,13 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 @media(max-width:520px){.gss-stats{grid-template-columns:repeat(2,1fr)}}
 
 /* 통계 위젯 캐러셀 (삼성 위젯 UI 스타일 — 가로 스와이프) */
-.widget-carousel{position:relative;margin-bottom:14px}
-.widget-track{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;padding:0 4px 6px;margin:0 -4px}
+.widget-carousel{position:relative}
+.widget-track{display:flex;flex-direction:row;gap:10px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;padding:0 2px 4px;margin:0 -2px;width:100%}
 .widget-track::-webkit-scrollbar{display:none}
-.widget-track > .stat-widget{flex:0 0 calc(100% - 8px);scroll-snap-align:center;margin-bottom:0;min-width:0}
+.widget-track > *{flex:0 0 calc(100% - 4px) !important;width:calc(100% - 4px);scroll-snap-align:center;scroll-snap-stop:always;margin-bottom:0;min-width:0;box-sizing:border-box}
+.stats-summary-slide{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.stats-summary-slide .stats-sum-card{margin:0}
+.summary-slide-head{grid-column:1/-1;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;padding-bottom:4px}
 .widget-dots{display:flex;justify-content:center;gap:6px;margin-top:10px;align-items:center}
 .widget-dot{width:8px;height:8px;border-radius:50%;background:var(--bd2);border:none;cursor:pointer;transition:all .3s cubic-bezier(.34,1.56,.64,1);padding:0}
 .widget-dot:hover{background:var(--bd3)}
@@ -5058,82 +5061,71 @@ function renderStats(){
     if(g) filterLabel=`${g.short} ${grp.srv!=='all'?`(${SRV_LBL[grp.srv]||grp.srv})`:''} 기준`;
   }
 
-  let html=`<div class="stats-summary">
+  // 슬라이드 데이터: 전체 + 각 게임/서버 그룹
+  const computeSlideStats=(evts)=>{
+    let kr=0,pulls=0,succ=0,fail=0;
+    evts.forEach(e=>{
+      const g=GAMES.find(x=>x.id===e.game); if(!g) return;
+      getAllAttempts(e).forEach(a=>{
+        if(a.result==='success') succ++;
+        else if(a.result==='fail') fail++;
+        pulls += a.spentPulls||0;
+      });
+      const paid=e.paidCurrencyUsed||0;
+      if(paid>0) kr += Math.round(paid*(g.gacha.pricePerPull/g.gacha.pullCost));
+    });
+    return {count:evts.length, pulls, succ, fail, krw:kr, sr:(succ+fail)>0?Math.round(succ/(succ+fail)*100):0};
+  };
+  const summarySlides=[{key:'all', label:'📋 전체', sub:'전 게임 합계', color:'var(--gold)', stats:computeSlideStats(recorded)}];
+  allGroups.forEach(grp=>{
+    const g=GAMES.find(x=>x.id===grp.game); if(!g) return;
+    const srvTag=grp.srv!=='all'?` ${SRV_LBL[grp.srv]||grp.srv}`:'';
+    summarySlides.push({
+      key:`${grp.game}-${grp.srv}`,
+      label:`${g.short}${srvTag}`,
+      sub:`${grp.pickups.length}건 기록`,
+      color:g.color,
+      stats:computeSlideStats(grp.pickups)
+    });
+  });
+
+  const renderSummarySlide=(s)=>`<div class="stats-summary stats-summary-slide" data-key="${s.key}">
+    ${summarySlides.length>1?`<div class="summary-slide-head" style="color:${s.color}">${s.label} <span style="font-size:10px;color:var(--mu);font-weight:500;margin-left:auto">${s.sub}</span></div>`:''}
     <div class="stats-sum-card purple">
       <div class="ssc-label">기록된 픽업</div>
-      <div class="ssc-value">${totalPickups}건</div>
-      <div class="ssc-sub">${filterLabel}</div>
+      <div class="ssc-value">${s.stats.count}건</div>
+      <div class="ssc-sub">${s.sub}</div>
     </div>
     <div class="stats-sum-card green">
       <div class="ssc-label">성공률</div>
-      <div class="ssc-value">${successRate}%</div>
-      <div class="ssc-sub">성공 ${totalSuccess} / 픽뚫 ${totalFail}</div>
+      <div class="ssc-value">${s.stats.sr}%</div>
+      <div class="ssc-sub">성공 ${s.stats.succ} / 픽뚫 ${s.stats.fail}</div>
     </div>
     <div class="stats-sum-card gold">
       <div class="ssc-label">총 뽑기 횟수</div>
-      <div class="ssc-value">${totalPulls.toLocaleString()}</div>
-      <div class="ssc-sub">${filterLabel}</div>
+      <div class="ssc-value">${s.stats.pulls.toLocaleString()}</div>
+      <div class="ssc-sub">${s.sub}</div>
     </div>
     <div class="stats-sum-card red">
       <div class="ssc-label">💸 실제 지출</div>
-      <div class="ssc-value">${fmtKRW(totalKRW)}</div>
+      <div class="ssc-value">${fmtKRW(s.stats.krw)}</div>
       <div class="ssc-sub">유료돌만 (무료 제외)</div>
     </div>
   </div>`;
 
-  // ── 게임별 통계 요약 (위젯 스택) ───────────────────────
-  if(activeFilter==='all' && allGroups.length>=1){
-    html+=`<div class="game-stat-stack">
-      <div class="gss-head">🎮 게임별 통계 요약 <span style="font-size:10px;color:var(--mu);font-weight:400">각 게임의 핵심 지표 한눈에</span></div>
-      <div class="gss-grid">
-      ${allGroups.map(grp=>{
-        const g=GAMES.find(x=>x.id===grp.game); if(!g) return '';
-        const pc=g.gacha;
-        let gSucc=0,gFail=0,gPulls=0,gPaid=0;
-        grp.pickups.forEach(p=>{
-          const all=getAllAttempts(p);
-          all.forEach(a=>{
-            if(a.result==='success') gSucc++;
-            else if(a.result==='fail') gFail++;
-            gPulls += a.spentPulls||0;
-          });
-          const paid=p.paidCurrencyUsed||0;
-          if(paid>0) gPaid += Math.round(paid*(pc.pricePerPull/pc.pullCost));
-        });
-        const gTotal=gSucc+gFail;
-        const gSr=gTotal?Math.round(gSucc/gTotal*100):0;
-        const srvTag=grp.srv!=='all'?`<span class="inv-srv-tag ${grp.srv}" style="font-size:9px;margin-left:6px">${SRV_LBL[grp.srv]||grp.srv}</span>`:'';
-        return `<div class="gss-card" style="--gc:${g.color};--gcr:${g.rgb}">
-          <div class="gss-card-head">
-            <span class="gss-game" style="color:${g.color}">${g.short}${srvTag}</span>
-            <span class="gss-pickups">${grp.pickups.length}건</span>
-          </div>
-          <div class="gss-stats">
-            <div class="gss-stat">
-              <div class="gss-stat-label">📊 기록</div>
-              <div class="gss-stat-val purple">${grp.pickups.length}<small>건</small></div>
-            </div>
-            <div class="gss-stat">
-              <div class="gss-stat-label">✨ 성공률</div>
-              <div class="gss-stat-val green">${gSr}<small>%</small></div>
-              <div class="gss-stat-sub">${gSucc}/${gTotal}</div>
-            </div>
-            <div class="gss-stat">
-              <div class="gss-stat-label">🎲 뽑기</div>
-              <div class="gss-stat-val gold">${gPulls.toLocaleString()}</div>
-            </div>
-            <div class="gss-stat">
-              <div class="gss-stat-label">💸 지출</div>
-              <div class="gss-stat-val red">${fmtKRW(gPaid)}</div>
-              <div class="gss-stat-sub">유료돌</div>
-            </div>
-          </div>
-        </div>`;
-      }).join('')}
+  let html='';
+  if(summarySlides.length>1){
+    html=`<div class="widget-carousel" style="margin-bottom:24px">
+      <div class="widget-track" data-wc="summary">
+        ${summarySlides.map(renderSummarySlide).join('')}
       </div>
+      <div class="widget-dots" data-wc-dots="summary">${summarySlides.map((s,i)=>`<button class="widget-dot ${i===0?'active':''}" data-idx="${i}" title="${s.label}" onclick="scrollWidgetTo('summary',${i})" style="${i===0?`background:${s.color}`:''}"></button>`).join('')}</div>
+      <div class="widget-hint">← 게임별로 스와이프 ${summarySlides.length}/${summarySlides.length} →</div>
     </div>`;
+  } else {
+    html=renderSummarySlide(summarySlides[0]||{key:'all',label:'전체',sub:'전 게임 합계',color:'var(--gold)',stats:{count:0,pulls:0,succ:0,fail:0,krw:0,sr:0}}).replace('stats-summary-slide','');
   }
-  
+
   if(allGroups.length>1){
     html+=`<div class="stats-game-filter">
       <button class="sgf-chip ${activeFilter==='all'?'act':''}" onclick="setStatsFilter('all')">📋 전체 (${recorded.length})</button>`;
@@ -8837,6 +8829,7 @@ function buildEnhancedStats(){
     const allProbs=Object.values(byGame).flatMap(d=>d.successProbs);
     const overallTheory=allProbs.length?(allProbs.reduce((a,b)=>a+b,0)/allProbs.length*100):null;
     const overallLuckLabel=overallTheory===null?'—':(overallTheory<25?'🍀 매우 운 좋음':overallTheory<50?'😊 운 좋음':overallTheory<75?'😐 평균':'😢 운 나쁨');
+    const roiList=Object.values(byGame).sort((a,b)=>(b.success+b.fail)-(a.success+a.fail));
     roiHtml=`<div class="stat-widget purple">
       <div class="sw-head">
         <div class="sw-title">
@@ -8852,8 +8845,9 @@ function buildEnhancedStats(){
           <div class="sw-hero-sub">${overallLuckLabel}</div>
         </div>
       </div>
-      <div class="sw-body">
-        ${Object.values(byGame).sort((a,b)=>(b.success+b.fail)-(a.success+a.fail)).map(d=>{
+      <div class="sw-body widget-carousel">
+        <div class="widget-track" data-wc="roi">
+        ${roiList.map(d=>{
           const total=d.success+d.fail;
           const myRate=total?Math.round(d.success/total*100):0;
           const hasProbs=d.successProbs.length>0;
@@ -8878,6 +8872,9 @@ function buildEnhancedStats(){
             ${d.success>0?`<div style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--bd);font-size:10px;color:var(--mu2)">픽업 1개당 <strong style="color:var(--gold);font-family:'Orbitron',monospace">₩${krwPerPickup.toLocaleString()}</strong> · 누적 <strong style="color:var(--tx)">${d.pulls}뽑</strong> / <strong>₩${d.krw.toLocaleString()}</strong></div>`:''}
           </div>`;
         }).join('')}
+        </div>
+        ${roiList.length>1?`<div class="widget-dots" data-wc-dots="roi">${roiList.map((d,i)=>`<button class="widget-dot ${i===0?'active':''}" data-idx="${i}" title="${d.g.short}" onclick="scrollWidgetTo('roi',${i})" style="${i===0?`background:${d.g.color||'var(--gold)'}`:''}"></button>`).join('')}</div>`:''}
+        ${roiList.length>1?`<div class="widget-hint">← 게임별로 스와이프 ${roiList.length}/${roiList.length} →</div>`:''}
       </div>
     </div>`;
   }
@@ -9042,7 +9039,8 @@ function buildEnhancedStats(){
           <div class="sw-hero-sub">${histGames.length}개 게임 · 총 ${allPulls.length}회</div>
         </div>
       </div>
-      <div class="sw-body">
+      <div class="sw-body widget-carousel">
+        <div class="widget-track" data-wc="hist">
       ${histGames.map(gid=>{
         const g=GAMES.find(x=>x.id===gid);
         if(!g) return '';
@@ -9087,6 +9085,9 @@ function buildEnhancedStats(){
           </div>
         </div>`;
       }).join('')}
+        </div>
+        ${histGames.length>1?`<div class="widget-dots" data-wc-dots="hist">${histGames.map((gid,i)=>{const g=GAMES.find(x=>x.id===gid);return `<button class="widget-dot ${i===0?'active':''}" data-idx="${i}" title="${g?g.short:gid}" onclick="scrollWidgetTo('hist',${i})" style="${i===0?`background:${g?.color||'var(--gold)'}`:''}"></button>`;}).join('')}</div>`:''}
+        ${histGames.length>1?`<div class="widget-hint">← 게임별로 스와이프 ${histGames.length}/${histGames.length} →</div>`:''}
       </div>
     </div>`;
   }
@@ -9129,7 +9130,8 @@ function buildEnhancedStats(){
           <div class="sw-hero-sub">✨${totSuccess} · 💔${totFail}</div>
         </div>
       </div>
-      <div class="sw-body">
+      <div class="sw-body widget-carousel">
+        <div class="widget-track" data-wc="result">
       ${distGames.map(gid=>{
         const g=GAMES.find(x=>x.id===gid);
         if(!g) return '';
@@ -9151,26 +9153,14 @@ function buildEnhancedStats(){
           </div>
         </div>`;
       }).join('')}
+        </div>
+        ${distGames.length>1?`<div class="widget-dots" data-wc-dots="result">${distGames.map((gid,i)=>{const g=GAMES.find(x=>x.id===gid);return `<button class="widget-dot ${i===0?'active':''}" data-idx="${i}" title="${g?g.short:gid}" onclick="scrollWidgetTo('result',${i})" style="${i===0?`background:${g?.color||'var(--gold)'}`:''}"></button>`;}).join('')}</div>`:''}
+        ${distGames.length>1?`<div class="widget-hint">← 게임별로 스와이프 ${distGames.length}/${distGames.length} →</div>`:''}
       </div>
     </div>`;
   }
 
-  // 3개 게임별 위젯(시점/결과/성공률)을 캐러셀로 묶음 (삼성 위젯 UI 스타일)
-  const widgets=[histHtml,resultDistHtml,roiHtml].filter(h=>h);
-  let carouselHtml='';
-  if(widgets.length){
-    const labels=['📊 시점 분포','🎯 결과 분포','🎲 성공률'];
-    const labelOrder=[];
-    if(histHtml) labelOrder.push(labels[0]);
-    if(resultDistHtml) labelOrder.push(labels[1]);
-    if(roiHtml) labelOrder.push(labels[2]);
-    carouselHtml=`<div class="widget-carousel">
-      <div class="widget-track" id="widgetTrack">${widgets.join('')}</div>
-      ${widgets.length>1?`<div class="widget-dots">${widgets.map((_,i)=>`<button class="widget-dot ${i===0?'active':''}" data-idx="${i}" title="${labelOrder[i]||''}" onclick="scrollWidgetTo(${i})"></button>`).join('')}</div>`:''}
-      ${widgets.length>1?`<div class="widget-hint">← 좌우로 스와이프 또는 도트 클릭 →</div>`:''}
-    </div>`;
-  }
-  return budgetHtml+chartHtml+cumChartHtml+carouselHtml;
+  return budgetHtml+chartHtml+cumChartHtml+histHtml+resultDistHtml+roiHtml;
 }
 
 // renderStats를 강화
@@ -9191,28 +9181,35 @@ renderStats=function(){
     wrap.innerHTML=html;
     el.insertBefore(wrap, el.firstChild);
   }
-  // 캐러셀 스크롤 → 도트 인디케이터 동기화
+  // 캐러셀 스크롤 → 도트 인디케이터 동기화 (위젯별로 트랙이 여러개)
   setTimeout(()=>{
-    const track=document.getElementById('widgetTrack');
-    if(!track || track._wcInited) return;
-    track._wcInited=true;
-    const dots=track.parentElement.querySelectorAll('.widget-dot');
-    if(!dots.length) return;
-    const updateDots=()=>{
-      const w=track.clientWidth;
-      const idx=Math.round(track.scrollLeft / Math.max(1,w));
-      dots.forEach((d,i)=>d.classList.toggle('active', i===idx));
-    };
-    track.addEventListener('scroll', updateDots, {passive:true});
-    updateDots();
+    document.querySelectorAll('.widget-track[data-wc]').forEach(track=>{
+      if(track._wcInited) return;
+      track._wcInited=true;
+      const name=track.getAttribute('data-wc');
+      const dots=track.parentElement.querySelectorAll(`[data-wc-dots="${name}"] .widget-dot`);
+      if(!dots.length) return;
+      const updateDots=()=>{
+        const w=track.clientWidth;
+        const idx=Math.round(track.scrollLeft / Math.max(1,w+10));
+        dots.forEach((d,i)=>d.classList.toggle('active', i===idx));
+      };
+      track.addEventListener('scroll', updateDots, {passive:true});
+      updateDots();
+    });
   }, 50);
 };
 
-// 도트 클릭 시 해당 위젯으로 스크롤
-function scrollWidgetTo(idx){
-  const track=document.getElementById('widgetTrack');
+// 도트 클릭 시 해당 위젯으로 스크롤 (name = hist|result|roi)
+function scrollWidgetTo(name, idx){
+  const track=document.querySelector(`.widget-track[data-wc="${name}"]`);
   if(!track) return;
-  track.scrollTo({left: idx*track.clientWidth, behavior:'smooth'});
+  const slide=track.children[idx];
+  if(slide){
+    track.scrollTo({left: slide.offsetLeft - track.offsetLeft, behavior:'smooth'});
+  } else {
+    track.scrollTo({left: idx*track.clientWidth, behavior:'smooth'});
+  }
 }
 
 // 픽업 등록 모달에 위시리스트 자동 제안 datalist 갱신
