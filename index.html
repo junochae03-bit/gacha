@@ -1850,6 +1850,7 @@ body.light .btn-primary{animation:none !important}
       <button class="btn btn-ghost" onclick="openAlarmConfig()" style="font-size:11px;padding:7px 12px">🔔 알림 설정</button>
       <button class="btn btn-ghost" onclick="toggleSelectMode()" style="font-size:11px;padding:7px 12px" title="여러 픽업 일괄 작업">✓ 선택 모드</button>
       <button class="btn btn-ghost" onclick="exportAllIcal()" style="font-size:11px;padding:7px 12px" title="즐겨찾기 픽업 일정을 한 번에 .ics로 내보내기">📅 전체 캘린더 내보내기</button>
+      <button class="btn btn-ghost" onclick="resetAllData()" style="font-size:11px;padding:7px 12px;color:var(--rd);border-color:rgba(248,113,113,.3)" title="모든 픽업·재화·기록·설정을 영구 삭제합니다">🗑 모든 데이터 초기화</button>
       <button class="btn btn-primary" onclick="openEvt()">＋ 새 픽업 등록</button>
     </div>
   </div>
@@ -7482,6 +7483,32 @@ function checkStorageSize(){
     return {total,MB,pct};
   }catch(e){return null;}
 }
+
+// 모든 데이터 초기화 — 픽업·재화·기록·즐겨찾기·위시리스트·설정 등 전부
+async function resetAllData(){
+  if(!confirm('⚠️ 모든 데이터를 영구 삭제합니다.\n\n• 등록한 픽업 / 결과 / 기록\n• 재화 보유량 / 월정액 설정\n• 즐겨찾기 / 위시리스트 / 알림\n• 일일/주간 숙제 상태\n• 캐릭터 아트 캐시 / AI 캐시\n• 예산 / 테마 / 서버 필터\n\n계속하시겠습니까?')) return;
+  if(!confirm('정말로 초기화하시겠습니까?\n\n💡 백업이 필요하면 먼저 상단 "💾 백업" 버튼으로 JSON으로 내보낸 뒤 진행하세요.\n\n이 작업은 되돌릴 수 없습니다.')) return;
+  try{
+    // localStorage: gv8-* 전부 제거
+    const keys=Object.keys(localStorage).filter(k=>k.startsWith('gv8-'));
+    keys.forEach(k=>localStorage.removeItem(k));
+    // IndexedDB 백업 미러도 비워야 자동 복구가 옛 데이터를 다시 끌어오지 않음
+    if('indexedDB' in window){
+      try{
+        const db=await idbOpen();
+        const tx=db.transaction(IDB_STORE,'readwrite');
+        tx.objectStore(IDB_STORE).clear();
+        await new Promise(r=>{tx.oncomplete=()=>r();tx.onerror=()=>r();});
+      }catch(e){console.warn('IDB clear 실패:',e);}
+    }
+    toast('🗑 모든 데이터 초기화 완료 — 새로고침');
+    setTimeout(()=>location.reload(), 600);
+  }catch(e){
+    console.error('resetAllData 실패:',e);
+    toast('⚠️ 초기화 실패: '+e.message);
+  }
+}
+window.resetAllData=resetAllData;
 
 function exportData(){
   const data={version:'v21',exportedAt:new Date().toISOString(),events,coupons,gameEvents,customEvents,inventory,monthlyOn,monthlyStart,favs,alarms,hiddenAutoMira,serverFilter,wishlist,alarmConfig,monthlyBudget,customTasks,taskState,taskHidden,taskOverrides};
