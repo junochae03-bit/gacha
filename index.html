@@ -6021,13 +6021,14 @@ function delEvt(i){
   // 백업 저장 (Undo용)
   const backup={index:i, event:JSON.parse(JSON.stringify(e))};
   
-  // 인벤토리 복구 (무료/유료 분리)
+  // 인벤토리 복구 (무료/유료 분리) — 명함 + 모든 attempts[]
   const g=GAMES.find(x=>x.id===e.game);
   if(g){
     const srvKey=e.srv==='all'?g.servers[0]:e.srv;
     const invKey=`${e.game}-${srvKey}`;
     if(!inventory[invKey])inventory[invKey]={};
     const primCurId=g.currencies[0].id;
+    // 명함(첫 시도) 복구
     if(e.freeCurrencyUsed||e.paidCurrencyUsed){
       if(e.freeCurrencyUsed>0){
         inventory[invKey][primCurId]=(inventory[invKey][primCurId]||0)+e.freeCurrencyUsed;
@@ -6039,6 +6040,21 @@ function delEvt(i){
     } else if(e.spentCurrency>0){
       inventory[invKey][primCurId]=(inventory[invKey][primCurId]||0)+e.spentCurrency;
     }
+    // 추가 시도(돌파) 각각 복구
+    (e.attempts||[]).forEach(a=>{
+      if(a.freeCurrencyUsed!=null || a.paidCurrencyUsed!=null){
+        if(a.freeCurrencyUsed>0){
+          inventory[invKey][primCurId]=(inventory[invKey][primCurId]||0)+a.freeCurrencyUsed;
+        }
+        if(a.paidCurrencyUsed>0){
+          inventory[invKey][primCurId+'_paid']=(inventory[invKey][primCurId+'_paid']||0)+a.paidCurrencyUsed;
+          inventory[invKey][primCurId+'_paid_spent']=Math.max(0,(inventory[invKey][primCurId+'_paid_spent']||0)-a.paidCurrencyUsed);
+        }
+      } else if(a.spentCurrency>0){
+        // 레거시: 무료로 간주
+        inventory[invKey][primCurId]=(inventory[invKey][primCurId]||0)+a.spentCurrency;
+      }
+    });
   }
   
   events.splice(i,1);
@@ -8456,11 +8472,53 @@ function saveSessionResult(eid,result){
   const cnt=_pullSessions[eid]||0;
   const g=GAMES.find(x=>x.id===e.game);
   const currency=g&&cnt>0?cnt*g.gacha.pullCost:0;
+
+  // 인벤토리에서 무료→유료 순으로 차감 + 사용량 분리 기록 (saveEvt/saveAttempt와 동일 로직)
+  let freeUsed=0, paidUsed=0;
+  let toastSuffix='';
+  if(g && currency>0){
+    const srvKey=e.srv==='all'?g.servers[0]:e.srv;
+    const invKey=`${e.game}-${srvKey}`;
+    if(!inventory[invKey]) inventory[invKey]={};
+    const primCurId=g.currencies[0]?.id;
+    if(primCurId){
+      let remaining=currency;
+      const freeHave=inventory[invKey][primCurId]||0;
+      const paidHave=inventory[invKey][primCurId+'_paid']||0;
+      freeUsed=Math.min(freeHave, remaining);
+      inventory[invKey][primCurId]=freeHave-freeUsed;
+      remaining-=freeUsed;
+      if(remaining>0){
+        paidUsed=Math.min(paidHave, remaining);
+        inventory[invKey][primCurId+'_paid']=paidHave-paidUsed;
+        remaining-=paidUsed;
+        if(paidUsed>0){
+          inventory[invKey][primCurId+'_paid_spent']=(inventory[invKey][primCurId+'_paid_spent']||0)+paidUsed;
+        }
+      }
+      // 부족분은 무료 사용으로 간주 (인벤토리 미입력 케이스)
+      if(remaining>0){ freeUsed+=remaining; }
+      // 토스트용 텍스트
+      const parts=[];
+      if(freeUsed>0) parts.push(`무료 ${freeUsed.toLocaleString()}`);
+      if(paidUsed>0){
+        const krw=Math.round(paidUsed*(g.gacha.pricePerPull/g.gacha.pullCost));
+        parts.push(`유료 ${paidUsed.toLocaleString()} (₩${krw.toLocaleString()})`);
+      }
+      if(parts.length) toastSuffix=` · ${parts.join(' + ')}`;
+    }
+  }
+
   const hasFirst=e.result==='success'||e.result==='fail'||e.spentPulls>0||e.spentCurrency>0;
   if(!hasFirst){
     e.result=result;
-    if(cnt>0){e.spentPulls=cnt;e.spentCurrency=currency;}
-    toast(result==='success'?'✨ 명함 성공 저장':'💔 명함 픽뚫 저장');
+    if(cnt>0){
+      e.spentPulls=cnt;
+      e.spentCurrency=currency;
+      e.freeCurrencyUsed=freeUsed;
+      e.paidCurrencyUsed=paidUsed;
+    }
+    toast((result==='success'?'✨ 명함 성공 저장':'💔 명함 픽뚫 저장')+toastSuffix);
   } else {
     if(!e.attempts) e.attempts=[];
     // 라벨은 누적 결과 수 기준 (픽뚫은 돌 카운트에 포함 X)
@@ -8473,8 +8531,8 @@ function saveSessionResult(eid,result){
     } else {
       label = failBefore===0 ? '픽뚫' : `픽뚫 #${failBefore+1}`;
     }
-    e.attempts.push({result,spentPulls:cnt,spentCurrency:currency,label,ts:Date.now()});
-    toast(result==='success'?`✨ ${label} 성공 저장`:`💔 ${label} 저장`);
+    e.attempts.push({result,spentPulls:cnt,spentCurrency:currency,freeCurrencyUsed:freeUsed,paidCurrencyUsed:paidUsed,label,ts:Date.now()});
+    toast((result==='success'?`✨ ${label} 성공 저장`:`💔 ${label} 저장`)+toastSuffix);
   }
   delete _pullSessions[eid];
   save();renderAll();
