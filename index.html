@@ -5974,10 +5974,10 @@ function saveEvt(){
       inventory[invKey][primCurId+'_paid_spent']=(inventory[invKey][primCurId+'_paid_spent']||0)+paidUsed;
     }
     
-    // 부족분: 인벤토리에 보유량을 입력하지 않은 경우 (무료돌 사용으로 가정)
-    // 무과금 유저가 인벤토리 입력 없이 소비량만 기록하는 일반적 케이스 지원
+    // 부족분: 보유 재화 다 쓴 후 추가로 뽑은 분 → 유료돌 사용으로 집계
     if(remaining>0){
-      freeUsed+=remaining;
+      paidUsed+=remaining;
+      inventory[invKey][primCurId+'_paid_spent']=(inventory[invKey][primCurId+'_paid_spent']||0)+remaining;
       remaining=0;
     }
     
@@ -8496,8 +8496,11 @@ function saveSessionResult(eid,result){
           inventory[invKey][primCurId+'_paid_spent']=(inventory[invKey][primCurId+'_paid_spent']||0)+paidUsed;
         }
       }
-      // 부족분은 무료 사용으로 간주 (인벤토리 미입력 케이스)
-      if(remaining>0){ freeUsed+=remaining; }
+      // 부족분: 보유 재화 다 쓴 후 추가로 뽑은 분 → 유료돌 사용으로 집계
+      if(remaining>0){
+        paidUsed+=remaining;
+        inventory[invKey][primCurId+'_paid_spent']=(inventory[invKey][primCurId+'_paid_spent']||0)+remaining;
+      }
       // 토스트용 텍스트
       const parts=[];
       if(freeUsed>0) parts.push(`무료 ${freeUsed.toLocaleString()}`);
@@ -8876,8 +8879,11 @@ function saveAttempt(){
           inventory[invKey][primCurId+'_paid_spent']=(inventory[invKey][primCurId+'_paid_spent']||0)+paidUsed;
         }
       }
-      // 부족분은 무료 사용으로 간주 (인벤토리 미입력 케이스)
-      if(remaining>0){ freeUsed+=remaining; }
+      // 부족분: 보유 재화 다 쓴 후 추가로 뽑은 분 → 유료돌 사용으로 집계
+      if(remaining>0){
+        paidUsed+=remaining;
+        inventory[invKey][primCurId+'_paid_spent']=(inventory[invKey][primCurId+'_paid_spent']||0)+remaining;
+      }
     }
   }
   // 첫 시도 데이터가 비어있으면 첫 시도로 채움
@@ -9463,17 +9469,23 @@ function buildEnhancedStats(){
     const all=getAllAttempts(e);
     if(!all.length) return; // 결과 없는 픽업은 스킵
     if(!byGame[g.id]) byGame[g.id]={g,success:0,fail:0,pulls:0,krw:0,successProbs:[],successPulls:[]};
+    // 픽뚫→성공 누적 추적: 픽뚫 spentPulls는 다음 성공의 카운트에 합산
+    let cumPullsForNext=0;
     all.forEach(a=>{
+      const pulls=a.spentPulls||0;
       if(a.result==='success'){
         byGame[g.id].success++;
-        if(a.spentPulls>0){
-          byGame[g.id].successProbs.push(calcPickupProb(g, a.spentPulls));
-          byGame[g.id].successPulls.push(a.spentPulls);
+        const totalForThis=cumPullsForNext+pulls; // 직전 픽뚫들 + 이번 성공뽑기
+        if(totalForThis>0){
+          byGame[g.id].successProbs.push(calcPickupProb(g, totalForThis));
+          byGame[g.id].successPulls.push(totalForThis);
         }
+        cumPullsForNext=0; // 성공 후 리셋
       } else if(a.result==='fail'){
         byGame[g.id].fail++;
+        cumPullsForNext+=pulls; // 픽뚫은 다음 성공에 합산
       }
-      byGame[g.id].pulls += a.spentPulls||0;
+      byGame[g.id].pulls += pulls;
     });
     // manualKrw 우선, 없으면 명함+추가 시도들의 유료돌 환산
     byGame[g.id].krw += eventKRW(e,g);
@@ -9666,9 +9678,20 @@ function buildEnhancedStats(){
   events.filter(e=>!e.predicted).forEach(e=>{
     if(histFilterGid && e.game!==histFilterGid) return;
     const all=getAllAttempts(e);
-    all.filter(a=>a.result==='success'&&a.spentPulls>0).forEach(a=>{
-      if(!successPullsByGame[e.game]) successPullsByGame[e.game]=[];
-      successPullsByGame[e.game].push(a.spentPulls);
+    // 픽뚫 spentPulls를 다음 성공에 누적
+    let cumPulls=0;
+    all.forEach(a=>{
+      const p=a.spentPulls||0;
+      if(a.result==='success'){
+        const totalForThis=cumPulls+p;
+        if(totalForThis>0){
+          if(!successPullsByGame[e.game]) successPullsByGame[e.game]=[];
+          successPullsByGame[e.game].push(totalForThis);
+        }
+        cumPulls=0;
+      } else if(a.result==='fail'){
+        cumPulls+=p;
+      }
     });
   });
   // 필터 활성 시: 1개라도 있으면 표시 / 비활성 시: 2개 이상인 게임만
