@@ -1,4 +1,4 @@
-const CACHE = 'gacha-v11';
+const CACHE = 'gacha-v12';
 const SHELL = ['./'];
 
 self.addEventListener('install', e => {
@@ -9,48 +9,65 @@ self.addEventListener('install', e => {
 
 self.addEventListener('activate', e => {
   e.waitUntil(
-    // 이전 버전 캐시 전부 삭제 (현재 CACHE만 남김)
     caches.keys().then(keys =>
       Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
 
-// 클라이언트에 새 버전 알림 (페치한 응답이 캐시본과 다를 때만)
 async function notifyNewVersion(){
   const clients = await self.clients.matchAll({ includeUncontrolled: true });
   clients.forEach(c => c.postMessage({ type: 'NEW_VERSION', cache: CACHE }));
 }
 
+// network-first with timeout — 빠른 네트워크면 항상 최신, 느리거나 오프라인이면 캐시 폴백
+function networkFirst(req, timeoutMs){
+  return new Promise(resolve => {
+    let done = false;
+    const timer = setTimeout(async () => {
+      if (done) return;
+      done = true;
+      const cached = await caches.match(req);
+      resolve(cached || caches.match('./'));
+    }, timeoutMs);
+    fetch(req).then(async res => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      if (res && res.ok) {
+        try {
+          const cacheRef = await caches.open(CACHE);
+          // 응답 본문 1회 클론 (cache.put + 비교용 1회)
+          const cachedPrev = await caches.match(req);
+          await cacheRef.put(req, res.clone());
+          // 캐시본과 다르면 클라이언트에 알림 (방금 푸시된 본은 이미 사용자에게 가지만, 다음 접속자에 신호)
+          if (cachedPrev) {
+            try {
+              const oldText = await cachedPrev.text();
+              const newText = await res.clone().text();
+              if (oldText !== newText) await notifyNewVersion();
+            } catch(_) {}
+          }
+        } catch(_) {}
+      }
+      resolve(res);
+    }).catch(async () => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      const cached = await caches.match(req);
+      resolve(cached || caches.match('./'));
+    });
+  });
+}
+
 self.addEventListener('fetch', e => {
-  // API 요청은 캐시 안 함
   if (e.request.url.includes('generativelanguage.googleapis.com')) return;
   if (e.request.url.includes('fonts.googleapis.com')) return;
 
-  // 페이지(HTML) 네비게이션은 stale-while-revalidate:
-  // 1) 캐시본을 즉시 반환 (빠른 첫 페인트)
-  // 2) 백그라운드로 네트워크 페치 → 새 응답이 캐시본과 다르면 알림
+  // 페이지(HTML) 네비게이션은 network-first(1.5s timeout) → 첫 로드부터 항상 최신
   if (e.request.mode === 'navigate') {
-    e.respondWith((async () => {
-      const cached = await caches.match(e.request);
-      const networkPromise = fetch(e.request).then(async res => {
-        if (res && res.ok) {
-          const clone = res.clone();
-          const c = await caches.open(CACHE);
-          await c.put(e.request, clone);
-          // 캐시본과 비교해 다르면 클라이언트에 알림
-          if (cached) {
-            try {
-              const oldText = await cached.clone().text();
-              const newText = await res.clone().text();
-              if (oldText !== newText) await notifyNewVersion();
-            } catch(_){}
-          }
-        }
-        return res;
-      }).catch(() => cached || caches.match('./'));
-      return cached || networkPromise;
-    })());
+    e.respondWith(networkFirst(e.request, 1500));
     return;
   }
 
@@ -62,7 +79,6 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// 클라이언트에서 SKIP_WAITING 메시지 받으면 즉시 활성화
 self.addEventListener('message', e => {
   if (e.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
