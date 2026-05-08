@@ -596,6 +596,13 @@ body.light .cost-analysis-box{background:linear-gradient(135deg,rgba(96,165,250,
 .widget-track{display:flex;flex-direction:row;gap:10px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;padding:0 2px 4px;margin:0 -2px;width:100%;position:relative}
 .widget-track::-webkit-scrollbar{display:none}
 .widget-track > *{flex:0 0 calc(100% - 4px) !important;width:calc(100% - 4px);scroll-snap-align:center;scroll-snap-stop:always;margin-bottom:0;min-width:0;box-sizing:border-box}
+.game-jump-bar{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:none;-ms-overflow-style:none}
+.game-jump-bar::-webkit-scrollbar{display:none}
+.game-jump-chip{flex:0 0 auto;padding:6px 12px;background:var(--sf2);border:1px solid var(--bd2);border-radius:8px;color:var(--mu2);cursor:pointer;font-size:11px;font-weight:700;letter-spacing:.2px;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.game-jump-chip:hover{background:var(--sf3);color:var(--tx);border-color:var(--bd3);transform:translateY(-1px)}
+.game-jump-chip.active{background:var(--gjc,var(--bl));border-color:var(--gjc,var(--bl));color:#0a0e1c;font-weight:800;box-shadow:0 0 12px var(--gjc,rgba(96,165,250,.4))}
+.game-jump-chip .gjc-srv{font-size:9px;padding:1px 5px;border-radius:4px;background:rgba(0,0,0,.18);color:inherit;opacity:.8}
+.game-jump-chip.active .gjc-srv{background:rgba(0,0,0,.25)}
 .stats-summary-slide{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
 .stats-summary-slide .stats-sum-card{margin:0}
 .summary-slide-head{grid-column:1/-1;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;padding-bottom:4px}
@@ -1698,6 +1705,8 @@ body.light .btn-primary{animation:none !important}
 .inv-qb.inv-qb-minus:hover{background:rgba(248,113,113,.18);border-color:rgba(248,113,113,.55)}
 .inv-qb.inv-qb-pull{color:var(--bl);border-color:rgba(96,165,250,.32);background:rgba(96,165,250,.08)}
 .inv-qb.inv-qb-pull:hover{background:rgba(96,165,250,.2);border-color:rgba(96,165,250,.55)}
+.inv-qb.inv-qb-pull-minus{color:#fb7185;border-color:rgba(251,113,133,.32);background:rgba(251,113,133,.08)}
+.inv-qb.inv-qb-pull-minus:hover{background:rgba(251,113,133,.2);border-color:rgba(251,113,133,.55)}
 .calc-qb-row{display:flex;gap:5px;flex-wrap:wrap;margin:4px 0}
 .calc-qb{font-size:9px;padding:3px 8px;border:1px solid var(--bd2);border-radius:5px;background:var(--sf2);color:var(--mu2);cursor:pointer;transition:all .15s;font-family:'Orbitron',monospace;font-weight:700}
 .calc-qb:hover{background:var(--sf3);color:var(--tx);border-color:var(--bd3)}
@@ -2124,6 +2133,11 @@ body.light .btn-primary{animation:none !important}
       <label>💎 소비 재화량 (자동)</label>
       <input class="fi" type="number" inputmode="numeric" id="em-spent-currency" placeholder="0" min="0">
     </div>
+  </div>
+  <div class="fg">
+    <label style="display:flex;align-items:center;gap:6px">💸 실제 지출액 (₩) <span style="font-size:10px;color:var(--mu);font-weight:400;text-transform:none">— 직접 입력 시 자동 환산을 덮어씀</span></label>
+    <input class="fi" type="number" inputmode="numeric" id="em-manual-krw" placeholder="비워두면 유료돌 사용분으로 자동 계산" min="0">
+    <div class="hint-text" style="font-size:10px;color:var(--mu);margin-top:4px">예: 패키지 구매로 직접 결제한 금액 (월정액 제외)</div>
   </div>
 
   <div class="fg" id="em-guarantee-row" style="display:none">
@@ -4040,6 +4054,10 @@ function renderInventory(){
               <div class="inv-qb-row">
                 <span class="inv-qb-label">🎲 뽑기 단위</span>
                 <span class="inv-qb-group">
+                  ${[1,5,10].map(n=>`<button class="inv-qb inv-qb-pull-minus" onclick="qAddInv('${key}','${c.id}',${-g.gacha.pullCost*n})">−${n}뽑</button>`).join('')}
+                </span>
+                <span class="inv-qb-divider"></span>
+                <span class="inv-qb-group">
                   ${[1,5,10].map(n=>`<button class="inv-qb inv-qb-pull" onclick="qAddInv('${key}','${c.id}',${g.gacha.pullCost*n})">+${n}뽑</button>`).join('')}
                 </span>
               </div>
@@ -4118,6 +4136,7 @@ function renderInventory(){
       });
     });
     invGridEl.innerHTML=`<div class="widget-carousel inv-carousel">
+      <div class="game-jump-bar" data-jump="inv">${meta.map((m,i)=>`<button class="game-jump-chip ${i===0?'active':''}" data-idx="${i}" onclick="scrollWidgetTo('inv',${i})" style="--gjc:${m.g.color}">${m.g.short}${m.srv!=='all'?` <span class="gjc-srv ${m.srv}">${SRV_LBL[m.srv]||m.srv}</span>`:''}</button>`).join('')}</div>
       <div class="widget-track" data-wc="inv">${cards.join('')}</div>
       <div class="widget-dots" data-wc-dots="inv">${meta.map((m,i)=>`<button class="widget-dot ${i===0?'active':''}" data-idx="${i}" title="${m.g.short}${m.srv!=='all'?` (${SRV_LBL[m.srv]||m.srv})`:''}" onclick="scrollWidgetTo('inv',${i})" style="${i===0?`background:${m.g.color}`:''}"></button>`).join('')}</div>
       <div class="widget-hint">← 게임별로 스와이프 ${meta.length}/${meta.length} →</div>
@@ -4323,6 +4342,7 @@ function renderCalc(){
       });
     });
     grid.innerHTML=`<div class="widget-carousel calc-carousel">
+      <div class="game-jump-bar" data-jump="calc">${meta.map((m,i)=>`<button class="game-jump-chip ${i===0?'active':''}" data-idx="${i}" onclick="scrollWidgetTo('calc',${i})" style="--gjc:${m.g.color}">${m.g.short}${m.srv!=='all'?` <span class="gjc-srv ${m.srv}">${SRV_LBL[m.srv]||m.srv}</span>`:''}</button>`).join('')}</div>
       <div class="widget-track" data-wc="calc">${cards.join('')}</div>
       <div class="widget-dots" data-wc-dots="calc">${meta.map((m,i)=>`<button class="widget-dot ${i===0?'active':''}" data-idx="${i}" title="${m.g.short}${m.srv!=='all'?` (${SRV_LBL[m.srv]||m.srv})`:''}" onclick="scrollWidgetTo('calc',${i})" style="${i===0?`background:${m.g.color}`:''}"></button>`).join('')}</div>
       <div class="widget-hint">← 게임별로 스와이프 ${meta.length}/${meta.length} →</div>
@@ -4444,7 +4464,7 @@ function ccCalc(key,gid,srv){
     <div class="cdiv"></div>
     ${(()=>{
       // 달성도 = 보유 뽑기 / 천장 보장 횟수 비율 (얼마나 천장까지 차 있는지)
-      const maxGuar = getMaxGuaranteedPulls(g);
+      const maxGuar = getMaxGuaranteedPulls(g, guar===1);
       if(maxGuar==null){
         // 천장 없는 시스템 (no_pity): 달성도 바 미표시
         return '';
@@ -5778,6 +5798,8 @@ function openEvt(idx=-1,asMira=false){
     document.getElementById('em-predicted').checked=!!e.predicted;
     document.getElementById('em-spent-currency').value=e.spentCurrency||'';
     document.getElementById('em-spent-pulls').value=e.spentPulls||'';
+    const manKrwEl=document.getElementById('em-manual-krw');
+    if(manKrwEl) manKrwEl.value=e.manualKrw||'';
     document.getElementById('em-memo').value=e.memo||'';
     const guarCb=document.getElementById('em-guaranteed');
     if(guarCb) guarCb.checked=!!e.hasGuaranteed;
@@ -5785,7 +5807,7 @@ function openEvt(idx=-1,asMira=false){
     document.querySelectorAll('input[name="em-result"]').forEach(r=>r.checked=(r.value===result));
     if(cloneBtn) cloneBtn.style.display='inline-flex';
   }else{
-    ['em-event','em-char','em-start','em-end','em-spent-currency','em-spent-pulls','em-memo'].forEach(id=>document.getElementById(id).value='');
+    ['em-event','em-char','em-start','em-end','em-spent-currency','em-spent-pulls','em-manual-krw','em-memo'].forEach(id=>{const el=document.getElementById(id);if(el) el.value='';});
     const guarCb=document.getElementById('em-guaranteed');
     if(guarCb) guarCb.checked=false;
     document.getElementById('em-type').value='limited';
@@ -5901,6 +5923,7 @@ function saveEvt(){
     result:resultRadio?resultRadio.value:'untried',
     spentCurrency:newSpentCurrency,
     spentPulls:newSpentPulls,
+    manualKrw:(()=>{const v=parseInt(document.getElementById('em-manual-krw')?.value);return (isNaN(v)||v<=0)?null:v;})(),
     memo:document.getElementById('em-memo').value.trim(),
     hasGuaranteed:document.getElementById('em-guaranteed')?.checked||false
   };
@@ -6346,12 +6369,9 @@ function extractGeminiText(data){
   const c = data?.candidates?.[0];
   if(!c) return '';
   const txt = c.content?.parts?.filter(p=>p.text)?.map(p=>p.text)?.join('\n') || '';
-  // 토큰 한도로 잘렸을 때 진단 가능하도록 plain string에 마커 부착
   if(c.finishReason === 'MAX_TOKENS'){
     console.warn('[Gemini] 응답이 maxOutputTokens 한도로 잘림 — 결과가 부분일 수 있음');
-    // 결과 String에 비파괴 메타 부착 (호출자가 .__truncated 검사 가능)
-    try { Object.defineProperty(txt && Object(txt), '__truncated', { value: true, enumerable: false }); } catch(_){}
-    // 전역 플래그도 세팅 — UI에서 토스트 표시
+    // 호출자가 새 호출 직전에 false로 reset 후 이 플래그 검사
     window._lastGeminiTruncated = true;
   }
   return txt;
@@ -7701,7 +7721,7 @@ function renderStatsCharts(){
   recorded.forEach(e=>{
     const g=GAMES.find(x=>x.id===e.game); if(!g) return;
     if(!gameSpend[g.id]) gameSpend[g.id]={name:g.name,color:g.color,krw:0,pulls:0};
-    gameSpend[g.id].krw+=Math.round(totalEventPaidUsed(e)*(g.gacha.pricePerPull/g.gacha.pullCost));
+    gameSpend[g.id].krw+=eventKRW(e,g);
     gameSpend[g.id].pulls+=e.spentPulls||0;
   });
   const maxKRW=Math.max(...Object.values(gameSpend).map(v=>v.krw),1);
@@ -7815,13 +7835,13 @@ function renderStatsInsight(){
   const fail=recorded.filter(e=>e.result==='fail').length;
   const overallRate=Math.round(succ/recorded.length*100);
   let totalPulls=0,totalPaid=0,totalKRW=0;
-  recorded.forEach(e=>{const g=GAMES.find(x=>x.id===e.game);if(!g)return;totalPulls+=e.spentPulls||0;const paid=totalEventPaidUsed(e);totalPaid+=paid;totalKRW+=Math.round(paid*(g.gacha.pricePerPull/g.gacha.pullCost));});
+  recorded.forEach(e=>{const g=GAMES.find(x=>x.id===e.game);if(!g)return;totalPulls+=e.spentPulls||0;const paid=totalEventPaidUsed(e);totalPaid+=paid;totalKRW+=eventKRW(e,g);});
   const avgPPS=succ?Math.round(totalPulls/succ):0;
   const r5050=recorded.filter(e=>{const g=GAMES.find(x=>x.id===e.game);return g&&g.gacha.pickupSystem==='5050';});
   const r5050succ=r5050.filter(e=>e.result==='success').length;
   const r5050rate=r5050.length?Math.round(r5050succ/r5050.length*100):null;
   const gameMap={};
-  recorded.forEach(e=>{const g=GAMES.find(x=>x.id===e.game);if(!g)return;if(!gameMap[g.id]){gameMap[g.id]={name:g.name,color:g.color,pulls:0,krw:0,succ:0,total:0};}gameMap[g.id].pulls+=e.spentPulls||0;gameMap[g.id].krw+=Math.round(totalEventPaidUsed(e)*(g.gacha.pricePerPull/g.gacha.pullCost));if(e.result==='success')gameMap[g.id].succ++;gameMap[g.id].total++;});
+  recorded.forEach(e=>{const g=GAMES.find(x=>x.id===e.game);if(!g)return;if(!gameMap[g.id]){gameMap[g.id]={name:g.name,color:g.color,pulls:0,krw:0,succ:0,total:0};}gameMap[g.id].pulls+=e.spentPulls||0;gameMap[g.id].krw+=eventKRW(e,g);if(e.result==='success')gameMap[g.id].succ++;gameMap[g.id].total++;});
   const topGame=Object.values(gameMap).sort((a,b)=>b.krw-a.krw)[0];
   const d30=new Date();d30.setDate(d30.getDate()-30);
   const recent=recorded.filter(e=>new Date(e.start)>=d30).length;
@@ -8102,12 +8122,10 @@ function aggregateCharacters(){
       byKey[key].totalPulls += a.spentPulls||0;
       byKey[key].attempts.push({...a, eventDate:e.start, eventId:e.id, eventType:e.type});
     });
-    // 지출은 명함+추가 시도들의 paidCurrencyUsed 합산 환산 (무료돌 제외)
+    // 지출은 manualKrw 우선, 없으면 명함+추가 시도들의 paidCurrencyUsed 합산 환산
     if(g){
-      const paid=totalEventPaidUsed(e);
-      if(paid>0){
-        byKey[key].totalKrw += Math.round(paid * (g.gacha.pricePerPull/g.gacha.pullCost));
-      }
+      const krw=eventKRW(e,g);
+      if(krw>0) byKey[key].totalKrw += krw;
     }
     byKey[key].events.push(e);
   });
@@ -8640,6 +8658,12 @@ function totalEventPaidUsed(e){
   });
   return p;
 }
+// 이벤트의 실제 지출액 KRW (수동 입력 우선, 없으면 유료돌×환산률)
+function eventKRW(e, g){
+  if(e && e.manualKrw && e.manualKrw>0) return e.manualKrw;
+  if(!g) return 0;
+  return Math.round(totalEventPaidUsed(e) * (g.gacha.pricePerPull/g.gacha.pullCost));
+}
 function getAllAttempts(e){
   if(!e) return [];
   const list=[];
@@ -9039,12 +9063,8 @@ function getCurrentMonthSpending(){
     if(!e.start || !e.start.startsWith(ym)) return;
     const g=GAMES.find(x=>x.id===e.game);
     if(!g) return;
-    const krwPerCurrency = g.gacha.pricePerPull / g.gacha.pullCost;
-    // 명함+추가 시도들의 유료돌 합산 (free/paid 메타 없으면 무료로 간주)
-    const paid=totalEventPaidUsed(e);
-    if(paid>0){
-      total += Math.round(paid * krwPerCurrency);
-    }
+    // manualKrw 우선, 없으면 명함+추가 시도들의 유료돌 합산
+    total += eventKRW(e,g);
   });
   return total;
 }
@@ -9223,12 +9243,15 @@ function calcPickupProb(g, N){
 }
 
 // 게임의 픽업 보장 최대 뽑기수 (안내용 — 단순 모델에선 보장 없음)
-function getMaxGuaranteedPulls(g){
+function getMaxGuaranteedPulls(g, hasGuarantee=false){
   const sys=normSys(g.gacha.pickupSystem);
   const hardPity=g.gacha.hardPity||0;
   if(sys==='no_pity') return null; // 천장 없음
-  // 5050 + pickupRate<1.0: 픽뚫 시 2천장 필요 (180뽑)
-  if(sys==='5050' && (g.gacha.pickupRate||0)<1.0) return hardPity*2;
+  // 5050 + pickupRate<1.0: 일반은 픽뚫 가능성 있어 2천장(180뽑) 필요
+  // 단 확정천장 보유 시 다음 픽업이 확정이라 1천장으로 충분
+  if(sys==='5050' && (g.gacha.pickupRate||0)<1.0){
+    return hasGuarantee ? hardPity : hardPity*2;
+  }
   // 그 외 (point_only/spark/guaranteed/5050 with rate=1.0): 1천장이면 픽업 확정
   return hardPity;
 }
@@ -9277,10 +9300,8 @@ function buildEnhancedStats(){
       if(!e.start||!e.start.startsWith(m.key))return;
       const g=GAMES.find(x=>x.id===e.game);
       if(!g)return;
-      const paid=totalEventPaidUsed(e);
-      if(paid<=0) return; // 유료돌 사용분 없으면 지출 0 → 막대 안 그림
-      const krwPerCurrency=g.gacha.pricePerPull/g.gacha.pullCost;
-      const krw=Math.round(paid*krwPerCurrency);
+      const krw=eventKRW(e,g);
+      if(krw<=0) return; // 지출 없으면 막대 안 그림
       total[g.id]=(total[g.id]||0)+krw;
       sum+=krw;
     });
@@ -9396,11 +9417,8 @@ function buildEnhancedStats(){
       }
       byGame[g.id].pulls += a.spentPulls||0;
     });
-    // krw는 명함+추가 시도들의 paidCurrencyUsed 합산 (무료돌 제외)
-    const paid=totalEventPaidUsed(e);
-    if(paid>0){
-      byGame[g.id].krw += Math.round(paid * (g.gacha.pricePerPull/g.gacha.pullCost));
-    }
+    // manualKrw 우선, 없으면 명함+추가 시도들의 유료돌 환산
+    byGame[g.id].krw += eventKRW(e,g);
   });
   let roiHtml='';
   if(Object.keys(byGame).length){
@@ -9465,11 +9483,8 @@ function buildEnhancedStats(){
     .map(e=>{
       const g=GAMES.find(x=>x.id===e.game);
       if(!g) return {date:e.start, krw:0, gid:e.game};
-      // 유료돌 사용분만 KRW 환산 (명함+추가 시도 합산)
-      const paid=totalEventPaidUsed(e);
-      const krwPerCurrency=g.gacha.pricePerPull/g.gacha.pullCost;
-      const krw=Math.round(paid*krwPerCurrency);
-      return {date:e.start, krw, gid:e.game, char:e.char||'픽업'};
+      // manualKrw 우선, 없으면 유료돌 환산
+      return {date:e.start, krw:eventKRW(e,g), gid:e.game, char:e.char||'픽업'};
     })
     .filter(r=>r.krw>0)
     .sort((a,b)=>a.date.localeCompare(b.date));
@@ -9776,7 +9791,8 @@ function bindCarousel(track){
   const name=track.getAttribute('data-wc');
   const dotsRoot=track.parentElement;
   const dots=dotsRoot.querySelectorAll(`[data-wc-dots="${name}"] .widget-dot`);
-  if(!dots.length) return;
+  const jumpChips=dotsRoot.querySelectorAll(`[data-jump="${name}"] .game-jump-chip`);
+  if(!dots.length && !jumpChips.length) return;
   const ctrl=new AbortController();
   track._wcCtrl=ctrl;
   const updateDots=()=>{
@@ -9792,6 +9808,13 @@ function bindCarousel(track){
       if(d<bestDist){ bestDist=d; bestIdx=i; }
     }
     dots.forEach((d,i)=>d.classList.toggle('active', i===bestIdx));
+    jumpChips.forEach((c,i)=>{
+      c.classList.toggle('active', i===bestIdx);
+      // 활성 칩이 보이도록 점프 바 자동 스크롤
+      if(i===bestIdx && c.scrollIntoView){
+        try{ c.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'}); }catch(_){}
+      }
+    });
   };
   track.addEventListener('scroll', updateDots, {passive:true, signal: ctrl.signal});
   updateDots();
