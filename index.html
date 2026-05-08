@@ -9492,24 +9492,37 @@ function buildEnhancedStats(){
   });
   let roiHtml='';
   if(Object.keys(byGame).length){
-    // 전체 평균 운빨 (히어로)
-    const allProbs=Object.values(byGame).flatMap(d=>d.successProbs);
-    const overallTheory=allProbs.length?(allProbs.reduce((a,b)=>a+b,0)/allProbs.length*100):null;
-    const overallLuckLabel=overallTheory===null?'—':(overallTheory<25?'🍀 매우 운 좋음':overallTheory<50?'😊 운 좋음':overallTheory<75?'😐 평균':'😢 운 나쁨');
+    // 운빨 라벨/색상 — 평균 N뽑 / 천장 비율 기준 (히스토그램과 일관)
+    // 0~25%: 매우 운 좋음 / 25~50%: 운 좋음 / 50~75%: 평균 / 75%+: 운 나쁨
+    const luckFromRatio=r=>r==null?'—':(r<0.25?'🍀 매우 운 좋음':r<0.5?'😊 운 좋음':r<0.75?'😐 평균':'😢 운 나쁨');
+    const colorFromRatio=r=>r==null?'var(--mu)':(r<0.25?'var(--g)':r<0.5?'var(--bl)':r<0.75?'var(--gold)':'var(--rd)');
+    // 게임별 ratio 평균 (게임 간 천장이 달라 단순 평균 N으론 불공정 → 비율 정규화)
+    const perGameRatios=Object.values(byGame)
+      .filter(d=>d.successPulls.length>0)
+      .map(d=>{
+        const max=getMaxGuaranteedPulls(d.g) || (d.g.gacha.hardPity*2 || 200);
+        const avg=d.successPulls.reduce((a,b)=>a+b,0)/d.successPulls.length;
+        return max>0?avg/max:null;
+      })
+      .filter(r=>r!=null);
+    const overallRatio=perGameRatios.length?perGameRatios.reduce((a,b)=>a+b,0)/perGameRatios.length:null;
+    const overallLuckLabel=luckFromRatio(overallRatio);
+    const overallPctDisplay=overallRatio!=null?Math.round(overallRatio*100):null;
+    const overallColor=colorFromRatio(overallRatio);
     const roiList=Object.values(byGame).sort((a,b)=>(b.success+b.fail)-(a.success+a.fail));
     roiHtml=`<div class="stat-widget purple">
       <div class="sw-head">
         <div class="sw-title">
           <span class="sw-icon">🎲</span>
           <div>
-            <div class="sw-name">게임별 성공률 vs 이론 확률</div>
-            <div class="sw-sub">단순 누적 1−(1−p)<sup>N</sup> · 픽뚫 제외 평균</div>
+            <div class="sw-name">게임별 성공률 vs 천장 대비</div>
+            <div class="sw-sub">평균 뽑기수 ÷ 천장 보장 = 운빨 비율 (낮을수록 운 좋음)</div>
           </div>
         </div>
         <div class="sw-hero">
           <div class="sw-hero-label">평균 운빨</div>
-          <div class="sw-hero-val">${overallTheory!==null?overallTheory.toFixed(0):'—'}<span style="font-size:14px;font-weight:700">%</span></div>
-          <div class="sw-hero-sub">${overallLuckLabel}</div>
+          <div class="sw-hero-val" style="color:${overallColor}">${overallPctDisplay!==null?overallPctDisplay:'—'}<span style="font-size:14px;font-weight:700">%</span></div>
+          <div class="sw-hero-sub" style="color:${overallColor}">${overallLuckLabel}</div>
         </div>
       </div>
       <div class="sw-body widget-carousel">
@@ -9517,23 +9530,24 @@ function buildEnhancedStats(){
         ${roiList.map(d=>{
           const total=d.success+d.fail;
           const myRate=total?Math.round(d.success/total*100):0;
-          const hasProbs=d.successProbs.length>0;
-          const avgTheory=hasProbs?(d.successProbs.reduce((a,b)=>a+b,0)/d.successProbs.length*100):null;
+          const hasProbs=d.successPulls.length>0;
           const avgPulls=hasProbs?Math.round(d.successPulls.reduce((a,b)=>a+b,0)/d.successPulls.length):null;
           const krwPerPickup=d.success?Math.round(d.krw/d.success):0;
-          const luckLabel=avgTheory===null?null:(avgTheory<25?'🍀 매우 운 좋음':avgTheory<50?'😊 운 좋음':avgTheory<75?'😐 평균':'😢 운 나쁨');
-          const luckColor=avgTheory===null?'var(--mu)':(avgTheory<25?'var(--g)':avgTheory<50?'var(--bl)':avgTheory<75?'var(--gold)':'var(--rd)');
-          const maxPulls=getMaxGuaranteedPulls(d.g);
+          const maxPulls=getMaxGuaranteedPulls(d.g) || (d.g.gacha.hardPity*2 || 200);
+          const ratio=avgPulls!=null && maxPulls>0?avgPulls/maxPulls:null;
+          const luckLabel=ratio==null?null:luckFromRatio(ratio);
+          const luckColor=colorFromRatio(ratio);
+          const ratioPct=ratio!=null?Math.round(ratio*100):null;
           const sysNorm=normSys(d.g.gacha.pickupSystem);
           const sysLabel=sysNorm==='no_pity'?'천장 없음':(sysNorm==='5050' && (d.g.gacha.pickupRate||0)<1.0)?'반천장':'천장 보장';
           return `<div class="sw-row" style="--row-c:${d.g.color}">
             <div class="sw-row-head">
               <span class="sw-row-game">${d.g.short} <span style="font-size:10px;color:var(--mu);font-weight:500;margin-left:4px">총 ${total}회 (✨${d.success} · 💔${d.fail})</span></span>
-              <span class="sw-row-meta">📐 ${sysLabel}: <strong style="color:var(--cy);font-family:'Orbitron',monospace">${maxPulls}뽑</strong></span>
+              <span class="sw-row-meta">📐 ${sysLabel}: <strong style="color:var(--cy);font-family:'Orbitron',monospace">${maxPulls||'—'}뽑</strong></span>
             </div>
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:10px">
               <div><span style="color:var(--mu)">내 성공률</span><br><strong style="font-family:'Orbitron',monospace;font-size:15px;color:var(--bl)">${myRate}%</strong></div>
-              <div><span style="color:var(--mu)">이론 확률 (평균)</span><br><strong style="font-family:'Orbitron',monospace;font-size:15px;color:${luckColor}">${avgTheory!==null?avgTheory.toFixed(1)+'%':'—'}</strong></div>
+              <div><span style="color:var(--mu)">천장 대비</span><br><strong style="font-family:'Orbitron',monospace;font-size:15px;color:${luckColor}">${ratioPct!=null?ratioPct+'%':'—'}</strong></div>
               <div><span style="color:var(--mu)">평균 뽑기</span><br><strong style="font-family:'Orbitron',monospace;font-size:15px;color:var(--mu2)">${avgPulls!==null?avgPulls+'뽑':'—'}</strong></div>
             </div>
             ${luckLabel?`<div style="margin-top:6px;font-size:11px;color:${luckColor};font-weight:700">${luckLabel}</div>`:''}
